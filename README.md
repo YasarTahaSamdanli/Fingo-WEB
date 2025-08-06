@@ -1,90 +1,84 @@
-Fingo: Kişisel Finans ve Stok Yönetimi Uygulaması 🚀
+# 🚀 Fingo: Kişisel Finans ve Stok Yönetimi Uygulaması
 
-Fingo, finansal hayatınızı düzene sokarken, ürün stoklarınızı da parmaklarınızın ucunda tutmanızı sağlayan kapsamlı ve kullanıcı dostu bir web uygulamasıdır. Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıcı raporlamaya kadar her şeyi tek bir yerden yönetin! 📈
+Fingo, finansal hayatınızı düzene sokarken, ürün stoklarınızı da parmaklarınızın ucunda tutmanızı sağlayan kapsamlı ve kullanıcı dostu bir web uygulamasıdır.  
+Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıcı raporlamaya kadar her şeyi tek bir yerden yönetin! 📈
 
-Özellikler ✨
-Kullanıcı Kimlik Doğrulama: Güvenli kayıt, giriş ve parola yönetimi. 🛡️
+---
 
-İki Faktörlü Kimlik Doğrulama (2FA): Hesabınıza ekstra bir güvenlik katmanı ekleyin. 🔐
+## ✨ Özellikler
 
-Finansal İşlem Yönetimi: Gelir ve giderlerinizi kolayca kaydedin, kategorilere ayırın ve takip edin. 💰
+- 🛡️ **Kullanıcı Kimlik Doğrulama**: Güvenli kayıt, giriş ve parola yönetimi.
+- 🔐 **İki Faktörlü Kimlik Doğrulama (2FA)**: Hesabınıza ekstra bir güvenlik katmanı ekleyin.
+- 💰 **Finansal İşlem Yönetimi**: Gelir ve giderlerinizi kolayca kaydedin, kategorilere ayırın ve takip edin.
+- 🔄 **Tekrarlayan İşlemler**: Düzenli gelir ve giderlerinizi otomatikleştirerek zamandan kazanın.
+- 📦 **Ürün Yönetimi**: Ürünlerinizi tüm detaylarıyla (ad, kategori, fiyat, birim, barkod vb.) ekleyin, güncelleyin ve silin.
+- ⚡ **Stok Yönetimi**: Stok miktarlarını anında artırın veya azaltın. Barkod tarayıcı desteği ile hızlı işlem yapın.
+- 🛒 **Satış Yönetimi**: Ürünleri sepete ekleyerek satışları kaydedin, geçmiş satışları filtreleyin ve inceleyin.
+- 🏷️ **Kategori Yönetimi**: Kendi özel gelir ve gider kategorilerinizi oluşturun.
+- 📊 **Detaylı Raporlar**:
+  - **Kategori Bazında Özet**: Hangi kategoride ne kadar harcama/kazanç var, bir bakışta görün.
+  - **Bakiye Geçmişi**: Zaman içindeki finansal bakiyenizin değişimini grafiklerle izleyin.
+  - **Stok Hareketleri**: Ürünlerinizin giriş-çıkış ve satışlarını detaylıca takip edin.
+- 📁 **Veri İçe/Dışa Aktarma**: Verilerinizi CSV formatında yedekleyin veya içe aktarın.
+- 🔔 **Bildirim Sistemi**: Düşük stok gibi önemli uyarılarda anlık bildirim alın.
+- 📱 **Duyarlı Tasarım**: Mobil, tablet ve masaüstünde sorunsuz kullanım.
 
-Tekrarlayan İşlemler: Düzenli gelir ve giderlerinizi otomatikleştirerek zamandan kazanın. 🔄
-
-Ürün Yönetimi: Ürünlerinizi tüm detaylarıyla (ad, kategori, fiyat, birim, barkod vb.) ekleyin, güncelleyin ve silin. 📦
-
-Stok Yönetimi: Ürün stok miktarlarını anında artırın veya azaltın. Barkod tarayıcı ile süper hızlı stok güncellemeleri yapın! ⚡
-
-Satış Yönetimi: Ürünleri sepete ekleyerek satışları kaydedin, geçmiş satışlarınızı filtreleyin ve inceleyin. 🛒
-
-Kategori Yönetimi: Kendi özel gelir ve gider kategorilerinizi oluşturun. 🏷️
-
-Detaylı Raporlar: Finansal sağlığınızı ve stok hareketlerinizi görselleştirin:
-
-Kategori Bazında Özet: Hangi kategoride ne kadar harcama/kazanç var, bir bakışta görün. 📊
-
-Bakiye Geçmişi: Zaman içindeki finansal bakiyenizin değişimini grafiklerle izleyin. 📈
-
-Stok Hareketleri: Ürünlerinizin stok giriş-çıkışlarını ve satışlarını detaylıca takip edin. 📦➡️📦
-
-Veri İçe/Dışa Aktarma: Finansal verilerinizi kolayca CSV formatında yedekleyin veya aktarın. 📁📤📥
-
-Bildirim Sistemi: Uygulama içi bildirimlerle önemli gelişmelerden (örn: düşük stok uyarısı) anında haberdar olun. 🔔
-
-Tamamen Duyarlı Tasarım: Fingo'yu mobil, tablet veya masaüstü fark etmeksizin her cihazda rahatça kullanın. 📱💻
-
+---
 
 ## 📸 Ekran Görüntüleri
 
-### Giriş Ekranı
-![girişekranı](screenshots/dashboard.png)
 
-### Yönetim Paneli
-![Yönetim](screenshots/satis-ekrani.png)
+### 🔑 Giriş Ekranı  
+![Giriş Ekranı](screenshots/giris-ekrani.png)
 
-### Raporlar Ve grafikler
-![Raporlar](screenshots/satis-ekrani.png)
+### 🛠️ Yönetim Paneli  
+![Yönetim Paneli](screenshots/yonetim-paneli.png)
 
-Kullanılan Teknolojiler 🛠️
-Frontend:
+### 📊 Raporlar ve Grafikler  
+![Raporlar](screenshots/raporlar.png)
 
-HTML5 🌐
+---
 
-Tailwind CSS (Hızlı ve modern stil için) 🎨
+## 🛠️ Kullanılan Teknolojiler
 
-JavaScript (Vanilla JS - Güçlü etkileşimler için) ⚡
+### Frontend
 
-Chart.js (Profesyonel grafikler için) 📊
+- 🌐 HTML5  
+- 🎨 Tailwind CSS (Modern ve hızlı stil oluşturma)
+- ⚡ Vanilla JavaScript (Etkileşimli arayüzler)
+- 📊 Chart.js (Gelişmiş grafik ve veri görselleştirme)
+- 📸 QuaggaJS (Barkod tarama entegrasyonu)
 
-QuaggaJS (Sorunsuz barkod tarama için) 📸
+### Backend
 
-Backend:
+- 🍃 Node.js
+- 🚀 Express.js
+- 🍃 MongoDB (MongoDB Atlas ile bulut veritabanı)
+- 🔑 JWT (JSON Web Token ile güvenli oturum yönetimi)
+- 🔒 bcryptjs (Şifreleme için)
+- 📧 nodemailer (2FA e-posta gönderimi)
+- ✅ speakeasy (2FA doğrulama)
 
-Node.js (Sunucu tarafı çalışma zamanı) 🍃
+### Dağıtım
 
-Express.js (Hızlı ve esnek web uygulamaları için) 🚀
+- 📄 **Frontend:** GitHub Pages
+- ☁️ **Backend:** Render.com
+- ☁️🍃 **Veritabanı:** MongoDB Atlas
 
-MongoDB (NoSQL Veritabanı) 🍃
+---
 
-JWT (JSON Web Tokens - Güvenli kimlik doğrulama için) 🔑
+## 📬 İletişim
 
-bcryptjs (Parola şifreleme için) 🔒
+**👤 Geliştirici:** Yaşar Taha Şamdanlı  
+📧 E-posta: [yasarsamdanli1@gmail.com](mailto:yasarsamdanli1@gmail.com)  
+🔗 GitHub: [@YasarTahaSamdanli](https://github.com/YasarTahaSamdanli)
 
-nodemailer (E-posta ile 2FA kodları için) 📧
+---
 
-speakeasy (2FA doğrulama için) ✅
+## 🌐 Proje Linki
 
-Dağıtım (Deployment):
+🔗 [GitHub Repo](https://github.com/YasarTahaSamdanli/Fingo-WEB)
 
-Frontend: GitHub Pages (Ücretsiz ve kolay web sitesi barındırma) 📄
-
-Backend: Render.com (Node.js API'nız için ücretsiz katmanlı bulut platformu) ☁️
-
-Veritabanı: MongoDB Atlas (Güvenilir ve ölçeklenebilir bulut veritabanı) ☁️🍃
+---
 
 
-
-İletişim 📧
-Yaşar Taha Şamdanlı - GitHub Profiliniz - [Yasarsamdanli1@gmail.com]
-
-Proje Linki: https://github.com/YasarTahaSamdanli/Fingo-WEB
