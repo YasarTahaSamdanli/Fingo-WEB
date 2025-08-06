@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const useRecoveryCodeBtn = document.getElementById('useRecoveryCodeBtn');
 
     // API Base URL
-    const API_BASE_URL = 'http://localhost:3000/api';
+    const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+
+
 
     // Geçici olarak 2FA akışı için kullanılacak kullanıcı bilgileri
     let tempUserEmail = null;

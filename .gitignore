@@ -5,7 +5,7 @@ node_modules/
 .env
 
 # Otomatik oluşturulan CSS dosyası (eğer Tailwind CSS'i derliyorsan)
-public/output.css
+
 
 # Log dosyaları
 *.log
