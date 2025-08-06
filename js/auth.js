@@ -1,5 +1,5 @@
 // public/js/auth.js
-import { TwoFactorAuthHandler } from './js/twoFactorAuth.js'; // Yeni 2FA modülünü içe aktarıyoruz
+import { TwoFactorAuthHandler } from './twoFactorAuth.js'; // Yeni 2FA modülünü içe aktarıyoruz
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
