@@ -29,13 +29,24 @@ Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıc
 
 
 ### 🔑 Giriş Ekranı  
-![Giriş Ekranı](screenshots/giris-ekrani.png)
+![Giriş Ekranı](ekranresmi/giriş.png)
 
 ### 🛠️ Yönetim Paneli  
-![Yönetim Paneli](screenshots/yonetim-paneli.png)
+![Yönetim Paneli](ekranresmi/yönetimpaneli.png)
 
-### 📊 Raporlar ve Grafikler  
-![Raporlar](screenshots/raporlar.png)
+### 📊 Stok Sistemi  
+![Raporlar](ekranresmi/stok.png)
+
+### 🏷️ Barkod Özelliği
+![barkod](ekranresmi/barkod.png)
+
+### 🆕 Ürün ekleme kaldırma 
+![ürün](ekranresmi/yeniürün.png)
+
+### 🔁 Tekrarlayan İşlemler 
+![ürün](ekranresmi/tekrarlayan.png)
+
+
 
 ---
 
