@@ -1,0 +1,71 @@
+/* input.css */
+
+/* Tailwind CSS'in temel stillerini, bileşenlerini ve yardımcı sınıflarını dahil et */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -- Kendi Özel CSS Kurallarımız -- */
+/* body için font ve arka plan rengi */
+body {
+    font-family: 'Inter', sans-serif; /* Tailwind config'de tanımladığımız Inter fontu */
+    background-color: #f0f4f8; /* Arka plan rengi */
+}
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Basit bir uyarı/hata mesaj kutusu stili */
+.message-box {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    min-width: 300px;
+    text-align: center;
+}
+.message-box.show {
+    opacity: 1;
+}
+.message-box.success {
+    background-color: #d1fae5; /* green-100 */
+    color: #065f46; /* green-800 */
+    border: 1px solid #34d399; /* green-400 */
+}
+.message-box.error {
+    background-color: #fee2e2; /* red-100 */
+    color: #991b1b; /* red-800 */
+    border: 1px solid #f87171; /* red-400 */
+}
+.message-box-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
+}

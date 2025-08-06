@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingo - Ürün Yönetimi</title>
+    <!-- Kendi derlenmiş Tailwind CSS dosyamızı bağlıyoruz -->
+    <!-- Bu dosyanın public/output.css yolunda olduğundan emin olun -->
+    <link href="/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* QR / Barkod Okuyucu Modal Stillleri */
+        .barcode-scanner-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .barcode-scanner-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .barcode-scanner-content {
+            background-color: white;
+            padding: 2rem; /* Daha fazla padding */
+            border-radius: 12px; /* Daha yuvarlak köşeler */
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Daha belirgin gölge */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .barcode-scanner-content #video {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: black;
+            display: block;
+            transform: scaleX(-1); /* Ön kamera için aynalama, arka kamera için gerekmez */
+        }
+        .barcode-scanner-content #barcodeScannerResult {
+            margin-top: 1.5rem; /* Daha fazla boşluk */
+            font-size: 1.25rem; /* Daha büyük font */
+            font-weight: bold;
+            color: #333;
+        }
+        .barcode-scanner-content button {
+            margin-top: 1.5rem; /* Daha fazla boşluk */
+            padding: 0.75rem 1.5rem; /* Daha büyük buton */
+            font-size: 1rem;
+        }
+
+        /* Message Box Stillleri (Anlık bildirimler için hala kullanılacak) */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.success { background-color: #4CAF50; }
+        .message-box.error { background-color: #f44336; }
+        .message-box.info { background-color: #2196F3; }
+        .message-box.warning { background-color: #ff9800; }
+        .message-box.confirm { background-color: #607D8B; }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* Bildirim Merkezi Stillleri */
+        .notification-center {
+            position: fixed;
+            top: 70px; /* Header'ın altında başla */
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900; /* Mesaj kutusunun altında olsun */
+            transform: translateX(110%); /* Başlangıçta ekran dışı */
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-center.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+        }
+        .notification-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .notification-item.unread {
+            background-color: #e0f2f7; /* Hafif mavi arka plan */
+            border-left: 4px solid #2196F3;
+        }
+        .notification-item.read {
+            background-color: #f9f9f9;
+            border-left: 4px solid #ccc;
+            color: #666;
+        }
+        .notification-item.success { border-left-color: #4CAF50; }
+        .notification-item.error { border-left-color: #f44336; }
+        .notification-item.warning { border-left-color: #ff9800; }
+        .notification-item.info { border-left-color: #2196F3; }
+
+        .notification-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .notification-item.success .notification-item-icon { color: #4CAF50; }
+        .notification-item.error .notification-item-icon { color: #f44336; }
+        .notification-item.warning .notification-item-icon { color: #ff9800; }
+        .notification-item.info .notification-item-icon { color: #2196F3; }
+
+        .notification-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        .notification-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f44336;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 font-sans overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="bg-white shadow-lg p-4 flex justify-between items-center z-40 relative border-b-4 border-blue-600">
+        <div class="flex items-center">
+            <button id="goToDashboardBtn" class="p-3 rounded-full hover:bg-gray-100 mr-4 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-home text-gray-700 text-xl"></i>
+            </button>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-blue-800 tracking-tight">Ürün Yönetimi</h1>
+        </div>
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <!-- Bildirim Zili ve Sayacı -->
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-gray-100 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-gray-700 text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+            </button>
+            <span id="loggedInUser" class="text-gray-700 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="logoutBtn" class="bg-red-600 text-white px-5 py-2 rounded-full hover:bg-red-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Çıkış Yap</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 lg:p-10 my-8 mx-auto bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-7xl">
+        <p class="text-lg text-gray-700 text-center mb-10 font-light">Envanterinizdeki ürünleri kolayca yönetin ve takip edin.</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- Left Column (Product Add/Update Form) -->
+            <div class="lg:col-span-1">
+                <div class="p-6 bg-blue-50 rounded-xl border border-blue-200 shadow-lg h-full flex flex-col">
+                    <h2 id="productFormTitle" class="text-2xl font-bold text-blue-700 mb-6 text-center">Yeni Ürün Ekle</h2>
+                    <form id="productForm" class="space-y-5"> <!-- FORM TAG HERE -->
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <div>
+                                <label for="productName" class="block text-gray-800 text-sm font-semibold mb-2">Ürün Adı:</label>
+                                <input type="text" id="productName" placeholder="Örn: Defter, Kalem" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="productQuantity" class="block text-gray-800 text-sm font-semibold mb-2">Miktar (Stok):</label>
+                                <input type="number" id="productQuantity" placeholder="Örn: 100" step="1" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+
+                            <!-- Price Calculation Section -->
+                            <div class="border-t-2 border-b-2 border-blue-300 pt-5 pb-5 mb-4 -mx-6 px-6 bg-blue-100 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">Fiyat Hesaplama</h3>
+                                <div>
+                                    <label for="costPriceInput" class="block text-gray-800 text-sm font-semibold mb-2">Maliyet Fiyatı (Toptancı) (₺):</label>
+                                    <input type="number" id="costPriceInput" placeholder="Örn: 10.00" step="0.01" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <p class="text-xs text-gray-600 mt-1">Ürünü toptancıdan aldığınız fiyat.</p>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="firstMarkupInput" class="block text-gray-800 text-sm font-semibold mb-2">İlk Zam Oranı (%) (Opsiyonel):</label>
+                                    <input type="number" id="firstMarkupInput" placeholder="Örn: 10 (yani %10 zam)" step="0.01" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <p class="text-xs text-gray-600 mt-1">Nakliye, depolama gibi ek maliyetleri karşılamak için.</p>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="profitMarginInput" class="block text-gray-800 text-sm font-semibold mb-2">Kendi Kar Marjınız (%) (Opsiyonel):</label>
+                                    <input type="number" id="profitMarginInput" placeholder="Örn: 25 (yani %25 kar)" step="0.01" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <p class="text-xs text-gray-600 mt-1">Hedeflediğiniz brüt kar oranı.</p>
+                                </div>
+                                <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
+                            </div>
+                            <!-- End Price Calculation Section -->
+
+                            <div>
+                                <label for="productPrice" class="block text-gray-800 text-sm font-semibold mb-2">Birim Satış Fiyatı (₺):</label>
+                                <input type="number" id="productPrice" placeholder="Örn: 15.50" step="0.01" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                <p class="text-xs text-gray-600 mt-1">Bu alan otomatik doldurulabilir veya manuel girilebilir.</p>
+                            </div>
+
+                            <!-- Barcode Section -->
+                            <div class="border-t-2 border-blue-300 pt-5 mt-5 -mx-6 px-6 bg-blue-100 rounded-lg shadow-inner">
+                                <h3 class="text-xl font-bold text-blue-800 mb-4 text-center">Barkod Bilgisi</h3>
+                                <div>
+                                    <label for="productBarcodeInput" class="block text-gray-800 text-sm font-semibold mb-2">Barkod Numarası (Opsiyonel):</label>
+                                    <input type="text" id="productBarcodeInput" placeholder="Barkod numarası" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <p class="text-xs text-gray-600 mt-1">Bu ürün için barkodu manuel girin veya tara butonunu kullanın.</p>
+                                </div>
+                                <button type="button" id="scanBarcodeBtn" class="mt-6 w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">
+                                    <i class="fas fa-barcode mr-2"></i> Barkod Tara
+                                </button>
+                            </div>
+                            <!-- End Barcode Section -->
+
+                            <div>
+                                <label for="productUnit" class="block text-gray-800 text-sm font-semibold mb-2">Birim Tipi:</label>
+                                <select id="productUnit" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <option value="adet">Adet</option>
+                                    <option value="kg">Kilogram</option>
+                                    <option value="litre">Litre</option>
+                                </select>
+                            </div>
+                            <div id="weightOrVolumePerUnitDiv">
+                                <label for="productWeightOrVolumePerUnit" class="block text-gray-800 text-sm font-semibold mb-2">Birim Başına Ağırlık/Hacim (kg/litre):</label>
+                                <input type="number" id="productWeightOrVolumePerUnit" placeholder="Örn: 0.25 (250gr için)" step="0.001" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                <p class="text-xs text-gray-600 mt-1">Sadece 'adet' ürünler için girin. (Örn: 1 adet ürün kaç kg/litre?)</p>
+                            </div>
+                            <div>
+                                <label for="productDescription" class="block text-gray-800 text-sm font-semibold mb-2">Açıklama (Opsiyonel):</label>
+                                <input type="text" id="productDescription" placeholder="Örn: Çizgili defter, Siyah tükenmez kalem" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="productCategory" class="block text-gray-800 text-sm font-semibold mb-2">Kategori (Opsiyonel):</label>
+                                <select id="productCategory" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <option value="">Kategori Seçin</option>
+                                    <!-- Kategoriler JS ile yüklenecek -->
+                                </select>
+                            </div>
+                            <!-- Minimum Stok Seviyesi -->
+                            <div>
+                                <label for="minStockLevel" class="block text-gray-800 text-sm font-semibold mb-2">Minimum Stok Seviyesi:</label>
+                                <input type="number" id="minStockLevel" placeholder="Örn: 10" step="1" min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                <p class="text-xs text-gray-600 mt-1">Bu seviyenin altına düştüğünde uyarı alacaksınız.</p>
+                            </div>
+                            <!-- Resim Yükleme Alanı -->
+                            <div>
+                                <label for="imageUpload" class="block text-gray-800 text-sm font-semibold mb-2">Resim Yükle (Opsiyonel):</label>
+                                <input type="file" id="imageUpload" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                <p class="text-xs text-gray-600 mt-1">Bilgisayarınızdan bir resim dosyası seçin.</p>
+                                <input type="hidden" id="imageUrlHidden"> <!-- This will store the base64 string -->
+                                <div id="imagePreviewContainer" class="mt-4 hidden">
+                                    <p class="text-sm text-gray-600 mb-2">Seçilen Resim Önizlemesi:</p>
+                                    <img id="imagePreview" src="#" alt="Resim Önizlemesi" class="w-32 h-32 object-cover rounded-md border border-gray-300">
+                                    <button type="button" id="clearImageBtn" class="mt-2 bg-red-400 text-white px-3 py-1 rounded-md hover:bg-red-500 text-xs">Resmi Temizle</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button type="submit" id="submitProductBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Ürün Ekle</button>
+                            <button type="button" id="cancelProductEditBtn" class="flex-1 bg-gray-400 text-white p-3 rounded-lg hover:bg-gray-500 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md hidden font-semibold text-lg">İptal</button>
+                        </div>
+                    </form> <!-- END FORM TAG HERE -->
+                </div>
+            </div> <!-- Left Column End -->
+
+            <!-- Right Column (Filters and Product List) -->
+            <div class="lg:col-span-1 space-y-8">
+
+                <!-- Filter Form -->
+                <div class="p-6 bg-purple-50 rounded-xl border border-purple-200 shadow-lg">
+                    <h2 class="text-2xl font-bold text-purple-700 mb-6 text-center">Ürünleri Filtrele</h2>
+                    <div class="grid grid-cols-1 gap-4 mb-4">
+                        <div>
+                            <label for="filterProductName" class="block text-gray-800 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
+                            <input type="text" id="filterProductName" placeholder="Ürün adına göre ara" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-base shadow-sm">
+                        </div>
+                        <div>
+                            <label for="filterProductCategory" class="block text-gray-800 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
+                            <select id="filterProductCategory" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 text-base shadow-sm">
+                                <option value="">Tüm Kategoriler</option>
+                                <!-- Kategoriler JS ile yüklenecek -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="applyProductFilterBtn" class="flex-1 bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtrele</button>
+                        <button id="clearProductFilterBtn" class="flex-1 bg-gray-400 text-white p-3 rounded-lg hover:bg-gray-500 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtreleri Temizle</button>
+                    </div>
+                </div>
+
+                <!-- Product List -->
+                <div id="productsListContainer" class="p-6 bg-gray-50 rounded-xl border border-gray-200 shadow-lg relative">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center">Mevcut Ürünler</h2>
+                    <div id="productsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2"> <!-- pr-2 ekledim scrollbar için boşluk bırakmak için -->
+                        <!-- Products will be loaded here by JS -->
+                    </div>
+                    <!-- Loading Overlay -->
+                    <div id="productsLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                        <p class="text-center text-gray-700 text-lg">
+                            <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                            Yükleniyor...
+                        </p>
+                    </div>
+                    <p class="text-right text-xl font-bold text-gray-800 mt-6 pt-4 border-t border-gray-200">Toplam Envanter Değeri: <span id="totalInventoryValue" class="text-blue-700">0.00 TL</span></p>
+                    <div class="mt-8 text-center flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                        <button id="generateShelfCardsBtn" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Reyon Kartları Oluştur</button>
+                        <button id="goToStockManagementBtn" class="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Stok Yönetimi Sayfasına Git</button>
+                    </div>
+                </div>
+
+            </div> <!-- Right Column End -->
+
+        </div> <!-- Main Content Grid End -->
+    </main>
+
+    <!-- Barcode Scanner Modal -->
+    <div id="barcodeScannerModal" class="barcode-scanner-modal">
+        <div class="barcode-scanner-content">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Barkod Tara</h3>
+            <!-- autoplay ve playsinline niteliklerini ekledim -->
+            <video id="video" class="w-full h-auto max-h-[400px] bg-black rounded-lg shadow-md" autoplay playsinline></video>
+            <div id="barcodeScannerResult" class="text-center text-red-600 font-bold mt-5 text-lg"></div>
+            <button id="stopScanBtn" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Taramayı Durdur</button>
+        </div>
+    </div>
+
+    <!-- Message Box (Anlık bildirimler için hala kullanılacak) -->
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <!-- Bildirim Merkezi Paneli -->
+    <div id="notificationCenter" class="notification-center">
+        <div class="notification-header">
+            <span>Bildirimler</span>
+            <button id="clearNotificationsBtn" class="text-blue-600 hover:text-blue-800 text-sm">Tümünü Temizle</button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <!-- Bildirimler buraya JS ile eklenecek -->
+            <p class="text-center text-gray-500 py-4">Henüz bildirim yok.</p>
+        </div>
+        <div class="notification-footer">
+            <button id="closeNotificationsBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">Kapat</button>
+        </div>
+    </div>
+
+    <!-- QuaggaJS Kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+
+    <script type="module">
+        // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
+        const initialJwtToken = localStorage.getItem('jwtToken');
+        const initialUserId = localStorage.getItem('userId');
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // Redirect if not logged in (Bu kontrol DOMContentLoaded'dan önce çalışabilir)
+        if (!initialJwtToken || !initialUserId) {
+            window.location.href = 'auth.html';
+        }
+
+        function parseJwt (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("JWT parse error:", e);
+                return null;
+            }
+        };
+
+        const decodedToken = parseJwt(initialJwtToken);
+        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
+            console.warn("JWT invalid or expired. Redirecting to login.");
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userId');
+            window.location.href = 'auth.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded fired. Initializing Product Management application...");
+
+            // JWT Token'ı Local Storage'dan al (Şimdi DOMContentLoaded içinde)
+            const getToken = () => localStorage.getItem('jwtToken');
+            const getUserId = () => localStorage.getItem('userId');
+
+
+            // DOM Elements
+            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loggedInUserSpan = document.getElementById('loggedInUser');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+
+            // Form elementinin doğru şekilde tanımlandığından emin ol
+            const productForm = document.getElementById('productForm');
+
+            const productNameInput = document.getElementById('productName');
+            const productQuantityInput = document.getElementById('productQuantity');
+            const productPriceInput = document.getElementById('productPrice');
+            const costPriceInput = document.getElementById('costPriceInput');
+            const firstMarkupInput = document.getElementById('firstMarkupInput');
+            const profitMarginInput = document.getElementById('profitMarginInput');
+            const calculateSellingPriceBtn = document.getElementById('calculateSellingPriceBtn');
+
+            const productBarcodeInput = document.getElementById('productBarcodeInput');
+            const scanBarcodeBtn = document.getElementById('scanBarcodeBtn');
+            const barcodeScannerModal = document.getElementById('barcodeScannerModal');
+            const video = document.getElementById('video');
+            const stopScanBtn = document.getElementById('stopScanBtn');
+            const barcodeScannerResult = document.getElementById('barcodeScannerResult');
+
+            const productUnitSelect = document.getElementById('productUnit');
+            const productWeightOrVolumePerUnitInput = document.getElementById('productWeightOrVolumePerUnit');
+            const weightOrVolumePerUnitDiv = document.getElementById('weightOrVolumePerUnitDiv');
+            const productDescriptionInput = document.getElementById('productDescription');
+            const productCategorySelect = document.getElementById('productCategory');
+            const minStockLevelInput = document.getElementById('minStockLevel'); // Minimum Stok Seviyesi inputu
+
+            // Resim Yükleme ile ilgili yeni DOM elementleri
+            const imageUploadInput = document.getElementById('imageUpload'); // Yeni: File input
+            const imageUrlHiddenInput = document.getElementById('imageUrlHidden'); // Yeni: Base64 stringini tutacak hidden input
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer'); // Yeni: Önizleme kapsayıcısı
+            const imagePreview = document.getElementById('imagePreview'); // Yeni: Resim önizleme <img>
+            const clearImageBtn = document.getElementById('clearImageBtn'); // Yeni: Resmi temizle butonu
+
+
+            const submitProductBtn = document.getElementById('submitProductBtn');
+            const cancelProductEditBtn = document.getElementById('cancelProductEditBtn');
+            const productFormTitle = document.getElementById('productFormTitle');
+            const productsListDiv = document.getElementById('productsList');
+            const productsLoadingOverlay = document.getElementById('productsLoadingOverlay');
+            const totalInventoryValueSpan = document.getElementById('totalInventoryValue');
+
+            const filterProductNameInput = document.getElementById('filterProductName');
+            const filterProductCategorySelect = document.getElementById('filterProductCategory');
+            const applyProductFilterBtn = document.getElementById('applyProductFilterBtn');
+            const clearProductFilterBtn = document.getElementById('clearProductFilterBtn');
+            const generateShelfCardsBtn = document.getElementById('generateShelfCardsBtn');
+            const goToStockManagementBtn = document.getElementById('goToStockManagementBtn'); // Yeni: Stok Yönetimi Sayfasına Git butonu
+
+
+            // Bildirim Merkezi DOM Elementleri
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+
+
+            let editingProductId = null;
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || []; // Bildirimleri local storage'da sakla
+
+            // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            // Bildirimleri Local Storage'a kaydet
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+
+                // Anlık mesaj kutusunu da göster
+                showMessageBox(message, type);
+            }
+
+            // Anlık mesaj kutusu gösterme fonksiyonu (eski showMessage)
+            function showMessageBox(message, type = 'success') {
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found!");
+                    return;
+                }
+                messageText.innerHTML = message;
+                messageBox.className = `message-box show ${type}`;
+                messageBox.classList.remove('hidden');
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            }
+
+            // Bildirimleri render etme (HTML'e basma)
+            function renderNotifications() {
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-500 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index; // Index'i sakla
+
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
+                    notificationList.appendChild(notificationItem);
+
+                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
+                });
+            }
+
+            // Okunmamış bildirim sayısını güncelle
+            function updateNotificationCount() {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
+
+            // Bildirimi okundu olarak işaretle
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
+            // Tüm bildirimleri temizle
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    notifications = [];
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                });
+            }
+
+            // Bildirim merkezini aç/kapat
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    // Eğer açılıyorsa, tüm okunmamışları okundu yap
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        notifications.forEach(notif => notif.isRead = true);
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            // Bildirim merkezini kapat butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
+
+
+            // Formu sıfırlama fonksiyonu
+            function resetProductForm() {
+                if (productForm) {
+                    productForm.reset();
+                }
+                editingProductId = null;
+                if (productFormTitle) productFormTitle.textContent = 'Yeni Ürün Ekle';
+                if (submitProductBtn) submitProductBtn.textContent = 'Ürün Ekle';
+                if (cancelProductEditBtn) {
+                    cancelProductEditBtn.classList.add('hidden');
+                }
+                if (minStockLevelInput) minStockLevelInput.value = 0;
+
+                // Resim yükleme alanlarını sıfırla
+                if (imageUploadInput) imageUploadInput.value = ''; // File inputu temizle
+                if (imageUrlHiddenInput) imageUrlHiddenInput.value = ''; // Hidden inputu temizle
+                if (imagePreview) imagePreview.src = '#'; // Önizleme resmini sıfırla
+                if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden'); // Önizleme kapsayıcısını gizle
+
+                toggleWeightOrVolumePerUnitField();
+            }
+
+            // Birim seçimine göre "Birim Başına Ağırlık/Hacim" alanını gösterme/gizleme
+            function toggleWeightOrVolumePerUnitField() {
+                if (!productUnitSelect || !weightOrVolumePerUnitDiv || !productWeightOrVolumePerUnitInput) {
+                    console.warn("Birim seçimi veya ağırlık/hacim inputu DOM'da bulunamadı.");
+                    return;
+                }
+
+                const selectedUnit = productUnitSelect.value;
+                if (selectedUnit === 'adet') {
+                    weightOrVolumePerUnitDiv.classList.remove('hidden');
+                    productWeightOrVolumePerUnitInput.min = "0";
+                    productWeightOrVolumePerUnitInput.placeholder = "Örn: 0.25 (250gr için)";
+                } else {
+                    weightOrVolumePerUnitDiv.classList.add('hidden');
+                    productWeightOrVolumePerUnitInput.min = "0.001";
+                    productWeightOrVolumePerUnitInput.placeholder = "Örn: 1.0 (1kg için)";
+                    productWeightOrVolumePerUnitInput.value = 1;
+                }
+            }
+
+            // Birim tipi değiştiğinde alanı güncelle
+            if (productUnitSelect) {
+                productUnitSelect.addEventListener('change', toggleWeightOrVolumePerUnitField);
+            }
+
+            // Fiyat Hesaplama Fonksiyonu
+            if (calculateSellingPriceBtn) {
+                calculateSellingPriceBtn.addEventListener('click', () => {
+                    const costPrice = parseFloat(costPriceInput.value);
+                    const firstMarkup = parseFloat(firstMarkupInput.value) || 0;
+                    const profitMargin = parseFloat(profitMarginInput.value) || 0;
+
+                    if (isNaN(costPrice) || costPrice <= 0) {
+                        addNotification('Lütfen geçerli bir maliyet fiyatı girin.', 'error');
+                        return;
+                    }
+
+                    let sellingPrice = costPrice;
+
+                    // İlk zam oranını uygula
+                    if (firstMarkup > 0) {
+                        sellingPrice += sellingPrice * (firstMarkup / 100);
+                    }
+
+                    // Kar marjını uygula
+                    // Formül: Satış Fiyatı = Maliyet Fiyatı / (1 - Kar Marjı Yüzdesi / 100)
+                    if (profitMargin > 0) {
+                        if (profitMargin >= 100) { // Kar marjı %100 veya daha fazla olamaz
+                            addNotification('Kar marjı %100\'den az olmalıdır.', 'error');
+                            return;
+                        }
+                        sellingPrice = sellingPrice / (1 - (profitMargin / 100));
+                    }
+
+                    if (productPriceInput) {
+                        productPriceInput.value = sellingPrice.toFixed(2);
+                        addNotification('Satış fiyatı başarıyla hesaplandı!', 'success');
+                    }
+                });
+            }
+
+            // Resim yükleme inputu değiştiğinde
+            if (imageUploadInput) {
+                imageUploadInput.addEventListener('change', (event) => {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // Dosya boyut kontrolü (örn: 1MB = 1024 * 1024 byte)
+                        const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+                        if (file.size > MAX_FILE_SIZE) {
+                            addNotification('Resim boyutu 1MB\'tan küçük olmalı.', 'error');
+                            imageUploadInput.value = ''; // Seçimi temizle
+                            if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
+                            if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            if (imagePreview) imagePreview.src = e.target.result;
+                            if (imageUrlHiddenInput) imageUrlHiddenInput.value = e.target.result; // Base64 stringi hidden inputa kaydet
+                            if (imagePreviewContainer) imagePreviewContainer.classList.remove('hidden');
+                        };
+                        reader.onerror = (e) => {
+                            console.error("Dosya okuma hatası:", e);
+                            addNotification('Resim okunamadı. Lütfen başka bir resim deneyin.', 'error');
+                            if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
+                            if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
+                        };
+                        reader.readAsDataURL(file); // Resmi Base64 olarak oku
+                    } else {
+                        if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
+                        if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
+                        if (imagePreview) imagePreview.src = '#';
+                    }
+                });
+            }
+
+            // Resmi temizle butonu
+            if (clearImageBtn) {
+                clearImageBtn.addEventListener('click', () => {
+                    if (imageUploadInput) imageUploadInput.value = '';
+                    if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
+                    if (imagePreview) imagePreview.src = '#';
+                    if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
+                    addNotification('Resim temizlendi.', 'info');
+                });
+            }
+
+
+            // Ürün butonlarına olay dinleyicileri ekleme fonksiyonu
+            function addEventListenersToProductButtons() {
+                document.querySelectorAll('.edit-product-btn').forEach(button => {
+                    button.onclick = (event) => {
+                        const productDiv = event.target.closest('div[data-id]');
+                        const productId = productDiv.dataset.id;
+
+                        fetch(`${API_BASE_URL}/products/${productId}?userId=${getUserId()}`, {
+                            headers: { 'Authorization': `Bearer ${getToken()}` }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                // handleAuthError burada çağrılmalı
+                                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                                throw new Error(`HTTP Hatası! Durum: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(product => {
+                            if (productNameInput) productNameInput.value = product.name;
+                            if (productQuantityInput) productQuantityInput.value = product.quantity;
+                            if (productPriceInput) productPriceInput.value = product.price;
+                            if (costPriceInput) costPriceInput.value = '';
+                            if (firstMarkupInput) firstMarkupInput.value = '';
+                            if (profitMarginInput) profitMarginInput.value = '';
+                            if (productBarcodeInput) productBarcodeInput.value = product.barcode || '';
+                            if (productUnitSelect) productUnitSelect.value = product.unit || 'adet';
+                            if (productWeightOrVolumePerUnitInput) productWeightOrVolumePerUnitInput.value = product.weightOrVolumePerUnit || '';
+                            if (productDescriptionInput) productDescriptionInput.value = product.description || '';
+                            if (productCategorySelect) productCategorySelect.value = product.category || '';
+                            if (minStockLevelInput) minStockLevelInput.value = product.minStockLevel !== undefined ? product.minStockLevel : 0;
+
+                            // Resim yükleme alanlarını doldur
+                            if (product.imageUrl) {
+                                if (imagePreview) imagePreview.src = product.imageUrl;
+                                if (imageUrlHiddenInput) imageUrlHiddenInput.value = product.imageUrl;
+                                if (imagePreviewContainer) imagePreviewContainer.classList.remove('hidden');
+                            } else {
+                                if (imagePreview) imagePreview.src = '#';
+                                if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
+                                if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
+                            }
+                            if (imageUploadInput) imageUploadInput.value = ''; // File inputu güvenlik nedeniyle boş kalır
+
+                            if (productUnitSelect) productUnitSelect.dispatchEvent(new Event('change'));
+
+                            if (submitProductBtn) submitProductBtn.textContent = 'Ürünü Güncelle';
+                            if (cancelProductEditBtn) cancelProductEditBtn.classList.remove('hidden');
+                            if (productFormTitle) productFormTitle.textContent = 'Ürün Düzenle';
+                            editingProductId = productId;
+
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        })
+                        .catch(error => {
+                            console.error('Ürün detayları çekilirken hata:', error);
+                            addNotification(`Ürün detayları yüklenirken hata: ${error.message}`, 'error');
+                        });
+                    };
+                });
+
+                document.querySelectorAll('.delete-product-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const productDiv = event.target.closest('div[data-id]');
+                        const productId = productDiv.dataset.id;
+
+                        showMessageBox(`Bu ürünü silmek istediğinizden emin misiniz? <div class="flex justify-center mt-4 space-x-4"><button id="confirmDeleteBtn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Evet, Sil</button> <button id="cancelDeleteBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">İptal</button></div>`, 'confirm');
+
+                        document.getElementById('confirmDeleteBtn').onclick = async () => {
+                            if (messageBox) messageBox.classList.add('hidden');
+
+                            const token = getToken();
+                            if (!token) return;
+
+                            try {
+                                const response = await fetch(`${API_BASE_URL}/products/${productId}?userId=${getUserId()}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+
+                                const result = await response.json();
+
+                                if (!response.ok) {
+                                    // handleAuthError burada çağrılmalı
+                                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                                    throw new Error(result.message || 'Silme işlemi başarısız oldu.');
+                                }
+                                addNotification(result.message, 'success');
+                                fetchProducts();
+                                resetProductForm();
+
+                            } catch (error) {
+                                console.error('Ürün silerken hata:', error);
+                                addNotification(`Ürün silinirken hata: ${error.message}. Ürün geri eklendi.`, 'error');
+                                fetchProducts();
+                            } finally {
+                                if (messageBox) messageBox.classList.add('hidden');
+                            }
+                        };
+
+                        document.getElementById('cancelDeleteBtn').onclick = () => {
+                            if (messageBox) messageBox.classList.add('hidden');
+                        };
+                    };
+                });
+            }
+
+            // Ürün ekleme/güncelleme formu gönderildiğinde
+            if (productForm) {
+                productForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
+
+                    // Form verilerini topla
+                    const productName = productNameInput.value.trim();
+                    const productQuantity = productQuantityInput.value;
+                    const productPrice = productPriceInput.value;
+                    const productDescription = productDescriptionInput.value.trim();
+                    const productCategory = productCategorySelect.value.trim();
+                    const productUnit = productUnitSelect.value;
+                    const productWeightOrVolumePerUnit = productWeightOrVolumePerUnitInput.value;
+                    const productBarcode = productBarcodeInput.value.trim();
+                    const minStockLevel = minStockLevelInput.value;
+                    const imageUrl = imageUrlHiddenInput.value; // Yeni: Base64 stringini buradan alıyoruz
+
+                    // Basit doğrulama
+                    if (!productName || productQuantity === '' || productPrice === '' || !productUnit) {
+                        addNotification('Lütfen tüm gerekli alanları doldurun: Ürün Adı, Miktar, Birim Satış Fiyatı, Birim Tipi.', 'error');
+                        return;
+                    }
+                    if (isNaN(parseInt(productQuantity)) || parseInt(productQuantity) < 0) {
+                        addNotification('Miktar pozitif bir sayı olmalı.', 'error');
+                        return;
+                    }
+                    if (isNaN(parseFloat(productPrice)) || parseFloat(productPrice) <= 0) {
+                        addNotification('Birim Satış Fiyatı pozitif bir sayı olmalı.', 'error');
+                        return;
+                    }
+                    if (productUnit === 'adet' && (isNaN(parseFloat(productWeightOrVolumePerUnit)) || parseFloat(productWeightOrVolumePerUnit) < 0)) {
+                        addNotification(`"${productUnit}" birimi için Birim Başına Ağırlık/Hacim sıfır veya pozitif bir sayı olmalı.`, 'error');
+                        return;
+                    }
+                    if ((productUnit === 'kg' || productUnit === 'litre') && (isNaN(parseFloat(productWeightOrVolumePerUnit)) || parseFloat(productWeightOrVolumePerUnit) <= 0)) {
+                        addNotification(`"${productUnit}" birimi için Birim Başına Ağırlık/Hacim pozitif bir sayı olmalı.`, 'error');
+                        return;
+                    }
+                    if (minStockLevel !== undefined && (isNaN(parseInt(minStockLevel)) || parseInt(minStockLevel) < 0)) {
+                        addNotification('Minimum Stok Seviyesi pozitif bir sayı veya sıfır olmalı.', 'error');
+                        return;
+                    }
+
+
+                    submitProductBtn.disabled = true;
+                    submitProductBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> İşleniyor...';
+
+                    const url = editingProductId ? `${API_BASE_URL}/products/${editingProductId}` : `${API_BASE_URL}/products`;
+                    const method = editingProductId ? 'PUT' : 'POST';
+
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
+                            body: JSON.stringify({
+                                name: productName,
+                                quantity: parseInt(productQuantity),
+                                price: parseFloat(productPrice),
+                                description: productDescription,
+                                category: productCategory,
+                                unit: productUnit,
+                                weightOrVolumePerUnit: parseFloat(productWeightOrVolumePerUnit) || 0, // NaN ise 0 olarak kaydet
+                                barcode: productBarcode || null, // Boş string ise null olarak kaydet
+                                minStockLevel: parseInt(minStockLevel) || 0, // NaN ise 0 olarak kaydet
+                                imageUrl: imageUrl || null // Base64 stringini veya null'ı gönder
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                            throw new Error(result.message || 'Ürün işlemi başarısız oldu.');
+                        }
+
+                        addNotification(result.message, 'success');
+                        resetProductForm(); // Formu temizle
+                        fetchProducts(); // Ürün listesini güncelle
+
+                    } catch (error) {
+                        console.error('Ürün eklerken/güncellerken hata:', error);
+                        addNotification(`Ürün işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
+                    } finally {
+                        submitProductBtn.disabled = false;
+                        submitProductBtn.innerHTML = (editingProductId ? 'Ürünü Güncelle' : 'Ürün Ekle');
+                    }
+                });
+            }
+
+            // Düzenleme İptal Butonu
+            if (cancelProductEditBtn) {
+                cancelProductEditBtn.addEventListener('click', () => {
+                    resetProductForm();
+                });
+            }
+
+            // Barkod Tarayıcıyı Başlatma
+            if (scanBarcodeBtn) {
+                scanBarcodeBtn.addEventListener('click', () => {
+                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active');
+                    barcodeScannerResult.textContent = 'Tarama başlatılıyor...';
+
+                    Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: video, // video elementini hedefle
+                            constraints: {
+                                width: 640,
+                                height: 480,
+                                facingMode: "environment" // Arka kamera tercih edilir
+                            },
+                        },
+                        decoder: {
+                            readers: ["ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                        },
+                        locate: true, // Barkodun konumunu bulmaya çalış
+                    }, function (err) {
+                        if (err) {
+                            console.error("Quagga Başlatma Hatası:", err);
+                            barcodeScannerResult.textContent = `Kamera başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`;
+                            addNotification(`Barkod tarayıcı başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`, 'error');
+                            if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
+                            return;
+                        }
+                        console.log("Quagga başlatıldı, tarama başlıyor.");
+                        barcodeScannerResult.textContent = 'Barkod bekleniyor...';
+                        Quagga.start();
+                    });
+
+                    Quagga.onDetected(function (result) {
+                        const code = result.codeResult.code;
+                        console.log("Barkod algılandı:", code);
+                        if (productBarcodeInput) productBarcodeInput.value = code;
+                        barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
+                        addNotification(`Barkod algılandı: ${code}`, 'success');
+                        Quagga.stop();
+                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
+                    });
+
+                    Quagga.onProcessed(function (result) {
+                        const drawingCtx = Quagga.canvas.ctx.overlay;
+                        const drawingCanvas = Quagga.canvas.dom.overlay;
+
+                        if (result) {
+                            if (result.boxes) {
+                                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
+                                result.boxes.filter(function (box) {
+                                    return box !== result.box;
+                                }).forEach(function (box) {
+                                    Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                                });
+                            }
+
+                            if (result.box) {
+                                Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+                            }
+
+                            if (result.codeResult && result.codeResult.code) {
+                                Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Taramayı Durdur Butonu
+            if (stopScanBtn) {
+                stopScanBtn.addEventListener('click', () => {
+                    Quagga.stop();
+                    if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
+                    barcodeScannerResult.textContent = '';
+                    addNotification('Barkod taraması durduruldu.', 'info');
+                });
+            }
+
+            // Filtreleme Butonları
+            if (applyProductFilterBtn) {
+                applyProductFilterBtn.addEventListener('click', () => {
+                    fetchProducts(); // Filtreleri uygulayıp ürünleri tekrar çek
+                });
+            }
+
+            if (clearProductFilterBtn) {
+                clearProductFilterBtn.addEventListener('click', () => {
+                    if (filterProductNameInput) filterProductNameInput.value = '';
+                    if (filterProductCategorySelect) filterProductCategorySelect.value = '';
+                    fetchProducts(); // Filtreleri temizleyip ürünleri tekrar çek
+                });
+            }
+
+
+            // Ürünleri API'den çekme ve tabloya basma fonksiyonu
+            async function fetchProducts() {
+                if (productsLoadingOverlay) productsLoadingOverlay.classList.remove('hidden');
+                if (productsListDiv) productsListDiv.innerHTML = '';
+                if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = '0.00 TL';
+
+                const token = getToken();
+                if (!token) {
+                    addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                const searchName = filterProductNameInput.value.trim();
+                const filterCategory = filterProductCategorySelect.value.trim();
+                let url = `${API_BASE_URL}/products?userId=${getUserId()}&`;
+
+                if (searchName) url += `name=${encodeURIComponent(searchName)}&`;
+                if (filterCategory) url += `category=${encodeURIComponent(filterCategory)}&`;
+                url += `timestamp=${Date.now()}`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 403) {
+                         addNotification('Ürünleri görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
+                         if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-500">2FA doğrulaması gerekli.</p>`;
+                         return;
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Ürünleri çekerken bir hata oluştu.');
+                    }
+
+                    const products = await response.json();
+                    if (productsListDiv) productsListDiv.innerHTML = '';
+
+                    if (products.length === 0) {
+                        if (productsListDiv) productsListDiv.innerHTML = `<p class="text-center text-gray-500 py-4">Henüz hiç ürün eklenmemiş.</p>`;
+                        return;
+                    }
+
+                    let totalValue = 0;
+                    products.forEach(product => {
+                        const productItem = document.createElement('div');
+                        // Ürün kartı tasarımı iyileştirildi
+                        productItem.className = `p-4 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 md:space-x-4`;
+
+                        if (product.isBelowMinStock) {
+                            productItem.classList.add('bg-red-50', 'border-l-4', 'border-red-500');
+                            const notificationExists = notifications.some(n => n.message.includes(product.name) && n.type === 'warning' && !n.isRead);
+                            if (!notificationExists) {
+                                addNotification(`Düşük Stok: "${product.name}" ürününün stoğu ${product.quantity} seviyesinde!`, 'warning');
+                            }
+                        }
+
+                        productItem.dataset.id = product._id;
+
+                        const categoryText = product.category ? `<p class="text-sm text-gray-500">Kategori: <span class="font-medium text-gray-700">${product.category}</span></p>` : '';
+                        const barcodeText = product.barcode ? `<p class="text-xs text-gray-500">Barkod: <span class="font-mono text-gray-700">${product.barcode}</span></p>` : '';
+                        // Resim varsa göster, yoksa placeholder kullan
+                        const imageUrlHtml = product.imageUrl ?
+                            `<img src="${product.imageUrl}" alt="${product.name}" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0" onerror="this.onerror=null;this.src='https://placehold.co/96x96/e2e8f0/64748b?text=Resim+Yok';">` :
+                            `<img src="https://placehold.co/96x96/e2e8f0/64748b?text=Resim+Yok" alt="Resim Yok" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0">`;
+
+
+                        productItem.innerHTML = `
+                            ${imageUrlHtml}
+                            <div class="flex-1">
+                                <p class="text-xl text-gray-800 font-semibold mb-1">${product.name}
+                                    ${product.isBelowMinStock ? '<span class="ml-2 text-red-600 font-bold text-sm" title="Stok Minimum Seviyenin Altında!">&#9888; Düşük Stok!</span>' : ''}
+                                </p>
+                                <p class="text-base text-gray-600 mb-1">Miktar: <span class="font-medium">${product.quantity} ${product.unit}</span></p>
+                                <p class="text-base text-gray-600 mb-1">Birim Fiyat: <span class="font-medium text-blue-700">${product.price.toFixed(2)} TL</span>
+                                    ${product.displayGrammage && product.unit !== 'kg' && product.unit !== 'litre' ? ` (<span class="font-medium">${product.displayGrammage}</span>)` : ''}
+                                </p>
+                                ${(product.unit === 'adet' && product.weightOrVolumePerUnit > 0) || product.unit === 'kg' || product.unit === 'litre' ? `<p class="text-sm text-gray-600 mb-1">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: <span class="font-medium">${product.pricePerUnitKgOrLiter} TL</span></p>` : ''}
+                                ${product.description ? `<p class="text-sm text-gray-600 mb-1">Açıklama: <span class="font-medium">${product.description}</span></p>` : ''}
+                                ${categoryText}
+                                ${barcodeText}
+                                <p class="text-xs text-gray-500 mt-2">Fiyat Güncelleme: ${product.priceUpdateDate}</p>
+                            </div>
+                            <div class="flex flex-col md:flex-row items-end md:items-center space-y-2 md:space-y-0 md:space-x-3 mt-3 md:mt-0">
+                                <p class="font-bold text-xl text-gray-900 whitespace-nowrap">Toplam: <span class="text-green-700">${(product.quantity * product.price).toFixed(2)} TL</span></p>
+                                <div class="flex space-x-2">
+                                    <button class="edit-product-btn p-2 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 transition-colors duration-200 transform hover:scale-110 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.38-2.827-2.828z" />
+                                        </svg>
+                                    </button>
+                                    <button class="delete-product-btn p-2 rounded-full bg-red-100 hover:bg-red-200 text-red-700 transition-colors duration-200 transform hover:scale-110 shadow-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1zm6 0a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        if (productsListDiv) productsListDiv.appendChild(productItem);
+                        totalValue += product.quantity * product.price;
+                    });
+                    if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = `${totalValue.toFixed(2)} TL`;
+                    addEventListenersToProductButtons();
+                } catch (error) {
+                    console.error('Ürünleri çekerken hata:', error);
+                    addNotification(`Ürünleri yüklerken bir hata oluştu: ${error.message}`, 'error');
+                    if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-500">Ürünler yüklenemedi.</p>`;
+                } finally {
+                    if (productsLoadingOverlay) productsLoadingOverlay.classList.add('hidden');
+                }
+            }
+
+            // Populate Category Dropdowns
+            async function populateCategoryDropdowns() {
+                if (productCategorySelect) productCategorySelect.innerHTML = '<option value="">Kategori Seçin</option>';
+                if (filterProductCategorySelect) filterProductCategorySelect.innerHTML = '<option value="">Tüm Kategoriler</option>';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/categories?timestamp=${Date.now()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    if (!response.ok) {
+                        // handleAuthError burada çağrılmalı
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP Hatası! Durum: ${response.status}`);
+                    }
+                    const categories = await response.json();
+
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.name;
+                        option.textContent = cat.name;
+                        if (productCategorySelect) productCategorySelect.appendChild(option.cloneNode(true));
+                        if (filterProductCategorySelect) filterProductCategorySelect.appendChild(option.cloneNode(true));
+                    });
+                } catch (error) {
+                    console.error('Kategoriler çekilirken hata:', error);
+                }
+            }
+
+            // Generate Shelf Cards Button
+            if (generateShelfCardsBtn) {
+                generateShelfCardsBtn.addEventListener('click', () => {
+                    window.location.href = 'shelf_cards.html';
+                });
+            }
+
+            // Go to Stock Management Button
+            if (goToStockManagementBtn) {
+                goToStockManagementBtn.addEventListener('click', () => {
+                    window.location.href = 'stock_management.html'; // Yeni sayfaya yönlendirme
+                });
+            }
+
+            // Go to Dashboard Button
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                });
+            }
+
+            // Logged In User Info
+            if (loggedInUserSpan && decodedToken && decodedToken.email) {
+                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
+            }
+
+            // Logout Button
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('fingoNotifications');
+                    window.location.href = 'auth.html';
+                });
+            }
+
+            // handleAuthError fonksiyonu (token süresi dolduğunda veya yetkilendirme hatasında yönlendirme)
+            function handleAuthError() {
+                addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                window.location.href = 'auth.html';
+            }
+
+
+            // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
+            populateCategoryDropdowns();
+            fetchProducts();
+            loadNotifications();
+            toggleWeightOrVolumePerUnitField();
+        });
+    </script>
+</body>
+</html>

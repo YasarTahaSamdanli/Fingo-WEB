@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingo - Satış Yönetimi</title>
+    <!-- Kendi derlenmiş Tailwind CSS dosyamızı bağlıyoruz -->
+    <link href="/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- QuaggaJS CDN'ini products.html ile aynı, daha güncel versiyona çevirdik -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* reports.html ile aynı arka plan */
+        }
+        /* Message Box Stillleri */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.success { background-color: #4CAF50; }
+        .message-box.error { background-color: #f44336; }
+        .message-box.info { background-color: #2196F3; }
+        .message-box.warning { background-color: #ff9800; }
+        .message-box.confirm { background-color: #607D8B; }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+
+        /* Bildirim Merkezi Stillleri */
+        .notification-center {
+            position: fixed;
+            top: 70px; /* Header'ın altında başla */
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900; /* Mesaj kutusunun altında olsun */
+            transform: translateX(110%); /* Başlangıçta ekran dışı */
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-center.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+        }
+        .notification-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .notification-item.unread {
+            background-color: #e0f2f7; /* Hafif mavi arka plan */
+            border-left: 4px solid #2196F3;
+        }
+        .notification-item.read {
+            background-color: #f9f9f9;
+            border-left: 4px solid #ccc;
+            color: #666;
+        }
+        .notification-item.success { border-left-color: #4CAF50; }
+        .notification-item.error { border-left-color: #f44336; }
+        .notification-item.info { border-left-color: #2196F3; }
+
+        .notification-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .notification-item.success .notification-item-icon { color: #4CAF50; }
+        .notification-item.error .notification-item-icon { color: #f44336; }
+        .notification-item.warning .notification-item-icon { color: #ff9800; }
+        .notification-item.info .notification-item-icon { color: #2196F3; }
+
+        .notification-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        .notification-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f44336;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* QR / Barkod Okuyucu Modal Stillleri */
+        .barcode-scanner-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .barcode-scanner-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .barcode-scanner-content {
+            background-color: white;
+            padding: 1.5rem; /* Daha az padding, video alanını büyütmek için */
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            /* Video ve diğer elementler için esnek bir düzen oluştur */
+        }
+
+        /* Video ve Canvas'ı kapsayacak alan */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 75%; /* 4:3 en boy oranı (480/640 = 0.75) */
+            background-color: black; /* Video yüklenene kadar siyah arka plan */
+            border-radius: 8px;
+            overflow: hidden; /* Taşmaları engelle */
+            margin-bottom: 1rem; /* Diğer elementlerden ayır */
+        }
+
+        /* Video elementi */
+        .video-container #video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Video içeriğini kapsayıcıya sığdır */
+            display: block;
+            transform: scaleX(-1); /* Ön kamera için aynalama */
+        }
+
+        /* QuaggaJS'in çizim yaptığı canvas */
+        .video-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2; /* Video'nun üzerinde olsun */
+        }
+
+        /* Diğer modal elemanları için stiller */
+        .barcode-scanner-content h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .barcode-scanner-content #barcodeScannerResult {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #red-600; /* Kırmızı renk için doğrudan Tailwind sınıfı kullanıldı */
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .barcode-scanner-content button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .barcode-scanner-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #555;
+            cursor: pointer;
+            z-index: 10; /* En üstte olsun */
+            padding: 0.5rem;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans overflow-x-hidden">
+
+    <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center z-40 relative">
+        <div class="flex items-center">
+            <!-- Menü Aç/Kapa Butonu (Artık her zaman görünür) -->
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-gray-200 mr-4">
+                <i class="fas fa-bars text-gray-700 text-xl"></i>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-700">Fingo Satış Yönetimi</h1>
+        </div>
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <!-- Bildirim Zili ve Sayacı -->
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-gray-100 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-gray-700 text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+            </button>
+            <span id="loggedInUser" class="text-gray-700 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-600 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+        </div>
+    </header>
+
+    <!-- Ana İçerik Alanı -->
+    <div class="flex flex-1 relative">
+
+        <!-- Yan Menü (Sidebar) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-800 text-white w-64 p-4 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20 lg:pt-4">
+            <button id="closeSidebarBtn" class="absolute top-4 right-4 p-2 rounded-md hover:bg-blue-700 text-white text-2xl">
+                &times;
+            </button>
+            <h2 class="text-xl font-semibold mb-6">Yönetim Paneli</h2>
+            <nav class="space-y-3">
+                <button id="goToDashboardBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-home"></i> <span>Ana Sayfa</span>
+                </button>
+                <button id="manageProductsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-box"></i> <span>Ürün Yönetimi</span>
+                </button>
+                <button id="goToSalesManagementBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-shopping-cart"></i><span>Satış Yönetimi</span>
+                </button>
+                <button id="manageRecurringTransactionsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-redo"></i> <span>Tekrarlayan İşlemler</span>
+                </button>
+                <button id="viewReportsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-chart-line"></i> <span>Raporları Görüntüle</span>
+                </button>
+                <button id="exportCsvBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-file-export"></i> <span>Verileri Dışa Aktar (CSV)</span>
+                </button>
+                <button id="importCsvBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-file-import"></i> <span>Verileri İçe Aktar (CSV)</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+        <!-- Satış Yönetimi Ana İçerik Alanı -->
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 mt-4 mb-4 bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-blue-700 mb-6 text-center">Satış Yönetimi</h2>
+            <p class="text-lg text-gray-700 text-center mb-10 font-light">Yeni satışları kaydedin ve geçmiş satışlarınızı yönetin.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Left Column (New Sale Form) -->
+                <div class="lg:col-span-1">
+                    <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-lg h-full flex flex-col">
+                        <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">Yeni Satış Oluştur</h3>
+                        <form id="newSaleForm" class="space-y-5">
+                            <div>
+                                <label for="saleDate" class="block text-gray-700 text-sm font-semibold mb-2">Satış Tarihi:</label>
+                                <input type="date" id="saleDate" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm" value="">
+                            </div>
+                            <div>
+                                <label for="customerName" class="block text-gray-700 text-sm font-semibold mb-2">Müşteri Adı (Opsiyonel):</label>
+                                <input type="text" id="customerName" placeholder="Örn: Ayşe Yılmaz" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+
+                            <!-- Product Selection for Sale -->
+                            <div class="border-t-2 border-b-2 border-gray-300 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-50 rounded-lg shadow-inner">
+                                <h4 class="text-xl font-bold text-gray-700 mb-4 text-center">Ürün Ekle</h4>
+                                <div class="relative mb-4">
+                                    <label for="productSearchInput" class="block text-gray-700 text-sm font-semibold mb-2">Ürün Adı veya Barkod:</label>
+                                    <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    <ul id="productSuggestions" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto hidden">
+                                        <!-- Arama önerileri buraya gelecek -->
+                                    </ul>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="productQuantityForSale" class="block text-gray-700 text-sm font-semibold mb-2">Miktar:</label>
+                                        <input type="number" id="productQuantityForSale" placeholder="Adet" min="1" value="1" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button type="button" id="scanBarcodeBtn" class="w-full bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 transition-colors shadow-md flex items-center justify-center">
+                                            <i class="fas fa-barcode mr-2"></i> Barkod Tara
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" id="addProductToSaleBtn" class="mt-6 w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md">Ürünü Sepete Ekle</button>
+                            </div>
+
+                            <!-- Sale Items List -->
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-700 mb-4 text-center">Satış Sepeti</h4>
+                                <div id="saleItemsList" class="space-y-3 max-h-60 overflow-y-auto p-3 bg-white rounded-md border border-gray-200 shadow-sm">
+                                    <p class="text-center text-gray-500 py-2">Henüz ürün eklenmedi.</p>
+                                </div>
+                                <p class="text-right text-2xl font-bold text-gray-900 mt-4">Toplam Tutar: <span id="totalSaleAmount" class="text-green-700">0.00 TL</span></p>
+                            </div>
+
+                            <button type="submit" id="completeSaleBtn" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Satışı Tamamla</button>
+                            <button type="button" id="clearSaleFormBtn" class="w-full bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Formu Temizle</button>
+                        </form>
+                    </div>
+                </div> <!-- Left Column End -->
+
+                <!-- Right Column (Past Sales List) -->
+                <div class="lg:col-span-1 space-y-8">
+
+                    <!-- Filter Past Sales -->
+                    <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-lg">
+                        <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">Geçmiş Satışları Filtrele</h3>
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <div>
+                                <label for="filterCustomerName" class="block text-gray-700 text-sm font-semibold mb-2">Müşteri Adına Göre Ara:</label>
+                                <input type="text" id="filterCustomerName" placeholder="Müşteri adı" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="filterSaleStartDate" class="block text-gray-700 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
+                                <input type="date" id="filterSaleStartDate" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="filterSaleEndDate" class="block text-gray-700 text-sm font-semibold mb-2">Bitiş Tarihi:</label>
+                                <input type="date" id="filterSaleEndDate" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-base shadow-sm">
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button id="applySaleFilterBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Filtrele</button>
+                            <button id="clearSaleFilterBtn" class="flex-1 bg-gray-500 text-white p-3 rounded-md hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Filtreleri Temizle</button>
+                        </div>
+                    </div>
+
+                    <!-- Past Sales List -->
+                    <div id="pastSalesListContainer" class="p-6 bg-white rounded-xl border border-gray-200 shadow-lg relative">
+                        <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center">Geçmiş Satışlar</h3>
+                        <div id="pastSalesList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                            <!-- Past sales will be loaded here by JS -->
+                        </div>
+                        <!-- Loading Overlay -->
+                        <div id="salesLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                            <p class="text-center text-gray-700 text-lg">
+                                <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                                Yükleniyor...
+                            </p>
+                        </div>
+                        <p class="text-right text-xl font-bold text-gray-800 mt-6 pt-4 border-t border-gray-200">Toplam Satış Hacmi: <span id="totalSalesVolume" class="text-blue-700">0.00 TL</span></p>
+                    </div>
+
+                </div> <!-- Right Column End -->
+
+            </div> <!-- Main Content Grid End -->
+        </main>
+    </div>
+
+    <!-- Mesaj Kutusu -->
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <!-- Bildirim Merkezi Paneli -->
+    <div id="notificationCenter" class="notification-center">
+        <div class="notification-header">
+            <span>Bildirimler</span>
+            <button id="clearNotificationsBtn" class="text-blue-600 hover:text-blue-800 text-sm">Tümünü Temizle</button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <!-- Bildirimler buraya JS ile eklenecek -->
+            <p class="text-center text-gray-500 py-4">Henüz bildirim yok.</p>
+        </div>
+        <div class="notification-footer">
+            <button id="closeNotificationsBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm">Kapat</button>
+        </div>
+    </div>
+
+    <!-- QR / Barkod Okuyucu Modal -->
+    <div id="barcodeScannerModal" class="barcode-scanner-modal">
+        <div class="barcode-scanner-content">
+            <button id="barcodeScannerCloseBtn" class="barcode-scanner-close-btn">&times;</button>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Barkod Tara</h3>
+
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <!-- Canvas QuaggaJS tarafından dinamik olarak eklenecek -->
+            </div>
+
+            <div id="barcodeScannerResult" class="text-center text-red-600 font-bold mt-5 text-lg">Tarama bekleniyor...</div>
+            <button id="stopScanBtn" class="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition-colors shadow-md">Taramayı Durdur</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
+        const initialJwtToken = localStorage.getItem('jwtToken');
+        const initialUserId = localStorage.getItem('userId');
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // Redirect if not logged in (Bu kontrol DOMContentLoaded'dan önce çalışabilir)
+        if (!initialJwtToken || !initialUserId) {
+            window.location.href = 'auth.html';
+        }
+
+        function parseJwt (token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("JWT parse error:", e);
+                return null;
+            }
+        };
+
+        const decodedToken = parseJwt(initialJwtToken);
+        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
+            console.warn("JWT invalid or expired. Redirecting to login.");
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userId');
+            window.location.href = 'auth.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded fired. Initializing Sales Management application...");
+
+            // JWT Token'ı Local Storage'dan al (Şimdi DOMContentLoaded içinde)
+            const getToken = () => localStorage.getItem('jwtToken');
+            const getUserId = () => localStorage.getItem('userId');
+
+            // DOM Elements
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loggedInUserSpan = document.getElementById('loggedInUser');
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+
+            // Sales Form Elements
+            const newSaleForm = document.getElementById('newSaleForm');
+            const saleDateInput = document.getElementById('saleDate');
+            const customerNameInput = document.getElementById('customerName');
+            // Ürün arama ve öneri elemanları
+            const productSearchInput = document.getElementById('productSearchInput');
+            const productSuggestions = document.getElementById('productSuggestions');
+            const productQuantityForSaleInput = document.getElementById('productQuantityForSale');
+            const addProductToSaleBtn = document.getElementById('addProductToSaleBtn');
+            const scanBarcodeBtn = document.getElementById('scanBarcodeBtn');
+            const saleItemsList = document.getElementById('saleItemsList');
+            const totalSaleAmountSpan = document.getElementById('totalSaleAmount');
+            const completeSaleBtn = document.getElementById('completeSaleBtn');
+            const clearSaleFormBtn = document.getElementById('clearSaleFormBtn');
+
+            // Past Sales Filter Elements
+            const filterCustomerNameInput = document.getElementById('filterCustomerName');
+            const filterSaleStartDateInput = document.getElementById('filterSaleStartDate');
+            const filterSaleEndDateInput = document.getElementById('filterSaleEndDate');
+            const applySaleFilterBtn = document.getElementById('applySaleFilterBtn');
+            const clearSaleFilterBtn = document.getElementById('clearSaleFilterBtn');
+            const pastSalesListDiv = document.getElementById('pastSalesList');
+            const salesLoadingOverlay = document.getElementById('salesLoadingOverlay');
+            const totalSalesVolumeSpan = document.getElementById('totalSalesVolume');
+
+            // Bildirim Merkezi DOM Elementleri
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+
+            // Barkod Tarayıcı Modal Elementleri
+            const barcodeScannerModal = document.getElementById('barcodeScannerModal');
+            const barcodeScannerCloseBtn = document.getElementById('barcodeScannerCloseBtn');
+            const videoElement = document.getElementById('video');
+            const barcodeScannerResult = document.getElementById('barcodeScannerResult');
+            const stopScanBtn = document.getElementById('stopScanBtn');
+
+            // Sidebar ve Yönlendirme Butonları
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const manageProductsBtn = document.getElementById('manageProductsBtn');
+            const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
+            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
+            const viewReportsBtn = document.getElementById('viewReportsBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
+            const importCsvBtn = document.getElementById('importCsvBtn');
+
+
+            let currentSaleItems = []; // Satış sepetindeki ürünleri tutacak dizi
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+            let allProducts = []; // Tüm ürünleri saklayacak dizi
+            let selectedProductForSale = null; // Arama ile seçilen ürünü tutacak
+            let scannerRunning = false; // Tarayıcının çalışıp çalışmadığını takip et
+
+            // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            // Bildirimleri Local Storage'a kaydet
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+
+                // Anlık mesaj kutusunu da göster
+                showMessageBox(message, type);
+            }
+
+            // Anlık mesaj kutusu gösterme fonksiyonu (eski showMessage)
+            function showMessageBox(message, type = 'success') {
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found!");
+                    return;
+                }
+                messageText.innerHTML = message;
+                messageBox.className = `message-box show ${type}`;
+                messageBox.classList.remove('hidden');
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            }
+
+            // Bildirimleri render etme (HTML'e basma)
+            function renderNotifications() {
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-500 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index; // Index'i sakla
+
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
+                    notificationList.appendChild(notificationItem);
+
+                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
+                });
+            }
+
+            // Okunmamış bildirim sayısını güncelle
+            function updateNotificationCount() {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
+
+            // Bildirimi okundu olarak işaretle
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
+            // Tüm bildirimleri temizle
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    notifications = [];
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                });
+            }
+
+            // Bildirim merkezini aç/kapat
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    // Eğer açılıyorsa, tüm okunmamışları okundu yap
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        notifications.forEach(notif => notif.isRead = true);
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            // Bildirim merkezini kapat butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
+
+
+            // Formu sıfırlama fonksiyonu
+            function resetSaleForm() {
+                if (newSaleForm) newSaleForm.reset();
+                currentSaleItems = [];
+                renderSaleItems();
+                updateTotalSaleAmount();
+                if (saleDateInput) saleDateInput.valueAsDate = new Date(); // Bugünün tarihini varsayılan yap
+                if (productSearchInput) productSearchInput.value = ''; // Arama inputunu temizle
+                if (productSuggestions) productSuggestions.classList.add('hidden'); // Önerileri gizle
+                selectedProductForSale = null; // Seçili ürünü sıfırla
+            }
+
+            // Tüm ürünleri API'den çekme (arama ve barkod için kullanılacak)
+            async function fetchAllProducts() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/products?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    allProducts = await response.json();
+                    console.log("Tüm ürünler yüklendi:", allProducts); // Debug
+                } catch (error) {
+                    console.error('Ürünler çekilirken hata:', error);
+                    addNotification('Ürün listesi yüklenemedi.', 'error');
+                }
+            }
+
+            // Ürün arama inputuna yazıldığında önerileri göster
+            if (productSearchInput) {
+                productSearchInput.addEventListener('input', () => {
+                    const searchTerm = productSearchInput.value.toLowerCase();
+                    productSuggestions.innerHTML = '';
+                    productSuggestions.classList.add('hidden');
+                    selectedProductForSale = null; // Yeni arama başladığında seçili ürünü sıfırla
+
+                    if (searchTerm.length < 2) return; // En az 2 karakter girilince ara
+
+                    const filteredProducts = allProducts.filter(product =>
+                        product.name.toLowerCase().includes(searchTerm) ||
+                        (product.barcode && product.barcode.toLowerCase().includes(searchTerm))
+                    );
+
+                    if (filteredProducts.length > 0) {
+                        filteredProducts.forEach(product => {
+                            const li = document.createElement('li');
+                            li.className = 'p-2 cursor-pointer hover:bg-gray-100 border-b border-gray-100 last:border-b-0 text-gray-800 text-sm';
+                            li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`;
+                            li.dataset.productId = product._id;
+                            li.dataset.productName = product.name;
+                            li.dataset.unitPrice = product.price;
+                            li.dataset.unit = product.unit;
+                            li.dataset.category = product.category;
+                            li.dataset.currentQuantity = product.quantity;
+                            li.dataset.barcode = product.barcode || '';
+
+                            li.addEventListener('click', () => {
+                                productSearchInput.value = product.name; // Inputa ürün adını yaz
+                                selectedProductForSale = product; // Seçilen ürünü kaydet
+                                productSuggestions.classList.add('hidden'); // Önerileri gizle
+                                productQuantityForSaleInput.focus(); // Miktar inputuna odaklan
+                                addNotification(`"${product.name}" seçildi. Miktar girip sepete ekleyebilirsiniz.`, 'info'); // Daha açıklayıcı mesaj
+                            });
+                            productSuggestions.appendChild(li);
+                        });
+                        productSuggestions.classList.remove('hidden');
+                    }
+                });
+
+                // Yeni: Enter tuşuna basıldığında ürünü sepete ekle
+                productSearchInput.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Form submit etmeyi engelle
+                        if (selectedProductForSale) {
+                            // Eğer bir ürün seçiliyse, doğrudan sepete ekle
+                            addProductToSaleBtn.click();
+                        } else {
+                            // Eğer bir ürün seçili değilse ama inputta bir değer varsa,
+                            // o değeri barkod olarak kabul edip ürünü bulmaya çalış
+                            const searchTerm = productSearchInput.value.trim();
+                            if (searchTerm) {
+                                const foundProduct = allProducts.find(p => p.barcode === searchTerm || p.name.toLowerCase() === searchTerm.toLowerCase());
+                                if (foundProduct) {
+                                    selectedProductForSale = foundProduct;
+                                    productSearchInput.value = foundProduct.name; // Inputu ürün adıyla doldur
+                                    addProductToSaleBtn.click(); // Sepete ekle
+                                    addNotification(`"${foundProduct.name}" otomatik olarak sepete eklendi.`, 'success');
+                                } else {
+                                    addNotification('Girilen barkod veya isimle ürün bulunamadı.', 'error');
+                                }
+                            } else {
+                                addNotification('Lütfen bir ürün arayın veya barkod girin.', 'error');
+                            }
+                        }
+                    }
+                });
+
+                // Input dışına tıklayınca önerileri gizle
+                document.addEventListener('click', (event) => {
+                    if (!productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
+                        productSuggestions.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Barkod Tara butonu (GERÇEK KAMERA ENTEGRASYONU)
+            if (scanBarcodeBtn) {
+                scanBarcodeBtn.addEventListener('click', () => {
+                    barcodeScannerModal.classList.add('active'); // Modalı göster
+                    barcodeScannerResult.textContent = 'Tarama başlatılıyor...'; // Mesajı sıfırla
+
+                    // QuaggaJS başlatma ayarları
+                    Quagga.init({
+                        inputStream: {
+                            name: "Live",
+                            type: "LiveStream",
+                            target: videoElement, // video elementini hedefle
+                            constraints: {
+                                width: 640,
+                                height: 480,
+                                facingMode: "environment" // Arka kamera tercih edilir
+                            },
+                        },
+                        decoder: {
+                            readers: ["ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
+                        },
+                        locate: true, // Barkodun konumunu bulmaya çalış
+                    }, function (err) {
+                        if (err) {
+                            console.error("Quagga Başlatma Hatası:", err);
+                            barcodeScannerResult.textContent = `Kamera başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`;
+                            addNotification(`Barkod tarayıcı başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`, 'error');
+                            barcodeScannerModal.classList.remove('active'); // Modalı kapat
+                            return;
+                        }
+                        console.log("Quagga başlatıldı, tarama başlıyor.");
+                        barcodeScannerResult.textContent = 'Barkod bekleniyor...';
+                        Quagga.start();
+                        scannerRunning = true;
+                    });
+
+                    // Barkod algılandığında
+                    Quagga.onDetected(function (result) {
+                        const code = result.codeResult.code;
+                        console.log("Barkod algılandı:", code);
+                        productSearchInput.value = code;
+                        barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
+                        addNotification(`Barkod algılandı: ${code}`, 'success');
+
+                        stopBarcodeScanner(); // Tarayıcıyı durdur
+                        barcodeScannerModal.classList.remove('active'); // Modalı kapat
+
+                        // Algılanan barkod ile ürünü bul ve sepete ekle
+                        const foundProduct = allProducts.find(p => p.barcode === code);
+                        if (foundProduct) {
+                            productSearchInput.value = foundProduct.name;
+                            selectedProductForSale = foundProduct;
+                            addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'success');
+                            productQuantityForSaleInput.focus();
+                            addProductToSaleBtn.click(); // Otomatik sepete ekle
+                        } else {
+                            addNotification(`"${code}" barkoduna sahip ürün bulunamadı.`, 'error');
+                            selectedProductForSale = null;
+                        }
+                    });
+
+                    // Tarama sırasında barkodun etrafına kutu çizme (Görsel geri bildirim)
+                    Quagga.onProcessed(function (result) {
+                        const drawingCtx = Quagga.canvas.ctx.overlay;
+                        const drawingCanvas = Quagga.canvas.dom.overlay;
+
+                        if (result) {
+                            if (result.boxes) {
+                                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
+                                result.boxes.filter(function (box) {
+                                    return box !== result.box;
+                                }).forEach(function (box) {
+                                    Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                                });
+                            }
+
+                            if (result.box) {
+                                Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+                            }
+
+                            if (result.codeResult && result.codeResult.code) {
+                                Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Barkod Tarayıcıyı Durdurma Fonksiyonu
+            function stopBarcodeScanner() {
+                if (scannerRunning) {
+                    Quagga.stop();
+                    scannerRunning = false;
+                    console.log("Barkod tarayıcı durduruldu.");
+                }
+            }
+
+            // Modal kapatma butonları
+            if (barcodeScannerCloseBtn) {
+                barcodeScannerCloseBtn.addEventListener('click', () => {
+                    barcodeScannerModal.classList.remove('active');
+                    stopBarcodeScanner();
+                });
+            }
+            if (stopScanBtn) {
+                stopScanBtn.addEventListener('click', () => {
+                    barcodeScannerModal.classList.remove('active');
+                    stopBarcodeScanner();
+                });
+            }
+
+
+            // Satış sepetine ürün ekleme (Güncellendi: selectedProductForSale kullanılıyor)
+            if (addProductToSaleBtn) {
+                addProductToSaleBtn.addEventListener('click', () => {
+                    if (!selectedProductForSale) {
+                        addNotification('Lütfen sepete eklemek için bir ürün seçin veya aratın.', 'error');
+                        return;
+                    }
+
+                    const productId = selectedProductForSale._id;
+                    const productName = selectedProductForSale.name;
+                    const unitPrice = parseFloat(selectedProductForSale.price);
+                    const unit = selectedProductForSale.unit;
+                    const category = selectedProductForSale.category;
+                    const currentStock = parseInt(selectedProductForSale.quantity); // selectedProductForSale'deki güncel stok
+
+                    let quantity = parseInt(productQuantityForSaleInput.value);
+
+                    if (isNaN(quantity) || quantity <= 0) {
+                        addNotification('Lütfen geçerli bir miktar girin.', 'error');
+                        return;
+                    }
+                    if (quantity > currentStock) {
+                        addNotification(`"${productName}" için yeterli stok yok. Maksimum ${currentStock} ${unit} satabilirsiniz.`, 'error');
+                        return;
+                    }
+
+                    // Sepette aynı ürün varsa miktarını artır
+                    const existingItemIndex = currentSaleItems.findIndex(item => item.productId === productId);
+                    if (existingItemIndex > -1) {
+                        // Sepetteki ürünün miktarını artır
+                        currentSaleItems[existingItemIndex].quantity += quantity;
+                        currentSaleItems[existingItemIndex].totalPrice = currentSaleItems[existingItemIndex].quantity * currentSaleItems[existingItemIndex].unitPrice;
+                    } else {
+                        currentSaleItems.push({
+                            productId,
+                            productName,
+                            unitPrice,
+                            quantity,
+                            unit,
+                            category,
+                            totalPrice: quantity * unitPrice // Yeni ürün eklenirken totalPrice'ı da ekle
+                        });
+                    }
+
+                    // allProducts dizisindeki ürünün stok miktarını güncelle (UI'da doğru görünmesi için)
+                    const productInAllProductsIndex = allProducts.findIndex(p => p._id === productId);
+                    if (productInAllProductsIndex > -1) {
+                        allProducts[productInAllProductsIndex].quantity -= quantity;
+                    }
+
+                    renderSaleItems();
+                    updateTotalSaleAmount();
+                    productQuantityForSaleInput.value = 1; // Miktarı sıfırla
+                    productSearchInput.value = ''; // Arama inputunu temizle
+                    selectedProductForSale = null; // Seçili ürünü sıfırla
+                    addNotification(`"${productName}" sepete eklendi.`, 'info');
+                });
+            }
+
+            // Satış sepetindeki ürünleri render etme
+            function renderSaleItems() {
+                saleItemsList.innerHTML = '';
+                if (currentSaleItems.length === 0) {
+                    saleItemsList.innerHTML = '<p class="text-center text-gray-500 py-2">Henüz ürün eklenmedi.</p>';
+                    return;
+                }
+
+                currentSaleItems.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex justify-between items-center p-2 bg-white rounded-md shadow-sm border border-gray-200';
+                    itemDiv.innerHTML = `
+                        <span class="text-gray-800 font-medium">${item.productName} (${item.quantity} ${item.unit})</span>
+                        <span class="text-blue-600 font-semibold">${(item.quantity * item.unitPrice).toFixed(2)} TL</span>
+                        <button type="button" class="remove-sale-item-btn text-red-500 hover:text-red-700 ml-2" data-index="${index}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    `;
+                    saleItemsList.appendChild(itemDiv);
+                });
+
+                // Ürün silme butonlarına olay dinleyicileri ekle
+                document.querySelectorAll('.remove-sale-item-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const indexToRemove = parseInt(event.target.closest('button').dataset.index);
+                        const removedItem = currentSaleItems.splice(indexToRemove, 1)[0];
+
+                        // allProducts dizisindeki ürünün stok miktarını geri getir
+                        const productInAllProductsIndex = allProducts.findIndex(p => p._id === removedItem.productId);
+                        if (productInAllProductsIndex > -1) {
+                            allProducts[productInAllProductsIndex].quantity += removedItem.quantity;
+                        }
+
+                        renderSaleItems();
+                        updateTotalSaleAmount();
+                        addNotification(`"${removedItem.productName}" sepetten çıkarıldı.`, 'info');
+                    });
+                });
+            }
+
+            // Toplam satış tutarını güncelleme
+            function updateTotalSaleAmount() {
+                let total = 0;
+                currentSaleItems.forEach(item => {
+                    total += item.quantity * item.unitPrice;
+                });
+                if (totalSaleAmountSpan) totalSaleAmountSpan.textContent = `${total.toFixed(2)} TL`;
+            }
+
+            // Satışı tamamlama
+            if (newSaleForm) {
+                newSaleForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    if (currentSaleItems.length === 0) {
+                        addNotification('Satışı tamamlamak için sepete ürün eklemelisiniz.', 'error');
+                        return;
+                    }
+
+                    const saleDate = saleDateInput.value;
+                    const customerName = customerNameInput.value.trim();
+
+                    completeSaleBtn.disabled = true;
+                    completeSaleBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Satış Oluşturuluyor...';
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/sales`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
+                            body: JSON.stringify({
+                                saleItems: currentSaleItems.map(item => ({
+                                    productId: item.productId,
+                                    quantity: item.quantity,
+                                    productName: item.productName, // Backend'e productName'i de gönder
+                                    unitPrice: item.unitPrice,     // Backend'e unitPrice'ı da gönder
+                                    totalPrice: item.totalPrice    // Backend'e totalPrice'ı da gönder
+                                })),
+                                customerName: customerName || null,
+                                saleDate: saleDate // ISO formatında gönderilecek
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                            throw new Error(result.message || 'Satış işlemi başarısız oldu.');
+                        }
+
+                        addNotification(result.message, 'success');
+                        resetSaleForm();
+                        await fetchAllProducts(); // Tüm ürünleri tekrar çek (stoklar güncellendiği için)
+                        fetchPastSales(); // Geçmiş satışları yenile
+
+                    } catch (error) {
+                        console.error('Satış işlemi sırasında hata:', error);
+                        addNotification(`Satış işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
+                    } finally {
+                        completeSaleBtn.disabled = false;
+                        completeSaleBtn.innerHTML = 'Satışı Tamamla';
+                    }
+                });
+            }
+
+            // Formu temizle butonu
+            if (clearSaleFormBtn) {
+                clearSaleFormBtn.addEventListener('click', resetSaleForm);
+            }
+
+            // Geçmiş satışları çekme ve listeleme
+            async function fetchPastSales() {
+                if (salesLoadingOverlay) salesLoadingOverlay.classList.remove('hidden');
+                if (pastSalesListDiv) pastSalesListDiv.innerHTML = '';
+                if (totalSalesVolumeSpan) totalSalesVolumeSpan.textContent = '0.00 TL';
+
+                const token = getToken();
+                if (!token) {
+                    addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                const filterCustomer = filterCustomerNameInput.value.trim();
+                const filterStartDate = filterSaleStartDateInput.value;
+                const filterEndDate = filterSaleEndDateInput.value;
+
+                let url = `${API_BASE_URL}/sales?userId=${getUserId()}&`;
+                if (filterCustomer) url += `customerName=${encodeURIComponent(filterCustomer)}&`;
+                if (filterStartDate) url += `startDate=${encodeURIComponent(new Date(filterStartDate).toISOString())}&`;
+                if (filterEndDate) url += `endDate=${encodeURIComponent(new Date(filterEndDate + 'T23:59:59.999').toISOString())}&`;
+                url += `timestamp=${Date.now()}`; // Cache busting
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.status === 403) {
+                         addNotification('Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
+                         if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-500">2FA doğrulaması gerekli.</p>`;
+                         return;
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Geçmiş satışları çekerken bir hata oluştu.');
+                    }
+
+                    const sales = await response.json();
+                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = '';
+
+                    if (sales.length === 0) {
+                        if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="text-center text-gray-500 py-4">Henüz hiç satış yapılmamış.</p>`;
+                        return;
+                    }
+
+                    let totalSalesValue = 0;
+                    sales.forEach(sale => {
+                        const saleItemDiv = document.createElement('div');
+                        saleItemDiv.className = `p-4 bg-white rounded-lg shadow-md border border-gray-100`;
+
+                        const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
+                        const customerInfo = sale.customerName ? `Müşteri: <span class="font-medium">${sale.customerName}</span>` : 'Müşteri: <span class="font-medium">Anonim</span>';
+
+                        let itemsHtml = sale.saleItems.map(item => `
+                            <li class="text-sm text-gray-600 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
+                        `).join('');
+
+                        saleItemDiv.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="text-lg font-semibold text-gray-800">Satış Tarihi: <span class="text-blue-700">${saleDate}</span></p>
+                                <p class="text-lg font-bold text-green-700">${sale.totalAmount.toFixed(2)} TL</p>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">${customerInfo}</p>
+                            <p class="text-md font-semibold text-gray-700 mb-1">Satılan Ürünler:</p>
+                            <ul class="list-disc list-inside">
+                                ${itemsHtml}
+                            </ul>
+                        `;
+                        if (pastSalesListDiv) pastSalesListDiv.appendChild(saleItemDiv);
+                        totalSalesValue += sale.totalAmount;
+                    });
+                    if (totalSalesVolumeSpan) totalSalesVolumeSpan.textContent = `${totalSalesValue.toFixed(2)} TL`;
+
+                } catch (error) {
+                    console.error('Geçmiş satışları çekerken hata:', error);
+                    addNotification(`Geçmiş satışlar yüklenirken bir hata oluştu: ${error.message}`, 'error');
+                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-500">Geçmiş satışlar yüklenemedi.</p>`;
+                } finally {
+                    if (salesLoadingOverlay) salesLoadingOverlay.classList.add('hidden');
+                }
+            }
+
+            // Filtreleme Butonları
+            if (applySaleFilterBtn) {
+                applySaleFilterBtn.addEventListener('click', () => {
+                    fetchPastSales(); // Filtreleri uygulayıp satışları tekrar çek
+                });
+            }
+
+            if (clearSaleFilterBtn) {
+                clearSaleFilterBtn.addEventListener('click', () => {
+                    if (filterCustomerNameInput) filterCustomerNameInput.value = '';
+                    if (filterSaleStartDateInput) filterSaleStartDateInput.value = '';
+                    if (filterSaleEndDateInput) filterSaleEndDateInput.value = '';
+                    fetchPastSales(); // Filtreleri temizleyip satışları tekrar çek
+                });
+            }
+
+            // Sidebar Fonksiyonları (reports.html'den kopyalandı)
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+                if (mainContent) mainContent.classList.remove('lg:ml-64');
+            };
+
+            const openSidebar = () => {
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.add('lg:ml-64');
+                }
+            };
+
+            const initializeSidebarState = () => {
+                closeSidebar();
+                if (window.innerWidth >= 1024) {
+                    openSidebar();
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+                        openSidebar();
+                    } else {
+                        closeSidebar();
+                    }
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları (reports.html ile senkronize)
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageProductsBtn) {
+                manageProductsBtn.addEventListener('click', () => {
+                    window.location.href = 'products.html';
+                    closeSidebar();
+                });
+            }
+            if (goToSalesManagementBtn) {
+                goToSalesManagementBtn.addEventListener('click', () => {
+                    window.location.href = 'sales_management.html';
+                    closeSidebar();
+                });
+            }
+            if (manageRecurringTransactionsBtn) {
+                manageRecurringTransactionsBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // Tekrarlayan işlemler index.html'de modal olarak açılıyor
+                    closeSidebar();
+                });
+            }
+            if (viewReportsBtn) {
+                viewReportsBtn.addEventListener('click', () => {
+                    window.location.href = 'reports.html';
+                    closeSidebar();
+                });
+            }
+            if (exportCsvBtn) {
+                exportCsvBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // CSV dışa aktarma index.html'de
+                    closeSidebar();
+                });
+            }
+            if (importCsvBtn) {
+                importCsvBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // CSV içe aktarma index.html'de
+                    closeSidebar();
+                });
+            }
+
+
+            // Logout Button
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('fingoNotifications');
+                    window.location.href = 'auth.html';
+                });
+            }
+
+            // handleAuthError fonksiyonu (token süresi dolduğunda veya yetkilendirme hatasında yönlendirme)
+            function handleAuthError() {
+                addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                window.location.href = 'auth.html';
+            }
+
+            // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
+            fetchAllProducts(); // Tüm ürünleri başta bir kere çek
+            fetchPastSales(); // Geçmiş satışları yükle
+            loadNotifications(); // Bildirimleri yükle
+            if (saleDateInput) saleDateInput.valueAsDate = new Date(); // Satış tarihini bugüne ayarla
+            if (productSearchInput) productSearchInput.focus(); // Sayfa yüklendiğinde arama inputuna odaklan
+            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla
+        });
+    </script>
+</body>
+</html>

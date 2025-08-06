@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingo Raporlar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 250px;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.error {
+            background-color: #f44336; /* Kırmızı */
+        }
+        .message-box.warning {
+            background-color: #ff9800; /* Turuncu */
+        }
+        .message-box.info {
+            background-color: #2196f3; /* Mavi */
+        }
+        .message-box.confirm {
+            background-color: #607D8B; /* Gri */
+            min-width: 300px;
+            flex-direction: column; /* Butonları alt alta sırala */
+            align-items: center;
+        }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .message-box.confirm .message-box-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans overflow-x-hidden">
+
+    <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center z-40 relative">
+        <div class="flex items-center">
+            <!-- Menü Aç/Kapa Butonu (Artık her zaman görünür) -->
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-gray-200 mr-4">
+                <i class="fas fa-bars text-gray-700 text-xl"></i>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-700">Fingo Raporlar</h1>
+        </div>
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <span id="loggedInUser" class="text-gray-700 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="manageProfileBtn" class="bg-gray-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-gray-700 transition-colors text-xs md:text-sm">Profil Yönetimi</button>
+            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-600 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+        </div>
+    </header>
+
+    <!-- Ana İçerik Alanı -->
+    <div class="flex flex-1 relative">
+
+        <!-- Yan Menü (Sidebar) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-800 text-white w-64 p-4 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20 lg:pt-4">
+            <button id="closeSidebarBtn" class="absolute top-4 right-4 p-2 rounded-md hover:bg-blue-700 text-white text-2xl">
+                &times;
+            </button>
+            <h2 class="text-xl font-semibold mb-6">Yönetim Paneli</h2>
+            <nav class="space-y-3">
+                <button id="goToDashboardBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-home"></i> <span>Ana Sayfa</span>
+                </button>
+                <button id="manageProductsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-box"></i> <span>Ürün Yönetimi</span>
+                </button>
+                <button id="goToSalesManagementBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-shopping-cart"></i><span>Satış Yönetimi</span>
+                </button>
+                <button id="manageRecurringTransactionsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-redo"></i> <span>Tekrarlayan İşlemler</span>
+                </button>
+                <button id="viewReportsBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-chart-line"></i> <span>Raporları Görüntüle</span>
+                </button>
+                <button id="exportCsvBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-file-export"></i> <span>Verileri Dışa Aktar (CSV)</span>
+                </button>
+                <button id="importCsvBtn" class="w-full text-left p-3 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-3 text-lg">
+                    <i class="fas fa-file-import"></i> <span>Verileri İçe Aktar (CSV)</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+        <!-- Raporlar Ana İçerik Alanı -->
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 mt-4 mb-4 bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-7xl mx-auto">
+            <h2 class="text-3xl font-bold text-blue-700 mb-6 text-center">Detaylı Raporlar</h2>
+
+            <!-- Rapor Filtreleme ve Seçim Alanı -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow-md mb-8 border border-gray-200">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 text-center">Rapor Filtreleri</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label for="reportTypeSelect" class="block text-gray-700 text-sm font-medium mb-1">Rapor Tipi:</label>
+                        <select id="reportTypeSelect" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <option value="categorySummary">Kategori Bazında Özet</option>
+                            <option value="balanceHistory">Bakiye Geçmişi</option>
+                            <option value="stockMovements">Stok Hareketleri</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="reportStartDate" class="block text-gray-700 text-sm font-medium mb-1">Başlangıç Tarihi:</label>
+                        <input type="date" id="reportStartDate" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label for="reportEndDate" class="block text-gray-700 text-sm font-medium mb-1">Bitiş Tarihi:</label>
+                        <input type="date" id="reportEndDate" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    </div>
+                    <div id="reportCategoryTypeFilter" class="hidden">
+                        <label for="reportCategoryType" class="block text-gray-700 text-sm font-medium mb-1">Kategori Tipi:</label>
+                        <select id="reportCategoryType" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <option value="">Tümü</option>
+                            <option value="Gelir">Gelir</option>
+                            <option value="Gider">Gider</option>
+                        </select>
+                    </div>
+                     <div id="reportBalanceHistoryPeriod" class="hidden">
+                        <label for="balanceHistoryPeriod" class="block text-gray-700 text-sm font-medium mb-1">Dönem:</label>
+                        <select id="balanceHistoryPeriod" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                            <option value="monthly">Aylık</option>
+                            <option value="yearly">Yıllık</option>
+                            <option value="custom">Özel Tarih Aralığı</option>
+                        </select>
+                    </div>
+                     <div id="reportBalanceHistoryYear" class="hidden">
+                        <label for="balanceHistoryYear" class="block text-gray-700 text-sm font-medium mb-1">Yıl:</label>
+                        <select id="balanceHistoryYear" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"></select>
+                    </div>
+                     <div id="reportBalanceHistoryMonth" class="hidden">
+                        <label for="balanceHistoryMonth" class="block text-gray-700 text-sm font-medium mb-1">Ay:</label>
+                        <select id="balanceHistoryMonth" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"></select>
+                    </div>
+                </div>
+                <div class="flex justify-center mt-6">
+                    <button id="generateReportBtn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors shadow-md text-lg">Rapor Oluştur</button>
+                </div>
+            </div>
+
+            <!-- Rapor Sonuçları Alanı -->
+            <div id="reportResults" class="space-y-8">
+                <!-- Kategori Bazında Özet Raporu -->
+                <div id="categorySummaryReport" class="report-section bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-2xl font-semibold text-purple-700 mb-4 text-center">Kategori Bazında Özet</h3>
+                    <div class="relative h-80 mb-4">
+                        <canvas id="categorySummaryChart"></canvas>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-6 text-left">Kategori</th>
+                                    <th class="py-3 px-6 text-left">Tip</th>
+                                    <th class="py-3 px-6 text-right">Toplam Miktar (₺)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categorySummaryTableBody" class="text-gray-600 text-sm font-light">
+                                <!-- Veriler buraya JS ile yüklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="categorySummaryNoData" class="text-center text-gray-500 mt-4 hidden">Seçilen kriterlere uygun veri bulunamadı.</p>
+                </div>
+
+                <!-- Bakiye Geçmişi Raporu -->
+                <div id="balanceHistoryReport" class="report-section bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                    <h3 class="text-2xl font-semibold text-green-700 mb-4 text-center">Bakiye Geçmişi</h3>
+                    <div class="relative h-80 mb-4">
+                        <canvas id="balanceHistoryChart"></canvas>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-6 text-left">Dönem</th>
+                                    <th class="py-3 px-6 text-right">Gelir (₺)</th>
+                                    <th class="py-3 px-6 text-right">Gider (₺)</th>
+                                    <th class="py-3 px-6 text-right">Net Bakiye (₺)</th>
+                                    <th class="py-3 px-6 text-right">Kümülatif Bakiye (₺)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="balanceHistoryTableBody" class="text-gray-600 text-sm font-light">
+                                <!-- Veriler buraya JS ile yüklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="balanceHistoryNoData" class="text-center text-gray-500 mt-4 hidden">Seçilen kriterlere uygun veri bulunamadı.</p>
+                </div>
+
+                <!-- Stok Hareketleri Raporu -->
+                <div id="stockMovementsReport" class="report-section bg-white p-6 rounded-lg shadow-md border border-gray-200 hidden">
+                    <h3 class="text-2xl font-semibold text-red-700 mb-4 text-center">Stok Hareketleri</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                                    <th class="py-3 px-6 text-left">Ürün Adı</th>
+                                    <th class="py-3 px-6 text-right">Satılan Miktar</th>
+                                    <th class="py-3 px-6 text-right">Toplam Tutar (₺)</th>
+                                    <th class="py-3 px-6 text-left">Satış Tarihi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockMovementsTableBody" class="text-gray-600 text-sm font-light">
+                                <!-- Veriler buraya JS ile yüklenecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <p id="stockMovementsNoData" class="text-center text-gray-500 mt-4 hidden">Seçilen kriterlere uygun veri bulunamadı.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mesaj Kutusu -->
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <!-- Profil Yönetimi Modalı -->
+    <div id="profileModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-start items-start p-4 hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200 relative max-h-[90vh] overflow-y-auto">
+            <button id="closeProfileModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold text-gray-700 mb-6 text-center">Profil Yönetimi</h2>
+
+            <div class="mb-4">
+                <label for="currentPassword" class="block text-gray-700 text-sm font-medium mb-1">Mevcut Parola:</label>
+                <input type="password" id="currentPassword" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Mevcut parolanızı girin">
+            </div>
+            <div class="mb-6">
+                <label for="newPassword" class="block text-gray-700 text-sm font-medium mb-1">Yeni Parola:</label>
+                <input type="password" id="newPassword" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Yeni parolanızı girin">
+            <p class="text-xs text-gray-500 mt-1">En az 8 karakter, büyük/küçük harf, rakam ve özel karakter (! ^ # @ ? _ = ) ( ) ) içermelidir.</p>
+        </div>
+
+            <button id="updatePasswordBtn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Parolayı Güncelle</button>
+
+            <!-- 2FA Yönetim Bölümü -->
+            <div class="mt-8 pt-4 border-t border-gray-200">
+                <h3 class="text-xl font-bold text-gray-700 mb-4 text-center">İki Faktörlü Kimlik Doğrulama (2FA)</h3>
+                <div id="twoFASetupArea" class="space-y-4">
+                    <p id="twoFAStatus" class="text-center text-gray-600">Durum: Yükleniyor...</p>
+                    <button id="toggle2FABtn" class="w-full bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition-colors text-sm hidden">2FA'yı Etkinleştir</button>
+                    <div id="recoveryCodesArea" class="hidden">
+                        <h4 class="text-md font-semibold text-gray-700 mt-4 mb-2">Kurtarma Kodları:</h4>
+                        <ul id="recoveryCodesList" class="bg-gray-100 p-3 rounded-md border border-gray-200 grid grid-cols-2 gap-2 text-sm text-gray-800 break-all max-h-40 overflow-y-auto">
+                        </ul>
+                        <button id="generateNewRecoveryCodesBtn" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors text-sm mt-4">Yeni Kurtarma Kodları Oluştur</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 2FA Kodu Giriş Modalı -->
+    <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200 relative">
+            <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-gray-700 mb-6 text-center"></h2>
+            <p id="twoFactorAuthMessage" class="text-center text-gray-600 mb-4"></p>
+
+            <div class="mb-4">
+                <label for="twoFactorAuthCodeInput" class="block text-gray-700 text-sm font-medium mb-1">Doğrulama Kodu:</label>
+                <input type="text" id="twoFactorAuthCodeInput" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="6 haneli kodu girin">
+            </div>
+
+            <button id="verifyTwoFactorAuthBtn" data-mode="login" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Kodu Doğrula</button>
+
+            <div class="flex justify-between mt-4">
+                <button id="resendTwoFactorAuthCodeBtn" class="text-blue-500 text-sm hover:underline">Kodu Tekrar Gönder</button>
+                <button id="useRecoveryCodeBtn" class="text-gray-500 text-sm hover:underline">Kurtarma Kodu Kullan</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { TwoFactorAuthHandler } from './js/twoFactorAuth.js';
+
+        const jwtToken = localStorage.getItem('jwtToken');
+        const userId = localStorage.getItem('userId');
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // JWT doğrulama ve yönlendirme
+        if (!jwtToken || !userId) {
+            window.location.href = 'auth.html';
+        }
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("JWT parse edilirken hata:", e);
+                return null;
+            }
+        };
+
+        const decodedToken = parseJwt(jwtToken);
+        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== userId) {
+            console.warn("JWT geçersiz veya süresi dolmuş. Giriş sayfasına yönlendiriliyor.");
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'auth.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elementleri Tanımlamaları
+            const loggedInUserSpan = document.getElementById('loggedInUser');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const manageProfileBtn = document.getElementById('manageProfileBtn');
+            const profileModal = document.getElementById('profileModal');
+            const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+            const currentPasswordInput = document.getElementById('currentPassword');
+            const newPasswordInput = document.getElementById('newPassword');
+            const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+
+            const twoFASetupArea = document.getElementById('twoFASetupArea');
+            const twoFAStatusSpan = document.getElementById('twoFAStatus');
+            const toggle2FABtn = document.getElementById('toggle2FABtn');
+            const recoveryCodesArea = document.getElementById('recoveryCodesArea');
+            const recoveryCodesList = document.getElementById('recoveryCodesList');
+            const generateNewRecoveryCodesBtn = document.getElementById('generateNewRecoveryCodesBtn');
+
+            const twoFactorAuthModal = document.getElementById('twoFactorAuthModal');
+            const twoFactorAuthCodeInput = document.getElementById('twoFactorAuthCodeInput');
+            const verifyTwoFactorAuthBtn = document.getElementById('verifyTwoFactorAuthBtn');
+            const resendTwoFactorAuthCodeBtn = document.getElementById('resendTwoFactorAuthCodeBtn');
+            const useRecoveryCodeBtn = document.getElementById('useRecoveryCodeBtn');
+            const twoFactorAuthModalTitle = document.getElementById('twoFactorAuthModalTitle');
+            const twoFactorAuthMessage = document.getElementById('twoFactorAuthMessage');
+            const closeTwoFactorAuthModalBtn2FA = document.getElementById('closeTwoFactorAuthModalBtn');
+
+
+            // Sidebar ve Yönlendirme Butonları
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const manageProductsBtn = document.getElementById('manageProductsBtn');
+            const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
+            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
+            const viewReportsBtn = document.getElementById('viewReportsBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
+            const importCsvBtn = document.getElementById('importCsvBtn');
+
+
+            // Rapor Elementleri
+            const reportTypeSelect = document.getElementById('reportTypeSelect');
+            const reportStartDateInput = document.getElementById('reportStartDate');
+            const reportEndDateInput = document.getElementById('reportEndDate');
+            const reportCategoryTypeFilter = document.getElementById('reportCategoryTypeFilter');
+            const reportCategoryTypeSelect = document.getElementById('reportCategoryType');
+            const reportBalanceHistoryPeriodDiv = document.getElementById('reportBalanceHistoryPeriod');
+            const balanceHistoryPeriodSelect = document.getElementById('balanceHistoryPeriod');
+            const reportBalanceHistoryYearDiv = document.getElementById('reportBalanceHistoryYear');
+            const balanceHistoryYearSelect = document.getElementById('balanceHistoryYear');
+            const reportBalanceHistoryMonthDiv = document.getElementById('reportBalanceHistoryMonth');
+            const balanceHistoryMonthSelect = document.getElementById('balanceHistoryMonth');
+            const generateReportBtn = document.getElementById('generateReportBtn');
+
+            const categorySummaryReportDiv = document.getElementById('categorySummaryReport');
+            const categorySummaryChartCanvas = document.getElementById('categorySummaryChart');
+            let categorySummaryChartInstance = null;
+            const categorySummaryTableBody = document.getElementById('categorySummaryTableBody');
+            const categorySummaryNoData = document.getElementById('categorySummaryNoData');
+
+            const balanceHistoryReportDiv = document.getElementById('balanceHistoryReport');
+            const balanceHistoryChartCanvas = document.getElementById('balanceHistoryChart');
+            let balanceHistoryChartInstance = null;
+            const balanceHistoryTableBody = document.getElementById('balanceHistoryTableBody');
+            const balanceHistoryNoData = document.getElementById('balanceHistoryNoData');
+
+            const stockMovementsReportDiv = document.getElementById('stockMovementsReport');
+            const stockMovementsTableBody = document.getElementById('stockMovementsTableBody');
+            const stockMovementsNoData = document.getElementById('stockMovementsNoData');
+
+
+            // TwoFactorAuthHandler'ı başlat
+            if (TwoFactorAuthHandler && twoFactorAuthModal && twoFactorAuthCodeInput && verifyTwoFactorAuthBtn && resendTwoFactorAuthCodeBtn && useRecoveryCodeBtn && twoFactorAuthModalTitle && twoFactorAuthMessage) {
+                TwoFactorAuthHandler.init({
+                    twoFactorAuthModal: twoFactorAuthModal,
+                    twoFactorAuthCodeInput: twoFactorAuthCodeInput,
+                    verifyTwoFactorAuthBtn: verifyTwoFactorAuthBtn,
+                    resendTwoFactorAuthCodeBtn: resendTwoFactorAuthCodeBtn,
+                    useRecoveryCodeBtn: useRecoveryCodeBtn,
+                    twoFactorAuthModalTitle: twoFactorAuthModalTitle,
+                    twoFactorAuthMessage: twoFactorAuthMessage,
+                    API_BASE_URL: API_BASE_URL,
+                    showMessage: showMessage
+                });
+            } else {
+                console.error("TwoFactorAuthHandler veya gerekli 2FA modal elementleri bulunamadı. 2FA modülü başlatılamadı.");
+            }
+
+            if (closeTwoFactorAuthModalBtn2FA) {
+                closeTwoFactorAuthModalBtn2FA.addEventListener('click', () => {
+                    TwoFactorAuthHandler.hide2FAModal();
+                    fetchUser2FAStatus();
+                });
+            }
+
+
+            const monthNames = [
+                "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+                "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+            ];
+
+            if (loggedInUserSpan && decodedToken && decodedToken.email) {
+                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
+            }
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('fingoNotifications');
+                    window.location.href = 'auth.html';
+                });
+            }
+
+            function showMessage(message, type = 'success') {
+                const messageBox = document.getElementById('messageBox');
+                const messageText = document.getElementById('messageText');
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements (messageBox or messageText) not found! Cannot display message.");
+                    return;
+                }
+                messageText.innerHTML = message;
+                messageBox.className = `message-box show ${type}`;
+                messageBox.classList.remove('hidden');
+                if (type !== 'confirm') {
+                    setTimeout(() => {
+                        messageBox.classList.remove('show');
+                        setTimeout(() => {
+                            messageBox.classList.add('hidden');
+                        }, 300);
+                    }, 3000);
+                }
+            }
+
+            function handleAuthError() {
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                showMessage('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 1500);
+            }
+
+            // Sidebar Fonksiyonları
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+                if (mainContent) mainContent.classList.remove('lg:ml-64');
+            };
+
+            const openSidebar = () => {
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.add('lg:ml-64');
+                }
+            };
+
+            const initializeSidebarState = () => {
+                closeSidebar();
+                if (window.innerWidth >= 1024) {
+                    openSidebar();
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('-translate-x-full')) {
+                        openSidebar();
+                    } else {
+                        closeSidebar();
+                    }
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageProductsBtn) {
+                manageProductsBtn.addEventListener('click', () => {
+                    window.location.href = 'products.html';
+                    closeSidebar();
+                });
+            }
+            if (goToSalesManagementBtn) {
+                goToSalesManagementBtn.addEventListener('click', () => {
+                    window.location.href = 'sales_management.html';
+                    closeSidebar();
+                });
+            }
+            if (manageRecurringTransactionsBtn) {
+                manageRecurringTransactionsBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // Tekrarlayan işlemler index.html'de modal olarak açılıyor
+                    // Alternatif olarak, eğer bu sayfa özel bir modal açacaksa, burada o modalı açma fonksiyonu çağrılır.
+                    closeSidebar();
+                });
+            }
+            if (viewReportsBtn) {
+                viewReportsBtn.addEventListener('click', () => {
+                    window.location.href = 'reports.html';
+                    closeSidebar();
+                });
+            }
+            if (exportCsvBtn) {
+                exportCsvBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // CSV dışa aktarma index.html'de
+                    closeSidebar();
+                });
+            }
+            if (importCsvBtn) {
+                importCsvBtn.addEventListener('click', () => {
+                    window.location.href = 'index.html'; // CSV içe aktarma index.html'de
+                    closeSidebar();
+                });
+            }
+
+
+            // Profil Yönetimi Modal Fonksiyonları
+            if (manageProfileBtn) {
+                manageProfileBtn.addEventListener('click', async () => {
+                    if (profileModal) profileModal.classList.remove('hidden');
+                    if (currentPasswordInput) currentPasswordInput.value = '';
+                    if (newPasswordInput) newPasswordInput.value = '';
+                    await fetchUser2FAStatus();
+                    closeSidebar();
+                });
+            }
+
+            if (closeProfileModalBtn) {
+                closeProfileModalBtn.addEventListener('click', () => {
+                    if (profileModal) profileModal.classList.add('hidden');
+                });
+            }
+
+            window.addEventListener('click', (event) => {
+                if (event.target === profileModal) {
+                    if (profileModal) profileModal.classList.add('hidden');
+                }
+            });
+
+            if (updatePasswordBtn) {
+                updatePasswordBtn.addEventListener('click', async () => {
+                    const currentPassword = currentPasswordInput ? currentPasswordInput.value : '';
+                    const newPassword = newPasswordInput ? newPasswordInput.value : '';
+
+                    if (!currentPassword || !newPassword) {
+                        showMessage('Lütfen mevcut ve yeni parolanızı girin.', 'error');
+                        return;
+                    }
+                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!^#@?_=)(]).*$/;
+                    if (newPassword.length < 8 || newPassword.length > 50 || !passwordRegex.test(newPassword)) {
+                        showMessage('Yeni parola en az 8 karakter, büyük/küçük harf, rakam ve özel karakter (! ^ # @ ? _ = ) ( ) ) içermelidir.', 'error');
+                        return;
+                    }
+                    if (currentPassword === newPassword) {
+                        showMessage('Yeni parola mevcut parolanızla aynı olamaz.', 'error');
+                        return;
+                    }
+
+                    if (updatePasswordBtn) {
+                        updatePasswordBtn.disabled = true;
+                        updatePasswordBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Güncelleniyor...';
+                    }
+
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/users/change-password`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify({ currentPassword, newPassword })
+                        });
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                            throw new Error(result.message || 'Parola güncelleme başarısız oldu.');
+                        }
+                        showMessage(result.message, 'success');
+                        if (profileModal) profileModal.classList.add('hidden');
+                    } catch (error) {
+                        console.error('Parola güncellerken hata:', error);
+                        showMessage(`Parola güncellenirken bir hata oluştu: ${error.message}`, 'error');
+                    } finally {
+                        if (updatePasswordBtn) {
+                            updatePasswordBtn.disabled = false;
+                            updatePasswordBtn.innerHTML = 'Parolayı Güncelle';
+                        }
+                    }
+                });
+            }
+
+            // 2FA Durumunu Çekme ve UI'ı Güncelleme
+            async function fetchUser2FAStatus() {
+                if (twoFAStatusSpan) twoFAStatusSpan.textContent = 'Durum: Yükleniyor...';
+                if (toggle2FABtn) toggle2FABtn.classList.add('hidden');
+                if (recoveryCodesArea) recoveryCodesArea.classList.add('hidden');
+                if (generateNewRecoveryCodesBtn) generateNewRecoveryCodesBtn.classList.add('hidden');
+                if (toggle2FABtn) toggle2FABtn.disabled = true;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/users/me?timestamp=${Date.now()}`, {
+                        headers: { 'Authorization': `Bearer ${jwtToken}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`Kullanıcı bilgileri çekilemedi: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+
+                    if (data.is2FAEnabled) {
+                        if (twoFAStatusSpan) {
+                            twoFAStatusSpan.textContent = 'Durum: ETKİN';
+                            twoFAStatusSpan.classList.remove('text-red-600');
+                            twoFAStatusSpan.classList.add('text-green-600');
+                        }
+                        if (toggle2FABtn) {
+                            toggle2FABtn.textContent = '2FA\'yı Devre Dışı Bırak';
+                            toggle2FABtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                            toggle2FABtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                        }
+                        if (recoveryCodesArea) recoveryCodesArea.classList.remove('hidden');
+                        if (generateNewRecoveryCodesBtn) generateNewRecoveryCodesBtn.classList.remove('hidden');
+                        if (recoveryCodesList) recoveryCodesList.innerHTML = '<li class="col-span-2 text-center text-gray-500">Kurtarma kodları sadece 2FA etkinleştirildiğinde bir kez gösterilir. Yenilerini oluşturabilirsiniz.</li>';
+
+                    } else {
+                        if (twoFAStatusSpan) {
+                            twoFAStatusSpan.textContent = 'Durum: DEVRE DIŞI';
+                            twoFAStatusSpan.classList.remove('text-green-600');
+                            twoFAStatusSpan.classList.add('text-red-600');
+                        }
+                        if (toggle2FABtn) {
+                            toggle2FABtn.textContent = '2FA\'yı Etkinleştir';
+                            toggle2FABtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                            toggle2FABtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                        }
+                        if (recoveryCodesArea) recoveryCodesArea.classList.add('hidden');
+                        if (generateNewRecoveryCodesBtn) generateNewRecoveryCodesBtn.classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('2FA durumu çekilirken hata:', error);
+                    if (twoFAStatusSpan) {
+                        twoFAStatusSpan.textContent = `Durum: HATA (${error.message})`;
+                        twoFAStatusSpan.classList.remove('text-green-600');
+                        twoFAStatusSpan.classList.add('text-red-600');
+                    }
+                } finally {
+                    if (toggle2FABtn) toggle2FABtn.classList.remove('hidden');
+                    if (toggle2FABtn) toggle2FABtn.disabled = false;
+                }
+            }
+
+            // Kurtarma kodlarını UI'da gösterme
+            function displayRecoveryCodes(codes) {
+                if (recoveryCodesList) recoveryCodesList.innerHTML = '';
+                if (codes.length === 0) {
+                    if (recoveryCodesList) recoveryCodesList.innerHTML = '<li class="col-span-2 text-center text-gray-500">Kurtarma kodu bulunamadı. Yeni kodlar oluşturun.</li>';
+                } else {
+                    codes.forEach(code => {
+                        const li = document.createElement('li');
+                        li.textContent = code;
+                        li.className = 'bg-white p-2 rounded-md border border-gray-100 flex items-center justify-between';
+                        if (recoveryCodesList) recoveryCodesList.appendChild(li);
+                    });
+                }
+            }
+
+            // 2FA'yı etkinleştir/devre dışı bırak butonu
+            if (toggle2FABtn) {
+                toggle2FABtn.addEventListener('click', async () => {
+                    if (toggle2FABtn) {
+                        toggle2FABtn.disabled = true;
+                        toggle2FABtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> İşleniyor...';
+                    }
+
+                    const isCurrentlyEnabled = twoFAStatusSpan && twoFAStatusSpan.textContent.includes('ETKİN');
+
+                    try {
+                        if (isCurrentlyEnabled) {
+                            showMessage(`2FA'yı devre dışı bırakmak istediğinizden emin misiniz? <div class="flex justify-center mt-4 space-x-4"><button id="confirmToggleBtn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Evet</button> <button id="cancelToggleBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">İptal</button></div>`, 'confirm');
+
+                            await new Promise((resolve) => {
+                                const confirmBtn = document.getElementById('confirmToggleBtn');
+                                const cancelBtn = document.getElementById('cancelToggleBtn');
+                                if (confirmBtn) confirmBtn.onclick = async () => { resolve(true); };
+                                if (cancelBtn) cancelBtn.onclick = () => { resolve(false); };
+                            }).then(async confirmed => {
+                                const messageBox = document.getElementById('messageBox'); // messageBox'ı tekrar al
+                                if (messageBox) messageBox.classList.add('hidden');
+                                if (confirmed) {
+                                    await execute2FAToggle(false);
+                                } else {
+                                    if (toggle2FABtn) {
+                                        toggle2FABtn.disabled = false;
+                                        toggle2FABtn.innerHTML = '2FA\'yı Devre Dışı Bırak';
+                                    }
+                                }
+                            });
+
+
+                        } else {
+                            showMessage('2FA etkinleştirme kodu e-postanıza gönderiliyor...', 'info');
+                            const response = await fetch(`${API_BASE_URL}/2fa/setup`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${jwtToken}`
+                                },
+                                body: JSON.stringify({ enable: true })
+                            });
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                                throw new Error(result.message || '2FA etkinleştirme başlatılamadı.');
+                            }
+                            showMessage(result.message, 'success');
+
+                            TwoFactorAuthHandler.show2FAModal('setup', decodedToken.email, jwtToken);
+                            if (result.recoveryCodes && result.recoveryCodes.length > 0) {
+                                displayRecoveryCodes(result.recoveryCodes);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('2FA geçiş hatası:', error);
+                        showMessage(`2FA işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
+                    } finally {
+                        if (toggle2FABtn) {
+                            toggle2FABtn.disabled = false;
+                            toggle2FABtn.innerHTML = isCurrentlyEnabled ? '2FA\'yı Devre Dışı Bırak' : '2FA\'yı Etkinleştir';
+                        }
+                    }
+                });
+            }
+
+
+            // 2FA Etkinleştirme/Devre Dışı Bırakma işlemini gerçekleştiren yardımcı fonksiyon
+            async function execute2FAToggle(enable) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/2fa/setup`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${jwtToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ enable: enable })
+                    });
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(result.message || 'İşlem başarısız oldu.');
+                    }
+                    showMessage(result.message, 'success');
+                    await fetchUser2FAStatus();
+                    if (enable && result.recoveryCodes && result.recoveryCodes.length > 0) {
+                        displayRecoveryCodes(result.recoveryCodes);
+                    }
+
+                } catch (error) {
+                    console.error('2FA geçiş hatası:', error);
+                    showMessage(`2FA işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
+                }
+            }
+
+
+            // Yeni Kurtarma Kodları Oluşturma
+            if (generateNewRecoveryCodesBtn) {
+                generateNewRecoveryCodesBtn.addEventListener('click', async () => {
+                    if (generateNewRecoveryCodesBtn) {
+                        generateNewRecoveryCodesBtn.disabled = true;
+                        generateNewRecoveryCodesBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Oluşturuluyor...';
+                    }
+
+                    showMessage(`Yeni kurtarma kodları oluşturmak istediğinizden emin misiniz? Eski kodlar geçersiz olacaktır. <div class="flex justify-center mt-4 space-x-4"><button id="confirmGenerateBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Evet</button> <button id="cancelGenerateBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">İptal</button></div>`, 'confirm');
+
+                    const confirmBtn = document.getElementById('confirmGenerateBtn');
+                    const cancelBtn = document.getElementById('cancelGenerateBtn');
+
+                    if (confirmBtn) confirmBtn.onclick = async () => {
+                        const messageBox = document.getElementById('messageBox'); // messageBox'ı tekrar al
+                        try {
+                            const response = await fetch(`${API_BASE_URL}/2fa/generate-new-recovery-codes`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${jwtToken}` }
+                            });
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                                throw new Error(result.message || 'Kurtarma kodları oluşturulamadı.');
+                            }
+                            showMessage(result.message, 'success');
+                            displayRecoveryCodes(result.recoveryCodes);
+                        } catch (error) {
+                            console.error('Yeni kurtarma kodları oluşturma hatası:', error);
+                            showMessage(`Yeni kurtarma kodları oluşturulurken bir hata oluştu: ${error.message}`, 'error');
+                        } finally {
+                            if (messageBox) messageBox.classList.add('hidden');
+                            if (generateNewRecoveryCodesBtn) {
+                                generateNewRecoveryCodesBtn.disabled = false;
+                                generateNewRecoveryCodesBtn.innerHTML = 'Yeni Kurtarma Kodları Oluştur';
+                            }
+                        }
+                    };
+
+                    if (cancelBtn) cancelBtn.onclick = () => {
+                        const messageBox = document.getElementById('messageBox'); // messageBox'ı tekrar al
+                        if (messageBox) messageBox.classList.add('hidden');
+                        if (generateNewRecoveryCodesBtn) {
+                            generateNewRecoveryCodesBtn.disabled = false;
+                            generateNewRecoveryCodesBtn.innerHTML = 'Yeni Kurtarma Kodları Oluştur';
+                        }
+                    };
+                });
+            }
+
+
+            // Rapor Filtreleme ve Oluşturma Fonksiyonları
+            function updateReportVisibility() {
+                const selectedReportType = reportTypeSelect ? reportTypeSelect.value : 'categorySummary';
+
+                // Tüm rapor bölümlerini gizle
+                if (categorySummaryReportDiv) categorySummaryReportDiv.classList.add('hidden');
+                if (balanceHistoryReportDiv) balanceHistoryReportDiv.classList.add('hidden');
+                if (stockMovementsReportDiv) stockMovementsReportDiv.classList.add('hidden');
+
+                // Tüm filtre alanlarını gizle
+                if (reportCategoryTypeFilter) reportCategoryTypeFilter.classList.add('hidden');
+                if (reportBalanceHistoryPeriodDiv) reportBalanceHistoryPeriodDiv.classList.add('hidden');
+                if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.add('hidden');
+                if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
+
+                // Seçilen rapora göre ilgili bölümleri ve filtreleri göster
+                if (selectedReportType === 'categorySummary') {
+                    if (categorySummaryReportDiv) categorySummaryReportDiv.classList.remove('hidden');
+                    if (reportCategoryTypeFilter) reportCategoryTypeFilter.classList.remove('hidden');
+                } else if (selectedReportType === 'balanceHistory') {
+                    if (balanceHistoryReportDiv) balanceHistoryReportDiv.classList.remove('hidden');
+                    if (reportBalanceHistoryPeriodDiv) reportBalanceHistoryPeriodDiv.classList.remove('hidden');
+                    // Döneme göre yıl/ay filtrelerini güncelle
+                    updateBalanceHistoryPeriodFilters();
+                } else if (selectedReportType === 'stockMovements') {
+                    if (stockMovementsReportDiv) stockMovementsReportDiv.classList.remove('hidden');
+                }
+            }
+
+            function updateBalanceHistoryPeriodFilters() {
+                const selectedPeriod = balanceHistoryPeriodSelect ? balanceHistoryPeriodSelect.value : 'monthly';
+                if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.add('hidden');
+                if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
+                if (reportStartDateInput) reportStartDateInput.parentElement.classList.add('hidden');
+                if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden');
+
+                if (selectedPeriod === 'monthly') {
+                    if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.remove('hidden');
+                    if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.remove('hidden');
+                } else if (selectedPeriod === 'yearly') {
+                    if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.remove('hidden');
+                } else if (selectedPeriod === 'custom') {
+                    if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
+                    if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                }
+            }
+
+            // Yıl ve Ay dropdown'larını doldur
+            function populateYearMonthDropdowns() {
+                const currentYear = new Date().getFullYear();
+                const currentMonth = new Date().getMonth(); // 0-11 arası
+
+                // Yıl dropdown'larını doldur
+                [balanceHistoryYearSelect].forEach(selectElement => {
+                    if (selectElement) {
+                        selectElement.innerHTML = '';
+                        for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            if (i === currentYear) {
+                                option.selected = true;
+                            }
+                            selectElement.appendChild(option);
+                        }
+                    }
+                });
+
+                // Ay dropdown'ını doldur (sadece balanceHistoryMonthSelect için)
+                if (balanceHistoryMonthSelect) {
+                    balanceHistoryMonthSelect.innerHTML = '';
+                    monthNames.forEach((month, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = month;
+                        if (index === currentMonth) {
+                            option.selected = true;
+                        }
+                        balanceHistoryMonthSelect.appendChild(option);
+                    });
+                }
+            }
+
+            // Rapor oluşturma butonu olay dinleyicisi
+            if (generateReportBtn) {
+                generateReportBtn.addEventListener('click', async () => {
+                    const selectedReportType = reportTypeSelect ? reportTypeSelect.value : 'categorySummary';
+                    const startDate = reportStartDateInput ? reportStartDateInput.value : '';
+                    const endDate = reportEndDateInput ? reportEndDateInput.value : '';
+
+                    if (generateReportBtn) {
+                        generateReportBtn.disabled = true;
+                        generateReportBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Rapor Oluşturuluyor...';
+                    }
+
+                    try {
+                        if (selectedReportType === 'categorySummary') {
+                            const categoryType = reportCategoryTypeSelect ? reportCategoryTypeSelect.value : '';
+                            await generateCategorySummaryReports(startDate, endDate, categoryType);
+                        } else if (selectedReportType === 'balanceHistory') {
+                            const period = balanceHistoryPeriodSelect ? balanceHistoryPeriodSelect.value : 'monthly';
+                            const year = balanceHistoryYearSelect ? balanceHistoryYearSelect.value : '';
+                            const month = balanceHistoryMonthSelect ? balanceHistoryMonthSelect.value : '';
+                            await generateBalanceHistoryReport(period, year, month, startDate, endDate);
+                        } else if (selectedReportType === 'stockMovements') {
+                            await fetchStockMovementReport(startDate, endDate);
+                        }
+                    } catch (error) {
+                        console.error('Rapor oluşturulurken genel hata:', error);
+                        showMessage(`Rapor oluşturulurken bir hata oluştu: ${error.message}`, 'error');
+                    } finally {
+                        if (generateReportBtn) {
+                            generateReportBtn.disabled = false;
+                            generateReportBtn.innerHTML = 'Rapor Oluştur';
+                        }
+                    }
+                });
+            }
+
+            // Kategori Bazında Özet Raporu Oluşturma
+            async function generateCategorySummaryReports(startDate, endDate, type) {
+                if (categorySummaryTableBody) categorySummaryTableBody.innerHTML = '';
+                if (categorySummaryNoData) categorySummaryNoData.classList.add('hidden');
+                if (categorySummaryChartInstance) categorySummaryChartInstance.destroy();
+
+                try {
+                    const queryParams = new URLSearchParams();
+                    if (startDate) queryParams.append('startDate', startDate);
+                    if (endDate) queryParams.append('endDate', endDate);
+                    if (type) queryParams.append('type', type);
+                    queryParams.append('userId', userId); // userId'yi ekle
+
+                    const url = `${API_BASE_URL}/reports/category-summary?${queryParams.toString()}`;
+                    console.log("Kategori özet için API isteği URL:", url);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${jwtToken}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("Kategori özet API yanıtı:", data);
+
+                    if (data.length === 0) {
+                        if (categorySummaryNoData) categorySummaryNoData.classList.remove('hidden');
+                        return;
+                    }
+
+                    const categories = data.map(item => `${item.category || 'Belirtilmemiş'} (${item.type})`);
+                    const amounts = data.map(item => item.totalAmount);
+                    const backgroundColors = data.map(item => item.type === 'Gelir' ? 'rgba(52, 211, 153, 0.6)' : 'rgba(248, 113, 113, 0.6)');
+                    const borderColors = data.map(item => item.type === 'Gelir' ? 'rgba(52, 211, 153, 1)' : 'rgba(248, 113, 113, 1)');
+
+                    // Tabloyu doldur
+                    data.forEach(item => {
+                        const row = categorySummaryTableBody.insertRow();
+                        row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.category || 'Belirtilmemiş'}</td>
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.type}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
+                        `;
+                    });
+
+                    // Grafiği oluştur/güncelle
+                    if (categorySummaryChartCanvas) {
+                        const ctx = categorySummaryChartCanvas.getContext('2d');
+                        categorySummaryChartInstance = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: categories,
+                                datasets: [{
+                                    label: 'Toplam Miktar (₺)',
+                                    data: amounts,
+                                    backgroundColor: backgroundColors,
+                                    borderColor: borderColors,
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: {
+                                        display: true,
+                                        text: 'Kategori Bazında Gelir/Gider Özeti'
+                                    }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true }
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Kategori özet verilerini çekerken hata:', error);
+                    showMessage(`Kategori özet raporu yüklenirken hata oluştu: ${error.message}`, 'error');
+                    if (categorySummaryNoData) categorySummaryNoData.classList.remove('hidden');
+                }
+            }
+
+            // Bakiye Geçmişi Raporu Oluşturma
+            async function generateBalanceHistoryReport(period, year, month, startDate, endDate) {
+                if (balanceHistoryTableBody) balanceHistoryTableBody.innerHTML = '';
+                if (balanceHistoryNoData) balanceHistoryNoData.classList.add('hidden');
+                if (balanceHistoryChartInstance) balanceHistoryChartInstance.destroy();
+
+                try {
+                    const queryParams = new URLSearchParams();
+                    queryParams.append('period', period);
+                    if (period === 'monthly' || period === 'yearly') {
+                        if (year) queryParams.append('year', year);
+                        if (period === 'monthly' && month !== '') queryParams.append('month', month);
+                    } else if (period === 'custom') {
+                        if (startDate) queryParams.append('startDate', startDate);
+                        if (endDate) queryParams.append('endDate', endDate);
+                    }
+                    queryParams.append('userId', userId); // userId'yi ekle
+
+                    const url = `${API_BASE_URL}/reports/balance-history?${queryParams.toString()}`;
+                    console.log("Bakiye geçmişi için API isteği URL:", url);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${jwtToken}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("Bakiye geçmişi API yanıtı:", data);
+
+                    if (data.length === 0) {
+                        if (balanceHistoryNoData) balanceHistoryNoData.classList.remove('hidden');
+                        return;
+                    }
+
+                    // Tabloyu doldur
+                    data.forEach(item => {
+                        const row = balanceHistoryTableBody.insertRow();
+                        row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                        const periodLabel = period === 'monthly' ? `${monthNames[item.month - 1]} ${item.year}` : `${item.year}`;
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${periodLabel}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${(item.income || 0).toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${(item.expense || 0).toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${(item.netBalance || 0).toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${(item.cumulativeBalance || 0).toFixed(2)} TL</td>
+                        `;
+                    });
+
+                    // Grafiği oluştur/güncelle
+                    renderBalanceHistoryChart(data, period);
+
+                } catch (error) {
+                    console.error('Bakiye geçmişi verilerini çekerken hata:', error);
+                    showMessage(`Bakiye geçmişi raporu yüklenirken hata oluştu: ${error.message}`, 'error');
+                    if (balanceHistoryNoData) balanceHistoryNoData.classList.remove('hidden');
+                }
+            }
+
+            function renderBalanceHistoryChart(data, period) {
+                if (balanceHistoryChartInstance) {
+                    balanceHistoryChartInstance.destroy();
+                }
+
+                if (!balanceHistoryChartCanvas) {
+                    console.error("Balance History Chart canvas not found!");
+                    return;
+                }
+
+                const labels = data.map(item => {
+                    if (period === 'monthly') {
+                        return `${monthNames[item.month - 1]} ${item.year}`;
+                    } else if (period === 'yearly') {
+                        return `${item.year}`;
+                    } else { // custom
+                        // Eğer custom dönemde aylık/yıllık gruplama yapılıyorsa
+                        if (item.month && item.year) return `${monthNames[item.month - 1]} ${item.year}`;
+                        if (item.year) return `${item.year}`;
+                        // Aksi takdirde, daha detaylı bir tarih formatı gerekebilir veya sadece dönem olarak gösterilebilir.
+                        return "Dönem"; // Varsayılan
+                    }
+                });
+
+                const incomes = data.map(item => item.income || 0);
+                const expenses = data.map(item => item.expense || 0);
+                const netBalances = data.map(item => item.netBalance || 0);
+                const cumulativeBalances = data.map(item => item.cumulativeBalance || 0);
+
+                const ctx = balanceHistoryChartCanvas.getContext('2d');
+                balanceHistoryChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Gelir (₺)',
+                                data: incomes,
+                                borderColor: 'rgba(52, 211, 153, 1)', // Green
+                                backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                                fill: true,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Gider (₺)',
+                                data: expenses,
+                                borderColor: 'rgba(248, 113, 113, 1)', // Red
+                                backgroundColor: 'rgba(248, 113, 113, 0.2)',
+                                fill: true,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Net Bakiye (₺)',
+                                data: netBalances,
+                                borderColor: 'rgba(59, 130, 246, 1)', // Blue
+                                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                fill: false,
+                                tension: 0.1
+                            },
+                            {
+                                label: 'Kümülatif Bakiye (₺)',
+                                data: cumulativeBalances,
+                                borderColor: 'rgba(168, 85, 247, 1)', // Purple
+                                backgroundColor: 'rgba(168, 85, 247, 0.2)',
+                                fill: false,
+                                tension: 0.1,
+                                borderDash: [5, 5] // Kesikli çizgi
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: 'Bakiye Geçmişi Grafiği'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Dönem'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Miktar (₺)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Stok Hareketleri Raporu Oluşturma
+            async function fetchStockMovementReport(startDate, endDate) {
+                if (stockMovementsTableBody) stockMovementsTableBody.innerHTML = '';
+                if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
+
+                try {
+                    const queryParams = new URLSearchParams();
+                    if (startDate) queryParams.append('startDate', startDate);
+                    if (endDate) queryParams.append('endDate', endDate);
+                    queryParams.append('userId', userId); // userId'yi ekle
+
+                    const url = `${API_BASE_URL}/reports/stock-movements?${queryParams.toString()}`;
+                    console.log("Stok hareketleri için API isteği URL:", url);
+
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${jwtToken}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("Stok hareketleri API yanıtı:", data);
+
+                    if (data.length === 0) {
+                        if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const row = stockMovementsTableBody.insertRow();
+                        row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                        const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
+                        `;
+                    });
+
+                } catch (error) {
+                    console.error('Stok hareketleri verilerini çekerken hata:', error);
+                    showMessage(`Stok hareketleri raporu yüklenirken hata oluştu: ${error.message}`, 'error');
+                    if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                }
+            }
+
+
+            // Olay Dinleyicileri ve Başlangıç Ayarları
+            if (reportTypeSelect) {
+                reportTypeSelect.addEventListener('change', updateReportVisibility);
+            }
+            if (balanceHistoryPeriodSelect) {
+                balanceHistoryPeriodSelect.addEventListener('change', updateBalanceHistoryPeriodFilters);
+            }
+
+            // Sayfa yüklendiğinde varsayılan raporu göster ve filtreleri doldur
+            populateYearMonthDropdowns();
+            updateReportVisibility(); // Varsayılan raporu göster
+            generateReportBtn.click(); // Sayfa yüklendiğinde ilk raporu otomatik oluştur
+
+
+            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            initializeSidebarState();
+            fetchUser2FAStatus();
+        });
+    </script>
+</body>
+</html>
