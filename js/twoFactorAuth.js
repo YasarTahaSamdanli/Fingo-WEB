@@ -33,7 +33,7 @@ export const TwoFactorAuthHandler = {
 
         this._API_BASE_URL = config.apiBaseUrl;
 
-        // Olay dinleyicilerini ayarla (Bu dinleyiciler sadece TwoFactorAuthHandler içinde kalmalı)
+        // Olay dinleyicilerini ayarla
         if (this._verifyTwoFactorAuthBtn) {
             this._verifyTwoFactorAuthBtn.addEventListener('click', () => this._handleVerifyButtonClick());
         }
@@ -83,7 +83,6 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'block';
         }
 
-        // DÜZELTME: 'hidden' sınıfını kaldırarak modalı göster
         console.log("Before removing 'hidden' class. Current classes:", this._twoFactorAuthModal.classList);
         this._twoFactorAuthModal.classList.remove('hidden');
         console.log("After removing 'hidden' class. New classes:", this._twoFactorAuthModal.classList);
@@ -94,7 +93,6 @@ export const TwoFactorAuthHandler = {
      */
     hide2FAModal: function() {
         if (this._twoFactorAuthModal) {
-            // DÜZELTME: 'hidden' sınıfını ekleyerek modalı gizle
             this._twoFactorAuthModal.classList.add('hidden');
         }
         this._tempUserEmail = null;
@@ -145,7 +143,7 @@ export const TwoFactorAuthHandler = {
      * Giriş akışında 2FA kodunu doğrular.
      * @param {string} email - Kullanıcının e-posta adresi.
      * @param {string} token - Kullanıcının girdiği 2FA kodu.
-     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
+     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean, token: string, userId: string, email: string)
      */
     verify2FACodeLogin: async function(email, token) {
         try {
@@ -158,12 +156,21 @@ export const TwoFactorAuthHandler = {
             });
 
             const result = await response.json();
+            console.log("Response from /2fa/verify-login-code:", result); // Yeni log
 
             if (!response.ok) {
                 throw new Error(result.message || '2FA kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email };
+            // Backend'den gelen tüm gerekli bilgileri döndür
+            return {
+                success: true,
+                message: result.message,
+                is2FAVerified: result.is2FAVerified,
+                token: result.token, // Backend'den gelen yeni token
+                userId: result.userId, // Backend'den gelen userId
+                email: result.email // Backend'den gelen email
+            };
 
         } catch (error) {
             console.error('2FA doğrulama hatası:', error);
@@ -207,7 +214,7 @@ export const TwoFactorAuthHandler = {
      * Kurtarma kodu ile girişi doğrular.
      * @param {string} email - Kullanıcının e-posta adresi.
      * @param {string} recoveryCode - Kullanıcının girdiği kurtarma kodu.
-     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
+     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean, token: string, userId: string, email: string)
      */
     verifyRecoveryCode: async function(email, recoveryCode) {
         try {
@@ -225,7 +232,14 @@ export const TwoFactorAuthHandler = {
                 throw new Error(result.message || 'Kurtarma kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email };
+            return {
+                success: true,
+                message: result.message,
+                is2FAVerified: result.is2FAVerified,
+                token: result.token, // Backend'den gelen yeni token
+                userId: result.userId, // Backend'den gelen userId
+                email: result.email // Backend'den gelen email
+            };
 
         } catch (error) {
             console.error('Kurtarma kodu doğrulama hatası:', error);
@@ -269,6 +283,7 @@ export const TwoFactorAuthHandler = {
             });
 
             const result = await response.json();
+            console.log("Response from /2fa/send-code:", result); // Yeni log
 
             if (!response.ok) {
                 throw new Error(result.message || 'Kod tekrar gönderilemedi.');
