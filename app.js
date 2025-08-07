@@ -24,12 +24,22 @@ const app = express();
 console.log('Uygulama başlatılıyor...');
 
 // ÖNEMLİ: CORS middleware'i, diğer tüm middleware'lerden ve rota tanımlamalarından ÖNCE gelmeli.
-app.use(cors({
+// CORS seçeneklerini daha açık belirtelim
+const corsOptions = {
     origin: '*', // Tüm kaynaklardan gelen isteklere izin ver
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // İzin verilen HTTP metotları
     allowedHeaders: ['Content-Type', 'Authorization'], // İzin verilen HTTP başlıkları
-}));
+    credentials: true, // Eğer kimlik bilgileri (çerezler, yetkilendirme başlıkları) gönderilecekse bu gerekli
+    optionsSuccessStatus: 200 // Bazı eski tarayıcılar 204 yerine 200 bekler
+};
+
+app.use(cors(corsOptions));
 console.log('CORS middleware uygulandı.');
+
+// Preflight (OPTIONS) isteklerini manuel olarak ele al
+// Bu, özellikle karmaşık CORS senaryolarında (custom headers, non-simple methods) yardımcı olabilir.
+app.options('*', cors(corsOptions));
+console.log('OPTIONS preflight handler uygulandı.');
 
 // JSON istek gövdelerini ayrıştırmak için middleware
 app.use(express.json({ limit: '50mb' }));
@@ -78,4 +88,3 @@ connectDB(process.env.MONGODB_URI)
         console.error("Uygulama başlatılırken veya veritabanına bağlanırken kritik hata oluştu:", error);
         process.exit(1); // Hata durumunda uygulamayı sonlandır
     });
-
