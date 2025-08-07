@@ -151,8 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
 
     if (loginBtn) {
-        console.log("Login form element found:", loginForm); // loginForm'u logla
-        loginForm.addEventListener('submit', async (e) => { // loginForm'un submit eventi
+        console.log("Login form element found:", loginForm);
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log("Login form submitted!");
             const email = document.getElementById('loginEmail').value;
@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.status === 403 && result.message === '2FA gerekli.') {
                         showMessageBox('2FA gerekli. Lütfen e-postanıza gönderilen kodu girin.', 'info');
                         console.log("2FA required. Calling TwoFactorAuthHandler.show2FAModal with email:", email, "and token:", result.token);
+                        // Düzeltme: Parametre sıralaması userEmail, jwtToken, mode
                         TwoFactorAuthHandler.show2FAModal(email, result.token, 'login');
 
                         localStorage.setItem('jwtToken', result.token);
@@ -193,13 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(result.message || 'Giriş başarısız oldu.');
                 }
 
-                // Normal giriş başarılı veya 2FA sonrası doğrulama başarılı
                 localStorage.setItem('jwtToken', result.token);
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('userEmail', email);
                 showMessageBox(result.message, 'success');
                 setTimeout(() => {
-                    window.location.href = '/Fingo-WEB/index.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/index.html';
                 }, 500);
 
             } catch (error) {
@@ -223,90 +223,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2FA kodu doğrulama butonu olay dinleyicisi (auth.js içinde)
-    if (verifyTwoFactorAuthBtn) {
-        verifyTwoFactorAuthBtn.addEventListener('click', async () => {
-            const code = twoFactorAuthCodeInput.value.trim();
-            const userEmail = localStorage.getItem('userEmail'); // localStorage'dan al
-            const jwtToken = localStorage.getItem('jwtToken'); // localStorage'dan al
-
-            if (!code) {
-                showMessageBox('Lütfen 2FA kodunu girin.', 'error');
-                return;
-            }
-            if (!userEmail || !jwtToken) {
-                showMessageBox('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-                return;
-            }
-
-            verifyTwoFactorAuthBtn.disabled = true;
-            verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
-
-            try {
-                // twoFactorAuth.js modülündeki verify2FACodeLogin fonksiyonunu çağır
-                const verificationResult = await TwoFactorAuthHandler.verify2FACodeLogin(userEmail, code); // jwtToken'ı burada göndermiyoruz, backend'de gerek yok
-
-                if (verificationResult.success) {
-                    // Düzeltme: Backend'den gelen yeni token, userId ve email'i kullan
-                    localStorage.setItem('jwtToken', verificationResult.token);
-                    localStorage.setItem('userId', verificationResult.userId);
-                    localStorage.setItem('userEmail', verificationResult.email);
-
-                    showMessageBox('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
-                    TwoFactorAuthHandler.hide2FAModal();
-                    setTimeout(() => {
-                        window.location.href = '/Fingo-WEB/index.html'; // Ana sayfaya yönlendir
-                    }, 500);
-                } else {
-                    showMessageBox(verificationResult.message || '2FA kodu geçersiz.', 'error');
-                }
-            } catch (error) {
-                console.error('2FA doğrulama hatası:', error);
-                showMessageBox(`2FA doğrulama sırasında bir hata oluştu: ${error.message}`, 'error');
-            } finally {
-                verifyTwoFactorAuthBtn.disabled = false;
-                verifyTwoFactorAuthBtn.innerHTML = 'Kodu Doğrula';
-            }
-        });
-    }
-
-    // 2FA kodunu tekrar gönderme butonu olay dinleyicisi (auth.js içinde)
-    if (resendTwoFactorAuthCodeBtn) {
-        resendTwoFactorAuthCodeBtn.addEventListener('click', async () => {
-            const userEmail = localStorage.getItem('userEmail');
-            const jwtToken = localStorage.getItem('jwtToken'); // Token'ı da gönderiyoruz
-
-            if (!userEmail) {
-                showMessageBox('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-                return;
-            }
-
-            resendTwoFactorAuthCodeBtn.disabled = true;
-            resendTwoFactorAuthCodeBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Gönderiliyor...';
-
-            try {
-                // TwoFactorAuthHandler'daki resend2FACode fonksiyonunu çağır
-                const resendResult = await TwoFactorAuthHandler.resend2FACode(userEmail, jwtToken);
-                if (resendResult.success) {
-                    showMessageBox('Yeni kod e-postanıza gönderildi.', 'success');
-                } else {
-                    showMessageBox(resendResult.message || 'Kod tekrar gönderilemedi.', 'error');
-                }
-            } catch (error) {
-                console.error('Kod tekrar gönderme hatası:', error);
-                showMessageBox(`Kod tekrar gönderilirken bir hata oluştu: ${error.message}`, 'error');
-            } finally {
-                resendTwoFactorAuthCodeBtn.disabled = false;
-                resendTwoFactorAuthCodeBtn.innerHTML = 'Kodu Tekrar Gönder';
-            }
-        });
-    }
+    // DÜZELTME: 2FA doğrulama ve tekrar gönderme butonlarının olay dinleyicileri TwoFactorAuthHandler içinde yönetiliyor.
+    // auth.js içinde tekrar tanımlamaya gerek yok, bu çakışmalara neden olabilir.
+    // verifyTwoFactorAuthBtn.addEventListener('click', ...) ve resendTwoFactorAuthCodeBtn.addEventListener('click', ...) kaldırıldı.
 
     // Kurtarma kodu kullanma butonu olay dinleyicisi (auth.js içinde)
     if (useRecoveryCodeBtn) {
         useRecoveryCodeBtn.addEventListener('click', () => {
-            // Bu kısım twoFactorAuth.js içinde yönetilecek
-            TwoFactorAuthHandler.showRecoveryCodeInput(); // Örneğin, modal içinde kurtarma kodu alanını göster
+            TwoFactorAuthHandler.showRecoveryCodeInput();
             showMessageBox('Kurtarma kodu ile giriş yapılıyor...', 'info');
         });
     }

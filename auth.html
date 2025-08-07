@@ -64,17 +64,10 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* DÜZELTME: 2FA Modal için daha agresif stil */
+        /* 2FA Modal için özel stil: Sadece z-index ve arka plan rengi */
         #twoFactorAuthModal {
-            z-index: 99999; /* Çok yüksek bir z-index */
+            z-index: 9999; /* Tüm diğer elementlerin üzerinde olmalı */
             background-color: rgba(0, 0, 0, 0.7); /* Daha koyu ve opak arka plan */
-            opacity: 1 !important; /* Opaklığı zorla */
-            visibility: visible !important; /* Görünürlüğü zorla */
-            display: flex !important; /* Display'i zorla */
-        }
-        /* Başlangıçta gizlemek için bu kuralı kullanacağız */
-        .modal-hidden {
-            display: none !important;
         }
     </style>
 </head>
@@ -121,8 +114,8 @@
         </div>
 
         <!-- 2FA Kodu Giriş Modalı -->
-        <!-- DÜZELTME: Başlangıçta 'modal-hidden' sınıfı ile gizli, JavaScript ile kaldırılacak -->
-        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50 modal-hidden">
+        <!-- DÜZELTME: Tailwind'in 'hidden' sınıfıyla başlangıçta gizli -->
+        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
             <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200 relative">
                 <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
                 <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-blue-700 mb-6 text-center">İki Faktörlü Kimlik Doğrulama</h2>

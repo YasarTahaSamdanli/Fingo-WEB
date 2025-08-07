@@ -28,12 +28,12 @@ export const TwoFactorAuthHandler = {
         this._resendTwoFactorAuthCodeBtn = config.resendTwoFactorAuthCodeBtn;
         this._useRecoveryCodeBtn = config.useRecoveryCodeBtn;
         this._twoFactorAuthModalTitle = config.twoFactorAuthModalTitle;
-        this._twoFactorAuthMessage = config.twoFactorAuthMessage; // Mesaj elementini alıyoruz
+        this._twoFactorAuthMessage = config.twoFactorAuthMessage;
         this._showMessage = config.showMessage;
 
         this._API_BASE_URL = config.apiBaseUrl;
 
-        // Olay dinleyicilerini ayarla
+        // Olay dinleyicilerini ayarla (Bu dinleyiciler sadece TwoFactorAuthHandler içinde kalmalı)
         if (this._verifyTwoFactorAuthBtn) {
             this._verifyTwoFactorAuthBtn.addEventListener('click', () => this._handleVerifyButtonClick());
         }
@@ -83,10 +83,10 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'block';
         }
 
-        // DÜZELTME: 'modal-hidden' sınıfını kaldırarak modalı göster
-        console.log("Before removing 'modal-hidden' class. Current classes:", this._twoFactorAuthModal.classList);
-        this._twoFactorAuthModal.classList.remove('modal-hidden');
-        console.log("After removing 'modal-hidden' class. New classes:", this._twoFactorAuthModal.classList);
+        // DÜZELTME: 'hidden' sınıfını kaldırarak modalı göster
+        console.log("Before removing 'hidden' class. Current classes:", this._twoFactorAuthModal.classList);
+        this._twoFactorAuthModal.classList.remove('hidden');
+        console.log("After removing 'hidden' class. New classes:", this._twoFactorAuthModal.classList);
     },
 
     /**
@@ -94,8 +94,8 @@ export const TwoFactorAuthHandler = {
      */
     hide2FAModal: function() {
         if (this._twoFactorAuthModal) {
-            // DÜZELTME: 'modal-hidden' sınıfını ekleyerek modalı gizle
-            this._twoFactorAuthModal.classList.add('modal-hidden');
+            // DÜZELTME: 'hidden' sınıfını ekleyerek modalı gizle
+            this._twoFactorAuthModal.classList.add('hidden');
         }
         this._tempUserEmail = null;
         this._tempJwtToken = null;
@@ -163,7 +163,7 @@ export const TwoFactorAuthHandler = {
                 throw new Error(result.message || '2FA kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email }; // Düzeltme: token, userId, email de döndürülüyor
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email };
 
         } catch (error) {
             console.error('2FA doğrulama hatası:', error);
@@ -225,7 +225,7 @@ export const TwoFactorAuthHandler = {
                 throw new Error(result.message || 'Kurtarma kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email }; // Düzeltme: token, userId, email de döndürülüyor
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email };
 
         } catch (error) {
             console.error('Kurtarma kodu doğrulama hatası:', error);
