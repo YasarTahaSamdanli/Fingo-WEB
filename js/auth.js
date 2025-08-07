@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('jwtToken', result.token);
                         localStorage.setItem('userId', result.userId);
                         localStorage.setItem('userEmail', email);
+                        console.log("Initial login token and user info stored in localStorage."); // Yeni log
                         return;
                     }
                     throw new Error(result.message || 'Giriş başarısız oldu.');
@@ -196,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('jwtToken', result.token);
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('userEmail', email);
+                console.log("Login successful. Token and user info stored in localStorage."); // Yeni log
                 showMessageBox(result.message, 'success');
                 setTimeout(() => {
                     window.location.href = '/Fingo-WEB/index.html';
@@ -227,13 +229,13 @@ document.addEventListener('DOMContentLoaded', () => {
         verifyTwoFactorAuthBtn.addEventListener('click', async () => {
             const code = twoFactorAuthCodeInput.value.trim();
             const userEmail = localStorage.getItem('userEmail');
-            const jwtToken = localStorage.getItem('jwtToken'); // JWT token'ı da alıyoruz
+            const jwtToken = localStorage.getItem('jwtToken');
 
             if (!code) {
                 showMessageBox('Lütfen 2FA kodunu girin.', 'error');
                 return;
             }
-            if (!userEmail || !jwtToken) { // JWT token kontrolü de eklendi
+            if (!userEmail || !jwtToken) {
                 showMessageBox('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
                 return;
             }
@@ -241,26 +243,25 @@ document.addEventListener('DOMContentLoaded', () => {
             verifyTwoFactorAuthBtn.disabled = true;
             verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
 
-            console.log("Attempting 2FA verification with code:", code, "email:", userEmail, "token:", jwtToken); // Yeni log
+            console.log("Attempting 2FA verification with code:", code, "email:", userEmail, "token:", jwtToken);
 
             try {
-                // twoFactorAuth.js modülündeki verify2FACodeLogin fonksiyonunu çağır
-                // Bu fonksiyonun backend'e gönderdiği token'ı da kontrol etmeliyiz.
                 const verificationResult = await TwoFactorAuthHandler.verify2FACodeLogin(userEmail, code);
 
-                console.log("2FA verification result:", verificationResult); // Yeni log
+                console.log("2FA verification result:", verificationResult);
 
                 if (verificationResult.success) {
                     // Düzeltme: Backend'den gelen yeni token, userId ve email'i kullan
                     localStorage.setItem('jwtToken', verificationResult.token);
                     localStorage.setItem('userId', verificationResult.userId);
                     localStorage.setItem('userEmail', verificationResult.email);
+                    console.log("2FA verification successful. New token and user info stored in localStorage."); // Yeni log
 
                     showMessageBox('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
                     TwoFactorAuthHandler.hide2FAModal();
-                    console.log("2FA successful. Redirecting to index.html..."); // Yeni log
+                    console.log("2FA successful. Redirecting to index.html...");
                     setTimeout(() => {
-                        window.location.href = '/Fingo-WEB/index.html'; // Ana sayfaya yönlendir
+                        window.location.href = '/Fingo-WEB/index.html';
                     }, 500);
                 } else {
                     showMessageBox(verificationResult.message || '2FA kodu geçersiz.', 'error');
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
             resendTwoFactorAuthCodeBtn.disabled = true;
             resendTwoFactorAuthCodeBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Gönderiliyor...';
 
-            console.log("Attempting to resend 2FA code for email:", userEmail); // Yeni log
+            console.log("Attempting to resend 2FA code for email:", userEmail);
 
             try {
                 const resendResult = await TwoFactorAuthHandler.resend2FACode(userEmail, jwtToken);
