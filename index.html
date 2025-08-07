@@ -637,7 +637,8 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/financial-summary?userId=${userId}`, {
+                    // DÜZELTME: Doğru API rotasını kullan
+                    const response = await fetch(`${API_BASE_URL}/financial-summary/general?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
@@ -646,9 +647,9 @@
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
                     }
                     const summary = await response.json();
-                    totalIncomeSpan.textContent = `${summary.totalIncome.toFixed(2)} TL`;
-                    totalExpenseSpan.textContent = `${summary.totalExpense.toFixed(2)} TL`;
-                    netBalanceSpan.textContent = `${summary.netBalance.toFixed(2)} TL`;
+                    totalIncomeSpan.textContent = `${summary.totalRevenue.toFixed(2)} TL`;
+                    totalExpenseSpan.textContent = `${summary.totalExpenses.toFixed(2)} TL`;
+                    netBalanceSpan.textContent = `${summary.currentBalance.toFixed(2)} TL`;
                 } catch (error) {
                     console.error('Genel finansal özet çekilirken hata:', error);
                     addNotification(`Genel özet yüklenirken hata: ${error.message}`, 'error');
@@ -1057,7 +1058,8 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/reports/balance-history?period=monthly&year=${year}&month=${month}&userId=${userId}`, {
+                    // DÜZELTME: Doğru API rotasını kullan
+                    const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
@@ -1085,7 +1087,7 @@
                 const labels = data.map(item => `${item.month}/${item.year}`);
                 const incomeData = data.map(item => item.income);
                 const expenseData = data.map(item => item.expense);
-                const cumulativeBalanceData = data.map(item => item.cumulativeBalance);
+                const cumulativeBalanceData = data.map(item => item.netBalance); // Net bakiye kullanıldı
 
                 monthlyChart = new Chart(monthlySummaryChartCtx, {
                     type: 'line',
@@ -1137,7 +1139,8 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/reports/balance-history?period=yearly&year=${year}&userId=${userId}`, {
+                    // DÜZELTME: Doğru API rotasını kullan
+                    const response = await fetch(`${API_BASE_URL}/financial-summary/annual?year=${year}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
@@ -1244,7 +1247,8 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/users/2fa-status?userId=${userId}`, {
+                    // DÜZELTME: Doğru API rotasını kullan
+                    const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
