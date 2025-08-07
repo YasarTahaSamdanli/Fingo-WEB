@@ -1,7 +1,11 @@
 // public/js/auth.js
+console.log("auth.js script loaded and executing."); // En başta çalışan log
+
 import { TwoFactorAuthHandler } from './twoFactorAuth.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded fired in auth.js."); // DOMContentLoaded'in tetiklendiğini gösteren log
+
     const API_BASE_URL = 'https://fingo-web.onrender.com/api';
 
     // DOM Elementleri
@@ -138,12 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Giriş Formu Gönderimi
-    // DÜZELTME: loginForm.addEventListener('submit', ...) yerine loginBtn.addEventListener('click', ...) kullanıyoruz
-    // Eğer loginForm submit event listener'ı çalışmıyorsa, doğrudan butona bağlanmak daha güvenli olabilir.
-    const loginBtn = document.getElementById('loginBtn'); // loginBtn referansını burada alıyoruz
+    // Giriş işlemi
+    const loginBtn = document.getElementById('loginBtn');
 
-    if (loginBtn) { // loginBtn'in varlığını kontrol et
+    if (loginBtn) {
+        console.log("Login button element found:", loginBtn); // Yeni log
         loginBtn.addEventListener('click', async (e) => {
             e.preventDefault(); // Formun varsayılan submit davranışını engelle
             console.log("Login button clicked!"); // Yeni log
@@ -158,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Giriş Yapılıyor...';
 
-            console.log("Attempting to fetch /api/login with email:", email); // Yeni log
+            console.log("Attempting to fetch /api/login with email:", email);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/login`, {
@@ -166,10 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
-                console.log("Fetch response received:", response); // Yeni log
+                console.log("Fetch response received:", response);
 
                 const result = await response.json();
-                console.log("Fetch result parsed:", result); // Yeni log
+                console.log("Fetch result parsed:", result);
 
                 if (!response.ok) {
                     if (response.status === 403 && result.message === '2FA gerekli.') {
@@ -202,12 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     } else {
-        console.error("CRITICAL ERROR: 'loginBtn' element not found!"); // Yeni log
+        console.error("CRITICAL ERROR: 'loginBtn' element not found!");
     }
 
 
     // 2FA Modal Kapatma Butonu
-    const closeTwoFactorAuthModalBtn = document.getElementById('closeTwoFactorAuthModalBtn');
     if (closeTwoFactorAuthModalBtn) {
         closeTwoFactorAuthModalBtn.addEventListener('click', () => {
             TwoFactorAuthHandler.hide2FAModal();
