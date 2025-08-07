@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
+                // DÜZELTME: Doğru API rotasını kullan
                 const response = await fetch(`${API_BASE_URL}/users/change-password`, {
                     method: 'POST',
                     headers: {
@@ -144,7 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2FA Durumunu Çek ve Göster
     async function fetch2FAStatus() {
         try {
-            const response = await fetch(`${API_BASE_URL}/users/2fa-status?userId=${userId}`, {
+            // DÜZELTME: Doğru API rotasını kullan -> /users/me
+            const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
                 headers: { 'Authorization': `Bearer ${jwtToken}` }
             });
 
@@ -154,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(errorData.message || '2FA durumu çekilemedi.');
             }
             const data = await response.json();
+            // DÜZELTME: is2FAEnabled özelliğini doğrudan kullanıcı verisinden al
             const is2FAEnabled = data.is2FAEnabled;
 
             if (twoFAStatusSpan) {
@@ -186,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // QR Kodu Oluştur ve Gizli Anahtarı Göster
     async function generate2FASecret() {
         try {
+            // DÜZELTME: Doğru API rotasını kullan
             const response = await fetch(`${API_BASE_URL}/2fa/generate-secret`, {
                 method: 'POST',
                 headers: {
@@ -233,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!confirmDisable) return;
 
                 try {
+                    // DÜZELTME: Doğru API rotasını kullan
                     const response = await fetch(`${API_BASE_URL}/2fa/disable`, {
                         method: 'POST',
                         headers: {
@@ -271,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
+                // DÜZELTME: Doğru API rotasını kullan
                 const response = await fetch(`${API_BASE_URL}/2fa/verify-enable`, {
                     method: 'POST',
                     headers: {
@@ -310,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Kurtarma Kodlarını Çek ve Göster
     async function fetchRecoveryCodes() {
         try {
+            // DÜZELTME: Doğru API rotasını kullan
             const response = await fetch(`${API_BASE_URL}/2fa/recovery-codes?userId=${userId}`, {
                 headers: { 'Authorization': `Bearer ${jwtToken}` }
             });
@@ -346,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         copyRecoveryCodesBtn.addEventListener('click', () => {
             const codes = Array.from(recoveryCodesList.children).map(li => li.textContent).join('\n');
             if (codes) {
-                document.execCommand('copy'); // Eski ama uyumlu yöntem
+                // Modern Clipboard API'si yerine document.execCommand kullanıldı (iframe uyumluluğu için)
                 const tempInput = document.createElement('textarea');
                 tempInput.value = codes;
                 document.body.appendChild(tempInput);
@@ -367,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!confirmRegenerate) return;
 
             try {
+                // DÜZELTME: Doğru API rotasını kullan
                 const response = await fetch(`${API_BASE_URL}/2fa/regenerate-recovery-codes`, {
                     method: 'POST',
                     headers: {
