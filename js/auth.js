@@ -1,40 +1,40 @@
 // public/js/auth.js
-import { TwoFactorAuthHandler } from './twoFactorAuth.js'; // Yeni 2FA modülünü içe aktarıyoruz
+import { TwoFactorAuthHandler } from './twoFactorAuth.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+
+    // DOM Elementleri
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    const showRegisterBtn = document.getElementById('showRegister');
-    const showLoginBtn = document.getElementById('showLogin');
-    const loginEmailInput = document.getElementById('loginEmail');
-    const loginPasswordInput = document.getElementById('loginPassword');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerEmailInput = document.getElementById('registerEmail');
-    const registerPasswordInput = document.getElementById('registerPassword');
-    const confirmPasswordInput = document.getElementById('confirmPassword');
-    const registerBtn = document.getElementById('registerBtn');
+    // Düzeltme: showRegister ve showLogin butonları için doğru ID'ler
+    const showRegisterFormBtn = document.getElementById('showRegister'); // auth.html'deki ID
+    const showLoginFormBtn = document.getElementById('showLogin');     // auth.html'deki ID
+    const loginSection = document.getElementById('loginForm'); // auth.html'de loginForm div'i loginSection olarak kullanılıyor
+    const registerSection = document.getElementById('registerForm'); // auth.html'de registerForm div'i registerSection olarak kullanılıyor
+
     const messageBox = document.getElementById('messageBox');
     const messageText = document.getElementById('messageText');
 
-    // 2FA modalı ile ilgili elemanlar
+    // 2FA Modal Elementleri
     const twoFactorAuthModal = document.getElementById('twoFactorAuthModal');
-    const closeTwoFactorAuthModalBtn = document.getElementById('closeTwoFactorAuthModalBtn');
     const twoFactorAuthCodeInput = document.getElementById('twoFactorAuthCode');
     const verifyTwoFactorAuthBtn = document.getElementById('verifyTwoFactorAuthBtn');
     const resendTwoFactorAuthCodeBtn = document.getElementById('resendTwoFactorAuthCodeBtn');
     const useRecoveryCodeBtn = document.getElementById('useRecoveryCodeBtn');
+    const twoFactorAuthModalTitle = document.getElementById('twoFactorAuthModalTitle');
+    const closeTwoFactorAuthModalBtn = document.getElementById('closeTwoFactorAuthModalBtn');
+    // Düzeltme: twoFactorAuthMessage elementini de alıyoruz
+    const twoFactorAuthMessage = document.getElementById('twoFactorAuthMessage');
 
-    // API Base URL
-    const API_BASE_URL = 'https://fingo-web.onrender.com/api';
 
-
-
-    // Geçici olarak 2FA akışı için kullanılacak kullanıcı bilgileri
-    let tempUserEmail = null;
-    let tempJwtToken = null; // 2FA doğrulaması için kullanılacak geçici JWT token
-
-    function showMessage(message, type = 'success') {
-        messageText.textContent = message;
+    // Mesaj Kutusu Fonksiyonu
+    function showMessageBox(message, type = 'success') {
+        if (!messageBox || !messageText) {
+            console.error("Message box elements not found!");
+            return;
+        }
+        messageText.innerHTML = message;
         messageBox.className = `message-box show ${type}`;
         messageBox.classList.remove('hidden');
         setTimeout(() => {
@@ -45,223 +45,218 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    // Formları değiştirme fonksiyonları
-    showRegisterBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginForm.classList.add('hidden');
-        registerForm.classList.remove('hidden');
+    // TwoFactorAuthHandler'ı başlatmadan önce modal elementinin varlığını kontrol et
+    if (!twoFactorAuthModal) {
+        console.error("CRITICAL ERROR: 'twoFactorAuthModal' element not found in auth.html!");
+        showMessageBox("Uygulama hatası: 2FA modalı bulunamadı. Lütfen geliştiriciye başvurun.", "error");
+        return; // Modal yoksa daha fazla ilerleme
+    } else {
+        console.log("SUCCESS: 'twoFactorAuthModal' element found:", twoFactorAuthModal);
+    }
+
+
+    // TwoFactorAuthHandler'ı başlat
+    TwoFactorAuthHandler.init({
+        twoFactorAuthModal,
+        twoFactorAuthCodeInput,
+        verifyTwoFactorAuthBtn,
+        resendTwoFactorAuthCodeBtn,
+        useRecoveryCodeBtn,
+        twoFactorAuthModalTitle,
+        twoFactorAuthMessage, // Düzeltme: Mesaj elementini de iletiyoruz
+        showMessage: showMessageBox,
+        apiBaseUrl: API_BASE_URL
     });
+    console.log("TwoFactorAuthHandler initialized.");
 
-    showLoginBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        registerForm.classList.add('hidden');
-        loginForm.classList.remove('hidden');
-    });
 
-    // Kayıt işlemi
-    registerBtn.addEventListener('click', async () => {
-        const email = registerEmailInput.value.trim();
-        const password = registerPasswordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
+    // Form görünürlüğünü değiştir
+    // Düzeltme: showRegisterBtn ve showLoginBtn yerine showRegisterFormBtn ve showLoginFormBtn kullanıyoruz
+    if (showRegisterFormBtn) {
+        showRegisterFormBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Varsayılan link davranışını engelle
+            if (loginSection) loginSection.classList.add('hidden');
+            if (registerSection) registerSection.classList.remove('hidden');
+        });
+    }
 
-        if (!email || !password || !confirmPassword) {
-            showMessage('Lütfen tüm alanları doldurun.', 'error');
-            return;
-        }
-        if (password !== confirmPassword) {
-            showMessage('Parolalar eşleşmiyor.', 'error');
-            return;
-        }
-        // Parola regex kontrolü: en az 8 karakter, büyük/küçük harf, rakam, özel karakter
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!^#@?_=)(]).*$/;
-        if (password.length < 8 || password.length > 50 || !passwordRegex.test(password)) {
-            showMessage('Parola en az 8 karakter, büyük/küçük harf, rakam ve özel karakter (! ^ # @ ? _ = ) ( ) ) içermelidir.', 'error');
-            return;
-        }
+    if (showLoginFormBtn) {
+        showLoginFormBtn.addEventListener('click', (e) => {
+            e.preventDefault(); // Varsayılan link davranışını engelle
+            if (registerSection) registerSection.classList.add('hidden');
+            if (loginSection) loginSection.classList.remove('hidden');
+        });
+    }
 
-        registerBtn.disabled = true;
-        registerBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Kaydediliyor...';
+    // Kayıt Formu Gönderimi
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value; // Confirm password'ı da al
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || 'Kayıt başarısız oldu.');
+            if (!email || !password || !confirmPassword) { // Confirm password kontrolü de eklendi
+                showMessageBox('Lütfen tüm alanları doldurun.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) { // Parola eşleşme kontrolü
+                showMessageBox('Parolalar eşleşmiyor.', 'error');
+                return;
+            }
+            // Parola regex kontrolü: en az 8 karakter, büyük/küçük harf, rakam, özel karakter
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+={}\[\]:;"'<>,.?/~`]).*$/;
+            if (password.length < 8 || password.length > 50 || !passwordRegex.test(password)) {
+                showMessageBox('Parola en az 8 karakter, büyük/küçük harf, rakam ve özel karakter içermelidir.', 'error');
+                return;
             }
 
-            showMessage(result.message, 'success');
-            // Kayıt başarılıysa giriş formuna geç
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            loginEmailInput.value = email; // Kayıtlı e-postayı giriş alanına otomatik doldur
-            registerEmailInput.value = '';
-            registerPasswordInput.value = '';
-            confirmPasswordInput.value = '';
 
-        } catch (error) {
-            console.error('Kayıt hatası:', error);
-            showMessage(`Kayıt sırasında bir hata oluştu: ${error.message}`, 'error');
-        } finally {
-            registerBtn.disabled = false;
-            registerBtn.innerHTML = 'Kayıt Ol';
-        }
-    });
+            // Buton durumunu güncelle
+            const registerBtn = document.getElementById('registerBtn'); // Buton referansını al
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Kaydediliyor...';
 
-    // Giriş işlemi
-    loginBtn.addEventListener('click', async () => {
-        const email = loginEmailInput.value.trim();
-        const password = loginPasswordInput.value;
 
-        if (!email || !password) {
-            showMessage('Lütfen e-posta ve parolanızı girin.', 'error');
-            return;
-        }
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Giriş Yapılıyor...';
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Kayıt başarısız oldu.');
+                }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-            const result = await response.json();
+                showMessageBox(result.message, 'success');
+                registerForm.reset();
+                if (registerSection) registerSection.classList.add('hidden');
+                if (loginSection) loginSection.classList.remove('hidden');
+            } catch (error) {
+                console.error('Kayıt hatası:', error);
+                showMessageBox(`Kayıt olurken hata: ${error.message}`, 'error');
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = 'Kayıt Ol';
+            }
+        });
+    }
 
-            if (!response.ok) {
-                throw new Error(result.message || 'Giriş başarısız oldu.');
+    // Giriş Formu Gönderimi
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showMessageBox('Lütfen e-posta ve parolanızı girin.', 'error');
+                return;
             }
 
-            // 2FA kontrolü
-            if (result.is2FAEnabled) {
-                // 2FA gerekiyorsa, geçici token'ı ve e-postayı kaydet
-                tempUserEmail = email;
-                tempJwtToken = result.token; // Backend'den gelen asıl token
-                // 2FA modalını göster
-                TwoFactorAuthHandler.show2FAModal('login', tempUserEmail, tempJwtToken);
-                showMessage('İki faktörlü kimlik doğrulama gerekli. Kod gönderiliyor...', 'info');
+            // Buton durumunu güncelle
+            const loginBtn = document.getElementById('loginBtn'); // Buton referansını al
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Giriş Yapılıyor...';
 
-                // Kodu otomatik olarak gönder
-                await TwoFactorAuthHandler.resend2FACode(tempUserEmail, tempJwtToken); // BURADA KOD OTOMATİK GÖNDERİLİYOR
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-            } else {
-                // 2FA gerekmiyorsa veya doğrulama başarılıysa
+                const result = await response.json();
+                if (!response.ok) {
+                    // 2FA gerekiyorsa özel mesajı işle
+                    if (response.status === 403 && result.message === '2FA gerekli.') {
+                        showMessageBox('2FA gerekli. Lütfen e-postanıza gönderilen kodu girin.', 'info');
+                        console.log("2FA required. Calling TwoFactorAuthHandler.show2FAModal with email:", email, "and token:", result.token);
+                        // Düzeltme: Parametre sıralaması userEmail, jwtToken, mode
+                        TwoFactorAuthHandler.show2FAModal(email, result.token, 'login');
+
+                        localStorage.setItem('jwtToken', result.token);
+                        localStorage.setItem('userId', result.userId);
+                        localStorage.setItem('userEmail', email);
+                        return;
+                    }
+                    throw new Error(result.message || 'Giriş başarısız oldu.');
+                }
+
+                // Normal giriş başarılı
                 localStorage.setItem('jwtToken', result.token);
                 localStorage.setItem('userId', result.userId);
-                localStorage.setItem('userEmail', result.email); // E-postayı da kaydet
-                showMessage('Giriş başarılı!', 'success');
+                localStorage.setItem('userEmail', email); // E-postayı da kaydet
+                showMessageBox(result.message, 'success');
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = '/Fingo-WEB/index.html'; // GitHub Pages için mutlak yol
                 }, 500);
+
+            } catch (error) {
+                console.error('Giriş hatası:', error);
+                showMessageBox(`Giriş yapılırken hata: ${error.message}`, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Giriş Yap';
             }
+        });
+    }
 
-        } catch (error) {
-            console.error('Giriş hatası:', error);
-            showMessage(`Giriş sırasında bir hata oluştu: ${error.message}`, 'error');
-        } finally {
-            loginBtn.disabled = false;
-            loginBtn.innerHTML = 'Giriş Yap';
-        }
-    });
+    // 2FA Modal Kapatma Butonu
+    if (closeTwoFactorAuthModalBtn) {
+        closeTwoFactorAuthModalBtn.addEventListener('click', () => {
+            TwoFactorAuthHandler.hide2FAModal();
+            twoFactorAuthCodeInput.value = ''; // Kodu temizle
+            // tempUserEmail ve tempJwtToken TwoFactorAuthHandler içinde yönetiliyor
+        });
+    }
 
-    // 2FA modalını kapatma
-    closeTwoFactorAuthModalBtn.addEventListener('click', () => {
-        TwoFactorAuthHandler.hide2FAModal();
-        twoFactorAuthCodeInput.value = ''; // Kodu temizle
-        tempUserEmail = null; // Geçici bilgileri sıfırla
-        tempJwtToken = null;
-    });
+    // 2FA Kodu Doğrulama Butonu (TwoFactorAuthHandler tarafından yönetiliyor)
+    // Bu kısım artık TwoFactorAuthHandler içinde _handleVerifyButtonClick tarafından yönetiliyor.
+    // auth.js içinde manuel olarak dinleyici eklemeye gerek yok.
+    // if (verifyTwoFactorAuthBtn) {
+    //     verifyTwoFactorAuthBtn.addEventListener('click', async () => {
+    //         const code = twoFactorAuthCodeInput.value.trim();
+    //         const userEmail = localStorage.getItem('userEmail');
+    //         const jwtToken = localStorage.getItem('jwtToken');
 
-    // 2FA kodunu doğrulama butonu (twoFactorAuth.js'e gönderilecek)
-    verifyTwoFactorAuthBtn.addEventListener('click', async () => {
-        const code = twoFactorAuthCodeInput.value.trim();
-        if (!code) {
-            showMessage('Lütfen 2FA kodunu girin.', 'error');
-            return;
-        }
-        if (!tempUserEmail || !tempJwtToken) {
-            showMessage('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-            return;
-        }
+    //         const verificationResult = await TwoFactorAuthHandler.verify2FACodeLogin(userEmail, code);
 
-        verifyTwoFactorAuthBtn.disabled = true;
-        verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
+    //         if (verificationResult.success) {
+    //             localStorage.setItem('jwtToken', verificationResult.token);
+    //             localStorage.setItem('userId', verificationResult.userId);
+    //             localStorage.setItem('userEmail', userEmail); // E-postayı da kaydet
+    //             showMessageBox('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
+    //             TwoFactorAuthHandler.hide2FAModal();
+    //             setTimeout(() => {
+    //                 window.location.href = '/Fingo-WEB/index.html';
+    //             }, 500);
+    //         } else {
+    //             showMessageBox(verificationResult.message || '2FA kodu geçersiz.', 'error');
+    //         }
+    //     });
+    // }
 
-        try {
-            // twoFactorAuth.js modülündeki verify2FACodeLogin fonksiyonunu çağır
-            const verificationResult = await TwoFactorAuthHandler.verify2FACodeLogin(tempUserEmail, code, tempJwtToken);
+    // 2FA Kodu Tekrar Gönder Butonu (TwoFactorAuthHandler tarafından yönetiliyor)
+    // Bu kısım artık TwoFactorAuthHandler içinde _handleResendButtonClick tarafından yönetiliyor.
+    // if (resendTwoFactorAuthCodeBtn) {
+    //     resendTwoFactorAuthCodeBtn.addEventListener('click', async () => {
+    //         const userEmail = localStorage.getItem('userEmail');
+    //         const jwtToken = localStorage.getItem('jwtToken');
+    //         const resendResult = await TwoFactorAuthHandler.resend2FACode(userEmail, jwtToken);
+    //         if (!resendResult.success) {
+    //             showMessageBox(resendResult.message || 'Kod tekrar gönderilemedi.', 'error');
+    //         }
+    //     });
+    // }
 
-            if (verificationResult.success) {
-                localStorage.setItem('jwtToken', verificationResult.token);
-                localStorage.setItem('userId', verificationResult.userId);
-                localStorage.setItem('userEmail', verificationResult.email); // E-postayı da kaydet
-                showMessage('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
-                TwoFactorAuthHandler.hide2FAModal();
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
-            } else {
-                showMessage(verificationResult.message || '2FA kodu geçersiz.', 'error');
-            }
-        } catch (error) {
-            console.error('2FA doğrulama hatası:', error);
-            showMessage(`2FA doğrulama sırasında bir hata oluştu: ${error.message}`, 'error');
-        } finally {
-            verifyTwoFactorAuthBtn.disabled = false;
-            verifyTwoFactorAuthBtn.innerHTML = 'Kodu Doğrula';
-        }
-    });
-
-    // 2FA kodunu tekrar gönderme butonu (twoFactorAuth.js'e gönderilecek)
-    resendTwoFactorAuthCodeBtn.addEventListener('click', async () => {
-        if (!tempUserEmail || !tempJwtToken) {
-            showMessage('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-            return;
-        }
-
-        resendTwoFactorAuthCodeBtn.disabled = true;
-        resendTwoFactorAuthCodeBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Gönderiliyor...';
-
-        try {
-            // TwoFactorAuthHandler'daki public resend2FACode fonksiyonunu çağır
-            const resendResult = await TwoFactorAuthHandler.resend2FACode(tempUserEmail, tempJwtToken);
-            if (resendResult.success) {
-                showMessage('Yeni kod e-postanıza gönderildi.', 'success');
-            } else {
-                showMessage(resendResult.message || 'Kod tekrar gönderilemedi.', 'error');
-            }
-        } catch (error) {
-            console.error('Kod tekrar gönderme hatası:', error);
-            showMessage(`Kod tekrar gönderilirken bir hata oluştu: ${error.message}`, 'error');
-        } finally {
-            resendTwoFactorAuthCodeBtn.disabled = false;
-            resendTwoFactorAuthCodeBtn.innerHTML = 'Kodu Tekrar Gönder';
-        }
-    });
-
-    // Kurtarma kodu kullanma butonu (twoFactorAuth.js'e gönderilecek)
-    useRecoveryCodeBtn.addEventListener('click', () => {
-        // Bu kısım twoFactorAuth.js içinde yönetilecek
-        TwoFactorAuthHandler.showRecoveryCodeInput(); // Örneğin, modal içinde kurtarma kodu alanını göster
-        showMessage('Kurtarma kodu ile giriş yapılıyor...', 'info');
-    });
-
-    // TwoFactorAuthHandler'a gerekli elementleri ve API_BASE_URL'i atıyoruz.
-    // Bu, TwoFactorAuthHandler'ın kendi UI elementlerine doğrudan erişmesini sağlar.
-    TwoFactorAuthHandler.init({
-        twoFactorAuthModal: twoFactorAuthModal,
-        twoFactorAuthCodeInput: twoFactorAuthCodeInput,
-        verifyTwoFactorAuthBtn: verifyTwoFactorAuthBtn,
-        resendTwoFactorAuthCodeBtn: resendTwoFactorAuthCodeBtn,
-        useRecoveryCodeBtn: useRecoveryCodeBtn,
-        twoFactorAuthModalTitle: document.getElementById('twoFactorAuthModalTitle'),
-        twoFactorAuthMessage: document.getElementById('twoFactorAuthMessage'),
-        API_BASE_URL: API_BASE_URL,
-        showMessage: showMessage // auth.js'teki showMessage fonksiyonunu 2FA modülüne geçiyoruz
-    });
+    // Kurtarma Kodu Kullan Butonu (TwoFactorAuthHandler tarafından yönetiliyor)
+    // Bu kısım artık TwoFactorAuthHandler içinde _handleUseRecoveryCodeClick tarafından yönetiliyor.
+    // if (useRecoveryCodeBtn) {
+    //     useRecoveryCodeBtn.addEventListener('click', () => {
+    //         TwoFactorAuthHandler.showRecoveryCodeInput();
+    //     });
+    // }
 });
