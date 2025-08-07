@@ -37,11 +37,12 @@ router.get('/financial-summary/general', authenticateToken, async (req, res) => 
         ]).toArray();
         const totalInventoryValue = inventoryValueResult.length > 0 ? inventoryValueResult[0].totalInventoryValue : 0;
 
+        // DÜZELTME: toFixed() burada kaldırıldı, frontend'de yapılacak.
         res.status(200).json({
-            totalRevenue: totalRevenue.toFixed(2),
-            totalExpenses: totalExpenses.toFixed(2),
-            currentBalance: currentBalance.toFixed(2),
-            totalInventoryValue: totalInventoryValue.toFixed(2)
+            totalRevenue: totalRevenue,
+            totalExpenses: totalExpenses,
+            currentBalance: currentBalance,
+            totalInventoryValue: totalInventoryValue
         });
 
     } catch (error) {
@@ -50,7 +51,7 @@ router.get('/financial-summary/general', authenticateToken, async (req, res) => 
     }
 });
 
-// Aylık Özetleri Getirme Rotası
+// Aylık Özetleri Getirme Rotası (Bu kısım zaten sayı döndürüyor, değişiklik yok)
 router.get('/financial-summary/monthly', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const { year, month } = req.query;
@@ -117,7 +118,7 @@ router.get('/financial-summary/monthly', authenticateToken, async (req, res) => 
     }
 });
 
-// Yıllık Özetleri Getirme Rotası
+// Yıllık Özetleri Getirme Rotası (Bu kısım zaten sayı döndürüyor, değişiklik yok)
 router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const { year } = req.query;
@@ -177,7 +178,7 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
     }
 });
 
-// Kategori Bazlı Harcama Dağılımı Rotası
+// Kategori Bazlı Harcama Dağılımı Rotası (Bu kısım zaten sayı döndürüyor, değişiklik yok)
 router.get('/financial-summary/category-distribution', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const { type, year, month } = req.query;
