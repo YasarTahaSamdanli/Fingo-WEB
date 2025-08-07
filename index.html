@@ -643,13 +643,14 @@
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                     if (!response.ok) {
+                        // Hata yanıtının JSON olduğunu varsayarak parse etmeye çalış
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
                     }
                     const summary = await response.json();
-                    totalIncomeSpan.textContent = `${summary.totalRevenue.toFixed(2)} TL`;
-                    totalExpenseSpan.textContent = `${summary.totalExpenses.toFixed(2)} TL`;
-                    netBalanceSpan.textContent = `${summary.currentBalance.toFixed(2)} TL`;
+                    totalIncomeSpan.textContent = `${parseFloat(summary.totalRevenue).toFixed(2)} TL`;
+                    totalExpenseSpan.textContent = `${parseFloat(summary.totalExpenses).toFixed(2)} TL`;
+                    netBalanceSpan.textContent = `${parseFloat(summary.currentBalance).toFixed(2)} TL`;
                 } catch (error) {
                     console.error('Genel finansal özet çekilirken hata:', error);
                     addNotification(`Genel özet yüklenirken hata: ${error.message}`, 'error');
