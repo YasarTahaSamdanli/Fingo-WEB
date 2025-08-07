@@ -11,7 +11,7 @@ export const TwoFactorAuthHandler = {
     _showMessage: null,
 
     _API_BASE_URL: null,
-    _tempUserEmail: null,
+    _tempUserEmail: null, // Giriş akışı için geçici kullanıcı e-postası
     _tempJwtToken: null,  // Giriş akışı için geçici JWT tokenı
 
     _setupJwtToken: null, // 2FA kurulum akışı için JWT tokenı
@@ -28,50 +28,56 @@ export const TwoFactorAuthHandler = {
         this._resendTwoFactorAuthCodeBtn = config.resendTwoFactorAuthCodeBtn;
         this._useRecoveryCodeBtn = config.useRecoveryCodeBtn;
         this._twoFactorAuthModalTitle = config.twoFactorAuthModalTitle;
-        this._twoFactorAuthMessage = config.twoFactorAuthMessage;
-        this._API_BASE_URL = config.API_BASE_URL;
-        this._showMessage = config.showMessage;
+        this._showMessage = config.showMessage; // showMessage fonksiyonunu dışarıdan al
 
-        // 2FA modalındaki butonların olay dinleyicilerini bağlama
-        this._verifyTwoFactorAuthBtn.addEventListener('click', () => this._handleVerifyButtonClick());
-        this._resendTwoFactorAuthCodeBtn.addEventListener('click', () => this._handleResendButtonClick());
-        this._useRecoveryCodeBtn.addEventListener('click', () => this._handleRecoveryButtonClick());
+        this._API_BASE_URL = config.apiBaseUrl;
+
+        // Olay dinleyicilerini ayarla
+        if (this._verifyTwoFactorAuthBtn) {
+            this._verifyTwoFactorAuthBtn.addEventListener('click', () => this._handleVerifyButtonClick());
+        }
+        if (this._resendTwoFactorAuthCodeBtn) {
+            this._resendTwoFactorAuthCodeBtn.addEventListener('click', () => this._handleResendButtonClick());
+        }
+        if (this._useRecoveryCodeBtn) {
+            this._useRecoveryCodeBtn.addEventListener('click', () => this._handleUseRecoveryCodeClick());
+        }
     },
 
     /**
-     * 2FA modalını gösterir.
-     * @param {string} type - Modalın gösterilme amacı ('login' veya 'setup')
-     * @param {string} email - Kullanıcının e-posta adresi
-     * @param {string} token - İlgili akış için kullanılacak JWT tokenı (giriş için tempToken, kurulum için normal jwtToken)
+     * 2FA doğrulama modalını gösterir.
+     * @param {string} userEmail - Doğrulama yapılacak kullanıcının e-posta adresi.
+     * @param {string} jwtToken - Kullanıcının JWT tokenı (opsiyonel, giriş sonrası için).
+     * @param {string} mode - 'login' veya 'setup' (varsayılan 'login').
      */
-    show2FAModal: function(type, email, token) {
-        this._twoFactorAuthCodeInput.value = ''; // Inputu temizle
-        this._twoFactorAuthCodeInput.focus(); // Inputa odaklan
+    show2FAModal: function(userEmail, jwtToken = null, mode = 'login') {
+        if (!this._twoFactorAuthModal) {
+            console.error("2FA modal element not found!");
+            return;
+        }
 
-        if (type === 'login') {
-            this._tempUserEmail = email;
-            this._tempJwtToken = token;
-            this._setupUserEmail = null; // Kurulum bilgileri temizle
-            this._setupJwtToken = null;
+        this._tempUserEmail = userEmail;
+        this._tempJwtToken = jwtToken; // Giriş akışı için token
+        this._setupUserEmail = userEmail; // Kurulum akışı için e-posta
+        this._setupJwtToken = jwtToken; // Kurulum akışı için token
 
-            this._twoFactorAuthModalTitle.textContent = 'İki Faktörlü Kimlik Doğrulama';
-            this._twoFactorAuthMessage.textContent = 'E-posta adresinize gönderilen 6 haneli kodu girin.';
-            this._resendTwoFactorAuthCodeBtn.classList.remove('hidden');
-            this._useRecoveryCodeBtn.classList.remove('hidden');
+        if (this._twoFactorAuthModalTitle) {
+            this._twoFactorAuthModalTitle.textContent = mode === 'login' ? 'İki Faktörlü Doğrulama' : '2FA Kurulumu';
+        }
+        if (this._twoFactorAuthCodeInput) {
+            this._twoFactorAuthCodeInput.value = ''; // Kodu temizle
+            this._twoFactorAuthCodeInput.placeholder = '######';
+            this._twoFactorAuthCodeInput.maxLength = 6; // OTP kodları 6 hanelidir
+        }
+        if (this._verifyTwoFactorAuthBtn) {
             this._verifyTwoFactorAuthBtn.textContent = 'Kodu Doğrula';
-            this._verifyTwoFactorAuthBtn.dataset.mode = 'login'; // Modu belirle
-        } else if (type === 'setup') {
-            this._setupUserEmail = email;
-            this._setupJwtToken = token;
-            this._tempUserEmail = null; // Giriş bilgileri temizle
-            this._tempJwtToken = null;
-
-            this._twoFactorAuthModalTitle.textContent = '2FA Etkinleştirme Doğrulaması';
-            this._twoFactorAuthMessage.textContent = 'E-posta adresinize gönderilen doğrulama kodunu girin.';
-            this._resendTwoFactorAuthCodeBtn.classList.remove('hidden'); // Kurulumda da tekrar gönderilebilir
-            this._useRecoveryCodeBtn.classList.add('hidden'); // Kurulumda kurtarma kodu kullanılmaz
-            this._verifyTwoFactorAuthBtn.textContent = '2FA\'yı Etkinleştir';
-            this._verifyTwoFactorAuthBtn.dataset.mode = 'setup'; // Modu belirle
+            this._verifyTwoFactorAuthBtn.dataset.mode = mode; // Buton modunu ayarla
+        }
+        if (this._resendTwoFactorAuthCodeBtn) {
+            this._resendTwoFactorAuthCodeBtn.style.display = 'block'; // Tekrar gönder butonunu göster
+        }
+        if (this._useRecoveryCodeBtn) {
+            this._useRecoveryCodeBtn.style.display = 'block'; // Kurtarma kodu kullan butonunu göster
         }
 
         this._twoFactorAuthModal.classList.remove('hidden');
@@ -81,8 +87,9 @@ export const TwoFactorAuthHandler = {
      * 2FA modalını gizler.
      */
     hide2FAModal: function() {
-        this._twoFactorAuthModal.classList.add('hidden');
-        this._twoFactorAuthCodeInput.value = '';
+        if (this._twoFactorAuthModal) {
+            this._twoFactorAuthModal.classList.add('hidden');
+        }
         this._tempUserEmail = null;
         this._tempJwtToken = null;
         this._setupUserEmail = null;
@@ -90,221 +97,156 @@ export const TwoFactorAuthHandler = {
     },
 
     /**
-     * Doğrulama butonuna tıklandığında hangi modda olduğunu kontrol eder ve ilgili fonksiyonu çağırır.
-     * Bu, tek bir buton üzerinden farklı 2FA akışlarını yönetmemizi sağlar.
+     * Doğrulama butonuna tıklandığında çalışır.
+     * Mod'a göre (login/setup/recovery) farklı doğrulama fonksiyonlarını çağırır.
      */
     _handleVerifyButtonClick: async function() {
+        const token = this._twoFactorAuthCodeInput.value.trim();
         const mode = this._verifyTwoFactorAuthBtn.dataset.mode;
-        const code = this._twoFactorAuthCodeInput.value.trim();
 
-        if (!code) {
-            this._showMessage('Lütfen kodu girin.', 'error');
+        if (!token) {
+            this._showMessage('Lütfen doğrulama kodunu girin.', 'warning');
             return;
         }
 
-        if (mode === 'login') {
-            if (!this._tempUserEmail || !this._tempJwtToken) {
-                this._showMessage('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-                return;
-            }
-            const verificationResult = await this.verify2FACodeLogin(this._tempUserEmail, code, this._tempJwtToken);
-            if (verificationResult.success) {
-                localStorage.setItem('jwtToken', verificationResult.token);
-                localStorage.setItem('userId', verificationResult.userId);
-                localStorage.setItem('userEmail', verificationResult.email); // E-postayı da kaydet
-                this._showMessage('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
-                this.hide2FAModal();
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
-            } else {
-                this._showMessage(verificationResult.message || '2FA kodu geçersiz.', 'error');
-            }
-        } else if (mode === 'setup') {
-            if (!this._setupUserEmail || !this._setupJwtToken) {
-                this._showMessage('2FA kurulum bilgisi bulunamadı. Lütfen tekrar deneyin.', 'error');
-                return;
-            }
-            const verificationResult = await this.verify2FACodeSetup(this._setupUserEmail, code, this._setupJwtToken);
-            if (verificationResult.success) {
-                this._showMessage('2FA başarıyla etkinleştirildi! Kurtarma kodlarınızı kaydedin.', 'success');
-                this.hide2FAModal();
-                setTimeout(() => { window.location.reload(); }, 500);
-
-            } else {
-                this._showMessage(verificationResult.message || 'Etkinleştirme kodu geçersiz.', 'error');
-            }
-        } else if (mode === 'recovery') {
-            if (!this._tempUserEmail || !this._tempJwtToken) {
-                this._showMessage('Geçici kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapmayı deneyin.', 'error');
-                return;
-            }
-            const verificationResult = await this.verifyRecoveryCode(this._tempUserEmail, code, this._tempJwtToken);
-            if (verificationResult.success) {
-                localStorage.setItem('jwtToken', verificationResult.token);
-                localStorage.setItem('userId', verificationResult.userId);
-                localStorage.setItem('userEmail', verificationResult.email);
-                this._showMessage('Kurtarma kodu doğrulama başarılı! Giriş yapılıyor...', 'success');
-                this.hide2FAModal();
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
-            } else {
-                this._showMessage(verificationResult.message || 'Kurtarma kodu geçersiz.', 'error');
-            }
-        }
-    },
-
-    _handleResendButtonClick: async function() {
-        const mode = this._verifyTwoFactorAuthBtn.dataset.mode;
-        let emailToResend, tokenToResend;
-
-        if (mode === 'login') {
-            emailToResend = this._tempUserEmail;
-            tokenToResend = this._tempJwtToken;
-        } else if (mode === 'setup') {
-            emailToResend = this._setupUserEmail;
-            tokenToResend = this._setupJwtToken;
-        }
-
-        if (!emailToResend || !tokenToResend) {
-            this._showMessage('Kullanıcı bilgisi bulunamadı. Lütfen tekrar deneyin.', 'error');
-            return;
-        }
-
-        await this.resend2FACode(emailToResend, tokenToResend);
-    },
-
-    _handleRecoveryButtonClick: function() {
-        this._twoFactorAuthMessage.textContent = 'Lütfen kurtarma kodunuzu girin.';
-        this._verifyTwoFactorAuthBtn.textContent = 'Kurtarma Kodu ile Doğrula';
-        this._verifyTwoFactorAuthBtn.dataset.mode = 'recovery';
-        this._resendTwoFactorAuthCodeBtn.classList.add('hidden');
-        this._useRecoveryCodeBtn.classList.add('hidden');
-        this._twoFactorAuthCodeInput.type = 'text';
-        this._twoFactorAuthCodeInput.placeholder = 'Kurtarma Kodunuz';
-        this._twoFactorAuthCodeInput.maxLength = 16;
-    },
-
-    // ------------------------------------------------------------------------------------------------
-    // 2FA Fonksiyonları (Backend ile İletişim) - Bunlar artık public metotlar
-    // ------------------------------------------------------------------------------------------------
-
-    /**
-     * Giriş akışında 2FA kodunu doğrular.
-     */
-    verify2FACodeLogin: async function(email, code, tempToken) {
         this._verifyTwoFactorAuthBtn.disabled = true;
         this._verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
 
+        let result;
+        if (mode === 'login') {
+            result = await this.verify2FACodeLogin(this._tempUserEmail, token); // DÜZELTME: email parametresi eklendi
+        } else if (mode === 'setup') {
+            result = await this.verify2FACodeSetup(this._setupUserEmail, token, this._setupJwtToken); // DÜZELTME: email parametresi eklendi
+        } else if (mode === 'recovery') {
+            result = await this.verifyRecoveryCode(this._tempUserEmail, token); // DÜZELTME: email parametresi eklendi
+        }
+
+        if (result.success) {
+            this._showMessage(result.message, 'success');
+            this.hide2FAModal();
+            // Başarılı doğrulama sonrası yönlendirme veya işlem auth.js'de yapılmalı
+        } else {
+            this._showMessage(result.message, 'error');
+        }
+
+        this._verifyTwoFactorAuthBtn.disabled = false;
+        this._verifyTwoFactorAuthBtn.innerHTML = 'Kodu Doğrula';
+    },
+
+    /**
+     * Giriş akışında 2FA kodunu doğrular.
+     * @param {string} email - Kullanıcının e-posta adresi.
+     * @param {string} token - Kullanıcının girdiği 2FA kodu.
+     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
+     */
+    verify2FACodeLogin: async function(email, token) { // DÜZELTME: email parametresi eklendi
         try {
             const response = await fetch(`${this._API_BASE_URL}/2fa/verify-login-code`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${tempToken}`
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, code })
+                body: JSON.stringify({ email: email, token: token }) // DÜZELTME: email gönderiliyor
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || '2FA doğrulama başarısız oldu.');
+                throw new Error(result.message || '2FA kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, token: result.token, userId: result.userId, email: result.email };
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified };
 
         } catch (error) {
             console.error('2FA doğrulama hatası:', error);
-            this._showMessage(`2FA doğrulama sırasında bir hata oluştu: ${error.message}`, 'error');
             return { success: false, message: error.message };
-        } finally {
-            this._verifyTwoFactorAuthBtn.disabled = false;
-            this._verifyTwoFactorAuthBtn.innerHTML = 'Kodu Doğrula';
         }
     },
 
     /**
-     * 2FA Etkinleştirme kodunu doğrular.
-     * @param {string} email - Kullanıcının e-posta adresi
-     * @param {string} code - Kullanıcının girdiği doğrulama kodu
-     * @param {string} jwtToken - Kullanıcının ana JWT tokenı (kimlik doğrulaması için)
-     * @returns {Object} Doğrulama sonucu (success: boolean, message: string, recoveryCodes?: string[])
+     * 2FA kurulum akışında 2FA kodunu doğrular.
+     * @param {string} email - Kullanıcının e-posta adresi.
+     * @param {string} token - Kullanıcının girdiği 2FA kodu.
+     * @param {string} jwtToken - Kullanıcının JWT tokenı.
+     * @returns {Object} İşlem sonucu (success: boolean, message: string, recoveryCodes: array)
      */
-    verify2FACodeSetup: async function(email, code, jwtToken) {
-        this._verifyTwoFactorAuthBtn.disabled = true;
-        this._verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Etkinleştiriliyor...';
-
+    verify2FACodeSetup: async function(email, token, jwtToken) {
         try {
-            const response = await fetch(`${this._API_BASE_URL}/2fa/verify`, {
+            const response = await fetch(`${this._API_BASE_URL}/2fa/verify-enable`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${jwtToken}`
                 },
-                body: JSON.stringify({ email, code })
+                body: JSON.stringify({ userId: localStorage.getItem('userId'), token: token })
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || '2FA etkinleştirme doğrulama başarısız oldu.');
+                throw new Error(result.message || '2FA kurulumu doğrulanamadı.');
             }
+
             return { success: true, message: result.message, recoveryCodes: result.recoveryCodes };
 
         } catch (error) {
-            console.error('2FA etkinleştirme doğrulama hatası:', error);
-            this._showMessage(`2FA etkinleştirme sırasında bir hata oluştu: ${error.message}`, 'error');
+            console.error('2FA kurulum doğrulama hatası:', error);
             return { success: false, message: error.message };
-        } finally {
-            this._verifyTwoFactorAuthBtn.disabled = false;
-            this._verifyTwoFactorAuthBtn.innerHTML = '2FA\'yı Etkinleştir';
         }
     },
 
     /**
-     * Kurtarma kodunu doğrular.
+     * Kurtarma kodu ile girişi doğrular.
+     * @param {string} email - Kullanıcının e-posta adresi.
+     * @param {string} recoveryCode - Kullanıcının girdiği kurtarma kodu.
+     * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
      */
-    verifyRecoveryCode: async function(email, recoveryCode, tempToken) {
-        this._verifyTwoFactorAuthBtn.disabled = true;
-        this._verifyTwoFactorAuthBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
-
+    verifyRecoveryCode: async function(email, recoveryCode) { // DÜZELTME: email parametresi eklendi
         try {
             const response = await fetch(`${this._API_BASE_URL}/2fa/verify-recovery-code`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${tempToken}`
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, recoveryCode })
+                body: JSON.stringify({ email: email, recoveryCode: recoveryCode }) // DÜZELTME: email gönderiliyor
             });
 
             const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(result.message || 'Kurtarma kodu doğrulama başarısız oldu.');
+                throw new Error(result.message || 'Kurtarma kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, token: result.token, userId: result.userId, email: result.email };
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified };
 
         } catch (error) {
             console.error('Kurtarma kodu doğrulama hatası:', error);
-            this._showMessage(`Kurtarma kodu doğrulama sırasında bir hata oluştu: ${error.message}`, 'error');
             return { success: false, message: error.message };
-        } finally {
-            this._verifyTwoFactorAuthBtn.disabled = false;
-            this._verifyTwoFactorAuthBtn.innerHTML = 'Kurtarma Kodu ile Doğrula';
         }
     },
 
     /**
-     * 2FA kodunu tekrar gönderir. (Public metot olarak eklendi)
-     * @param {string} email - Kullanıcının e-posta adresi
-     * @param {string} token - Kullanıcının JWT tokenı
+     * Tekrar gönder butonuna tıklandığında çalışır.
+     */
+    _handleResendButtonClick: async function() {
+        const email = this._tempUserEmail; // DÜZELTME: email parametresi kullanılıyor
+        if (!email) {
+            this._showMessage('E-posta adresi bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+            return;
+        }
+        const result = await this.resend2FACode(email, this._tempJwtToken); // DÜZELTME: email parametresi eklendi
+        if (!result.success) {
+            this._showMessage(result.message, 'error');
+        }
+    },
+
+    /**
+     * 2FA kodunu tekrar gönderir.
+     * @param {string} email - Kullanıcının e-posta adresi.
+     * @param {string} token - Kullanıcının JWT tokenı (opsiyonel, giriş sonrası için).
      * @returns {Object} İşlem sonucu (success: boolean, message: string)
      */
-    resend2FACode: async function(email, token) {
+    resend2FACode: async function(email, token) { // DÜZELTME: email parametresi eklendi
         this._resendTwoFactorAuthCodeBtn.disabled = true;
         this._resendTwoFactorAuthCodeBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Gönderiliyor...';
 
@@ -313,9 +255,9 @@ export const TwoFactorAuthHandler = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    // 'Authorization': `Bearer ${token}` // send-code rotası authenticateToken kullanmıyor
                 },
-                body: JSON.stringify({ email: email })
+                body: JSON.stringify({ email: email }) // DÜZELTME: email gönderiliyor
             });
 
             const result = await response.json();
@@ -332,8 +274,37 @@ export const TwoFactorAuthHandler = {
             this._showMessage(`Kod tekrar gönderilirken bir hata oluştu: ${error.message}`, 'error');
             return { success: false, message: error.message };
         } finally {
-            this._resendTwoFactorAuthCodeBtn.disabled = false;
-            this._resendTwoFactorAuthCodeBtn.innerHTML = 'Kodu Tekrar Gönder';
+            this._resendTwoFactorAuthAuthBtn.disabled = false;
+            this._resendTwoFactorAuthAuthBtn.innerHTML = 'Kodu Tekrar Gönder';
         }
-    }
+    },
+
+    /**
+     * Kurtarma kodu kullan butonuna tıklandığında çalışır.
+     */
+    _handleUseRecoveryCodeClick: function() {
+        if (this._twoFactorAuthModalTitle) {
+            this._twoFactorAuthModalTitle.textContent = 'Kurtarma Kodu Kullan';
+        }
+        if (this._twoFactorAuthCodeInput) {
+            this._twoFactorAuthCodeInput.value = '';
+            this._twoFactorAuthCodeInput.placeholder = 'Kurtarma Kodunuz';
+            this._twoFactorAuthCodeInput.maxLength = 20; // Kurtarma kodları daha uzun olabilir
+        }
+        if (this._verifyTwoFactorAuthBtn) {
+            this._verifyTwoFactorAuthBtn.textContent = 'Kodu Doğrula';
+            this._verifyTwoFactorAuthBtn.dataset.mode = 'recovery'; // Modu kurtarma olarak ayarla
+        }
+        if (this._resendTwoFactorAuthCodeBtn) {
+            this._resendTwoFactorAuthCodeBtn.style.display = 'none'; // Tekrar gönder butonunu gizle
+        }
+        if (this._useRecoveryCodeBtn) {
+            this._useRecoveryCodeBtn.style.display = 'none'; // Kurtarma kodu kullan butonunu gizle
+        }
+    },
+
+    // auth.js tarafından çağrılan yardımcı fonksiyonlar
+    // showRecoveryCodeInput: function() { // Bu fonksiyon artık _handleUseRecoveryCodeClick tarafından yönetiliyor
+    //     this._handleUseRecoveryCodeClick();
+    // }
 };
