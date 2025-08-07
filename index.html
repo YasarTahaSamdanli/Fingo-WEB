@@ -392,12 +392,6 @@
         const initialJwtToken = localStorage.getItem('jwtToken');
         const initialUserId = localStorage.getItem('userId');
 
-        // Eğer token veya userId yoksa, kullanıcıyı giriş sayfasına yönlendir
-        if (!initialJwtToken || !initialUserId) {
-            console.warn("No JWT token or userId found. Redirecting to login.");
-            window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
-        }
-
         // JWT Token'ı çözümleme fonksiyonu
         function parseJwt (token) {
             try {
@@ -415,16 +409,31 @@
 
         // Token'ı çöz ve geçerliliğini kontrol et
         const decodedToken = parseJwt(initialJwtToken);
-        console.log("Decoded JWT Token:", decodedToken); // Yeni log
+        console.log("Index.html - Decoded JWT Token:", decodedToken); // Yeni log
 
-        // DÜZELTME: 2FA etkinse ve doğrulanmamışsa da giriş sayfasına yönlendir
-        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId || (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified)) {
-            console.warn("JWT invalid, expired, user mismatch, or 2FA not verified. Redirecting to login.");
+        const isTokenPresent = !!initialJwtToken;
+        const isUserIdPresent = !!initialUserId;
+        const isTokenExpired = decodedToken ? (decodedToken.exp * 1000 < Date.now()) : true;
+        const isUserIdMismatch = decodedToken ? (decodedToken.userId !== initialUserId) : true;
+        const is2FARequiredButNotVerified = decodedToken ? (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified) : false;
+
+        console.log("Index.html - Auth Check Results:"); // Yeni log
+        console.log("  - isTokenPresent:", isTokenPresent);
+        console.log("  - isUserIdPresent:", isUserIdPresent);
+        console.log("  - isTokenExpired:", isTokenExpired);
+        console.log("  - isUserIdMismatch:", isUserIdMismatch);
+        console.log("  - is2FARequiredButNotVerified:", is2FARequiredButNotVerified);
+
+
+        if (!isTokenPresent || !isUserIdPresent || isTokenExpired || isUserIdMismatch || is2FARequiredButNotVerified) {
+            console.warn("Index.html - Authentication check failed. Redirecting to login.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('fingoNotifications');
-            window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
+            window.location.href = '/Fingo-WEB/auth.html';
+        } else {
+            console.log("Index.html - Authentication check passed. User is authenticated."); // Yeni log
         }
 
         // DOMContentLoaded olayı, tüm HTML yüklendikten sonra tetiklenir
@@ -624,13 +633,13 @@
             }
 
             function handleAuthError() {
-                console.error("Authentication error detected. Redirecting to login page."); // Yeni log
+                console.error("Authentication error detected. Redirecting to login page.");
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('userId');
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('fingoNotifications');
-                window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
+                window.location.href = '/Fingo-WEB/auth.html';
             }
 
             // Genel Finansal Özeti Çek

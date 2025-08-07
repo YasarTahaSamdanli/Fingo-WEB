@@ -188,7 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('jwtToken', result.token);
                         localStorage.setItem('userId', result.userId);
                         localStorage.setItem('userEmail', email);
-                        console.log("Initial login token and user info stored in localStorage."); // Yeni log
+                        console.log("Initial login token and user info stored in localStorage.");
+                        console.log("Stored initial JWT Token:", localStorage.getItem('jwtToken')); // Yeni log
+                        console.log("Stored initial User ID:", localStorage.getItem('userId')); // Yeni log
                         return;
                     }
                     throw new Error(result.message || 'Giriş başarısız oldu.');
@@ -197,8 +199,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('jwtToken', result.token);
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('userEmail', email);
-                console.log("Login successful. Token and user info stored in localStorage."); // Yeni log
-                showMessageBox(result.message, 'success');
+                console.log("Login successful. Token and user info stored in localStorage.");
+                console.log("Stored JWT Token after successful login:", localStorage.getItem('jwtToken')); // Yeni log
+                console.log("Stored User ID after successful login:", localStorage.getItem('userId')); // Yeni log
+
                 setTimeout(() => {
                     window.location.href = '/Fingo-WEB/index.html';
                 }, 500);
@@ -251,11 +255,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("2FA verification result:", verificationResult);
 
                 if (verificationResult.success) {
-                    // Düzeltme: Backend'den gelen yeni token, userId ve email'i kullan
                     localStorage.setItem('jwtToken', verificationResult.token);
                     localStorage.setItem('userId', verificationResult.userId);
                     localStorage.setItem('userEmail', verificationResult.email);
                     console.log("2FA verification successful. New token and user info stored in localStorage."); // Yeni log
+                    console.log("Stored JWT Token after 2FA verification:", localStorage.getItem('jwtToken')); // Yeni log
+                    console.log("Stored User ID after 2FA verification:", localStorage.getItem('userId')); // Yeni log
 
                     showMessageBox('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
                     TwoFactorAuthHandler.hide2FAModal();
