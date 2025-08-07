@@ -24,7 +24,7 @@ const app = express();
 console.log('Uygulama başlatılıyor...');
 
 // ÖNEMLİ: CORS middleware'i, diğer tüm middleware'lerden ve rota tanımlamalarından ÖNCE gelmeli.
-// CORS seçeneklerini daha açık belirtelim
+// Daha agresif CORS seçenekleri
 const corsOptions = {
     origin: '*', // Tüm kaynaklardan gelen isteklere izin ver
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // İzin verilen HTTP metotları
@@ -33,11 +33,21 @@ const corsOptions = {
     optionsSuccessStatus: 200 // Bazı eski tarayıcılar 204 yerine 200 bekler
 };
 
+// Tüm isteklere CORS başlıklarını ekleyen custom middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Tüm kaynaklara izin ver
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgileri için
+    next();
+});
+console.log('Manuel CORS başlıkları middleware uygulandı.');
+
+// express-cors middleware'ini de kullanalım, çakışma olursa bu daha spesifik olabilir
 app.use(cors(corsOptions));
-console.log('CORS middleware uygulandı.');
+console.log('express-cors middleware uygulandı.');
 
 // Preflight (OPTIONS) isteklerini manuel olarak ele al
-// Bu, özellikle karmaşık CORS senaryolarında (custom headers, non-simple methods) yardımcı olabilir.
 app.options('*', cors(corsOptions));
 console.log('OPTIONS preflight handler uygulandı.');
 
@@ -52,7 +62,6 @@ connectDB(process.env.MONGODB_URI)
         console.log('MongoDB bağlantısı başarılı.');
 
         // Rotaları tanımla
-        // Her rota modülünü kendi prefix'i altında kullan
         app.use('/api', authRoutes);
         app.use('/api', productRoutes);
         app.use('/api', salesRoutes);
