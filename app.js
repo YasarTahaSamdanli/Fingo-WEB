@@ -29,8 +29,9 @@ app.use(cors({ // CORS ayarları
     allowedHeaders: ['Content-Type', 'Authorization'], // İzin verilen HTTP başlıkları
 }));
 
-// Statik dosyaları sunma (public klasöründeki HTML, CSS, JS dosyaları)
-app.use(express.static('public'));
+// ÖNEMLİ: Statik dosyaları sunma satırı Render için kaldırıldı.
+// Bu görev artık GitHub Pages'ta. Backend sadece API isteklerini karşılayacak.
+// app.use(express.static('public')); // Bu satır kaldırıldı veya yorum satırı yapıldı.
 
 // Veritabanı bağlantısını başlat
 connectDB(process.env.MONGODB_URI)
@@ -59,3 +60,4 @@ connectDB(process.env.MONGODB_URI)
         console.error("Uygulama başlatılırken hata oluştu:", error);
         process.exit(1); // Hata durumunda uygulamayı sonlandır
     });
+
