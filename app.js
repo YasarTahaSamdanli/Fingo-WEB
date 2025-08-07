@@ -34,22 +34,23 @@ const corsOptions = {
 };
 
 // Tüm isteklere CORS başlıklarını ekleyen custom middleware
+// Bu middleware, herhangi bir isteğin (preflight dahil) başında çalışır ve CORS başlıklarını ekler.
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // Tüm kaynaklara izin ver
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgileri için
+    // Preflight isteği ise, hemen yanıt ver
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
     next();
 });
-console.log('Manuel CORS başlıkları middleware uygulandı.');
+console.log('Manuel CORS başlıkları ve OPTIONS preflight handler uygulandı.');
 
 // express-cors middleware'ini de kullanalım, çakışma olursa bu daha spesifik olabilir
 app.use(cors(corsOptions));
 console.log('express-cors middleware uygulandı.');
-
-// Preflight (OPTIONS) isteklerini manuel olarak ele al
-app.options('*', cors(corsOptions));
-console.log('OPTIONS preflight handler uygulandı.');
 
 // JSON istek gövdelerini ayrıştırmak için middleware
 app.use(express.json({ limit: '50mb' }));
