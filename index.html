@@ -394,6 +394,7 @@
 
         // Eğer token veya userId yoksa, kullanıcıyı giriş sayfasına yönlendir
         if (!initialJwtToken || !initialUserId) {
+            console.warn("No JWT token or userId found. Redirecting to login.");
             window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
         }
 
@@ -414,8 +415,11 @@
 
         // Token'ı çöz ve geçerliliğini kontrol et
         const decodedToken = parseJwt(initialJwtToken);
-        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
-            console.warn("JWT invalid or expired. Redirecting to login.");
+        console.log("Decoded JWT Token:", decodedToken); // Yeni log
+
+        // DÜZELTME: 2FA etkinse ve doğrulanmamışsa da giriş sayfasına yönlendir
+        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId || (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified)) {
+            console.warn("JWT invalid, expired, user mismatch, or 2FA not verified. Redirecting to login.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
             localStorage.removeItem('userEmail');
@@ -440,8 +444,8 @@
             // Header butonları
             const loggedInUserSpan = document.getElementById('loggedInUser');
             const logoutBtn = document.getElementById('logoutBtn');
-            const profileManagementBtn = document.getElementById('profileManagementBtn'); // Yeni eklendi
-            const loggedInUserMainSpan = document.getElementById('loggedInUserMain'); // Ana içerik başlığındaki kullanıcı adı
+            const profileManagementBtn = document.getElementById('profileManagementBtn');
+            const loggedInUserMainSpan = document.getElementById('loggedInUserMain');
 
             // Yan menü butonları
             const goToDashboardBtn = document.getElementById('goToDashboardBtn');
@@ -620,6 +624,7 @@
             }
 
             function handleAuthError() {
+                console.error("Authentication error detected. Redirecting to login page."); // Yeni log
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('userId');
@@ -637,13 +642,11 @@
                     return;
                 }
                 try {
-                    // DÜZELTME: Doğru API rotasını kullan
                     const response = await fetch(`${API_BASE_URL}/financial-summary/general?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                     if (!response.ok) {
-                        // Hata yanıtının JSON olduğunu varsayarak parse etmeye çalış
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
                     }
@@ -660,7 +663,7 @@
             // İşlemleri Çek ve Listele
             async function fetchTransactions(filters = {}) {
                 if (loadingTransactionsRow) loadingTransactionsRow.style.display = 'table-row';
-                if (transactionsTableBody) transactionsTableBody.innerHTML = ''; // Önceki verileri temizle
+                if (transactionsTableBody) transactionsTableBody.innerHTML = '';
 
                 const token = getToken();
                 const userId = getUserId();
@@ -685,7 +688,7 @@
                     }
                     const transactions = await response.json();
 
-                    if (transactionsTableBody) transactionsTableBody.innerHTML = ''; // Yükleniyor mesajını kaldır
+                    if (transactionsTableBody) transactionsTableBody.innerHTML = '';
 
                     if (transactions.length === 0) {
                         const noDataRow = document.createElement('tr');
@@ -715,7 +718,6 @@
                         if (transactionsTableBody) transactionsTableBody.appendChild(row);
                     });
 
-                    // Düzenle ve Sil butonlarına olay dinleyicileri ekle
                     document.querySelectorAll('.edit-btn').forEach(button => {
                         button.addEventListener('click', (e) => editTransaction(e.currentTarget.dataset.id));
                     });
@@ -738,7 +740,7 @@
                     e.preventDefault();
                     const formData = new FormData(transactionForm);
                     const transactionData = Object.fromEntries(formData.entries());
-                    transactionData.amount = parseFloat(transactionData.amount); // Miktarı sayıya çevir
+                    transactionData.amount = parseFloat(transactionData.amount);
 
                     const token = getToken();
                     const userId = getUserId();
@@ -770,8 +772,8 @@
 
                         addNotification(result.message, 'success');
                         resetForm();
-                        fetchTransactions(); // İşlemleri yeniden çek
-                        fetchGeneralFinancialSummary(); // Genel özeti güncelle
+                        fetchTransactions();
+                        fetchGeneralFinancialSummary();
                     } catch (error) {
                         console.error('İşlem ekleme/güncelleme hatası:', error);
                         addNotification(`İşlem eklenirken/güncellenirken hata: ${error.message}`, 'error');
@@ -815,7 +817,6 @@
 
             // İşlem Sil
             async function deleteTransaction(id) {
-                // Confirm dialog yerine custom modal kullanılmalı
                 const confirmDelete = confirm("Bu işlemi silmek istediğinizden emin misiniz?");
                 if (!confirmDelete) return;
 
@@ -837,8 +838,8 @@
                     }
 
                     addNotification(result.message, 'success');
-                    fetchTransactions(); // İşlemleri yeniden çek
-                    fetchGeneralFinancialSummary(); // Genel özeti güncelle
+                    fetchTransactions();
+                    fetchGeneralFinancialSummary();
                 } catch (error) {
                     console.error('İşlem silme hatası:', error);
                     addNotification(`İşlem silinirken hata: ${error.message}`, 'error');
@@ -851,7 +852,6 @@
                 if (transactionForm) delete transactionForm.dataset.editingId;
                 if (transactionForm) transactionForm.querySelector('button[type="submit"]').textContent = 'İşlem Ekle';
                 if (resetFormBtn) resetFormBtn.textContent = 'İptal';
-                // Tarih alanına bugünün tarihini otomatik olarak ayarla
                 if (transactionDateInput) transactionDateInput.valueAsDate = new Date();
             }
 
@@ -922,7 +922,7 @@
 
             function populateCategoryDropdowns(categories) {
                 if (categorySelect) categorySelect.innerHTML = '';
-                if (filterCategorySelect) filterCategorySelect.innerHTML = '<option value="">Tümü</option>'; // Filtre için "Tümü" seçeneği
+                if (filterCategorySelect) filterCategorySelect.innerHTML = '<option value="">Tümü</option>';
                 categories.forEach(cat => {
                     const option = document.createElement('option');
                     option.value = cat.name;
@@ -982,7 +982,7 @@
                         if (categoryForm) delete categoryForm.dataset.editingId;
                         if (categoryForm) categoryForm.querySelector('button[type="submit"]').textContent = 'Kaydet';
                         if (cancelCategoryEditBtn) cancelCategoryEditBtn.style.display = 'none';
-                        fetchCategories(); // Kategorileri yeniden çek
+                        fetchCategories();
                     } catch (error) {
                         console.error('Kategori ekleme/güncelleme hatası:', error);
                         addNotification(`Kategori işlemi yapılırken hata: ${error.message}`, 'error');
@@ -1000,7 +1000,6 @@
             }
 
             async function deleteCategory(id) {
-                // Confirm dialog yerine custom modal kullanılmalı
                 const confirmDelete = confirm("Bu kategoriyi silmek istediğinizden emin misiniz? Bu kategoriye ait tüm işlemler de etkilenecektir.");
                 if (!confirmDelete) return;
 
@@ -1022,8 +1021,8 @@
                     }
 
                     addNotification(result.message, 'success');
-                    fetchCategories(); // Kategorileri yeniden çek
-                    fetchTransactions(); // İşlemleri de güncelle
+                    fetchCategories();
+                    fetchTransactions();
                 } catch (error) {
                     console.error('Kategori silme hatası:', error);
                     addNotification(`Kategori silinirken hata: ${error.message}`, 'error');
@@ -1046,7 +1045,7 @@
             if (resetFilterBtn) {
                 resetFilterBtn.addEventListener('click', () => {
                     if (filterForm) filterForm.reset();
-                    fetchTransactions(); // Filtreleri sıfırlayıp tüm işlemleri çek
+                    fetchTransactions();
                 });
             }
 
@@ -1059,7 +1058,6 @@
                     return;
                 }
                 try {
-                    // DÜZELTME: Doğru API rotasını kullan
                     const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1088,7 +1086,7 @@
                 const labels = data.map(item => `${item.month}/${item.year}`);
                 const incomeData = data.map(item => item.income);
                 const expenseData = data.map(item => item.expense);
-                const cumulativeBalanceData = data.map(item => item.netBalance); // Net bakiye kullanıldı
+                const cumulativeBalanceData = data.map(item => item.netBalance);
 
                 monthlyChart = new Chart(monthlySummaryChartCtx, {
                     type: 'line',
@@ -1140,7 +1138,6 @@
                     return;
                 }
                 try {
-                    // DÜZELTME: Doğru API rotasını kullan
                     const response = await fetch(`${API_BASE_URL}/financial-summary/annual?year=${year}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1169,7 +1166,7 @@
                 const labels = data.map(item => item.year);
                 const incomeData = data.map(item => item.income);
                 const expenseData = data.map(item => item.expense);
-                const netBalanceData = data.map(item => item.netBalance); // Yıllık özette net bakiye
+                const netBalanceData = data.map(item => item.netBalance);
 
                 annualChart = new Chart(annualSummaryChartCtx, {
                     type: 'bar',
@@ -1208,9 +1205,8 @@
             // Ay ve Yıl Dropdownlarını Doldur
             function populateMonthYearDropdowns() {
                 const currentYear = new Date().getFullYear();
-                const currentMonth = new Date().getMonth(); // 0-11 arası
+                const currentMonth = new Date().getMonth();
 
-                // Yıl doldurma (geçmiş 5 yıl ve gelecek 1 yıl)
                 for (let i = currentYear - 5; i <= currentYear + 1; i++) {
                     const optionMonth = document.createElement('option');
                     optionMonth.value = i;
@@ -1225,14 +1221,13 @@
                 if (yearSelect) yearSelect.value = currentYear;
                 if (annualYearSelect) annualYearSelect.value = currentYear;
 
-                // Ay doldurma
                 const months = [
                     "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
                     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
                 ];
                 months.forEach((month, index) => {
                     const option = document.createElement('option');
-                    option.value = index; // Ay indeksi (0'dan başlar)
+                    option.value = index;
                     option.textContent = month;
                     if (monthSelect) monthSelect.appendChild(option);
                 });
@@ -1248,7 +1243,6 @@
                     return;
                 }
                 try {
-                    // DÜZELTME: Doğru API rotasını kullan
                     const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1258,11 +1252,8 @@
                         throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
                     }
                     const data = await response.json();
-                    // Bu bilgiyi burada kullanmıyoruz, sadece API'nin çalıştığını kontrol etmek için çağırılıyor.
-                    // Detaylı 2FA durumu profile.html sayfasında gösterilecek.
                 } catch (error) {
                     console.error('Kullanıcı bilgileri çekilirken hata:', error);
-                    // addNotification(`Kullanıcı bilgileri yüklenirken hata: ${error.message}`, 'error');
                 }
             }
 
@@ -1316,44 +1307,42 @@
             // Sayfa Yönlendirme Butonları
             if (goToDashboardBtn) {
                 goToDashboardBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/index.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/index.html';
                     closeSidebar();
                 });
             }
             if (manageProductsBtn) {
                 manageProductsBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/products.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/products.html';
                     closeSidebar();
                 });
             }
             if (goToSalesManagementBtn) {
                 goToSalesManagementBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/sales_management.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/sales_management.html';
                     closeSidebar();
                 });
             }
             if (manageRecurringTransactionsBtn) {
                 manageRecurringTransactionsBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/index.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/index.html';
                     closeSidebar();
                 });
             }
             if (viewReportsBtn) {
                 viewReportsBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/reports.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/reports.html';
                     closeSidebar();
                 });
             }
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', () => {
-                    // CSV dışa aktarma mantığı buraya gelecek
                     addNotification('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
             if (importCsvBtn) {
                 importCsvBtn.addEventListener('click', () => {
-                    // CSV içe aktarma mantığı buraya gelecek
                     addNotification('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
@@ -1374,14 +1363,14 @@
                     localStorage.removeItem('userId');
                     localStorage.removeItem('userEmail');
                     localStorage.removeItem('fingoNotifications');
-                    window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
+                    window.location.href = '/Fingo-WEB/auth.html';
                 });
             }
 
-            // Profil Yönetimi Butonu - DÜZELTME: profile.html sayfasına yönlendir
+            // Profil Yönetimi Butonu
             if (profileManagementBtn) {
                 profileManagementBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/profile.html'; // Yeni profil sayfasına yönlendirme
+                    window.location.href = '/Fingo-WEB/profile.html';
                 });
             }
 
@@ -1397,8 +1386,8 @@
             fetchMonthlySummary(currentYear, currentMonth);
             fetchAnnualSummary(currentYear);
             fetchCategories();
-            fetchUser2FAStatus(); // Bu çağrı artık sadece API'nin çalıştığını kontrol etmek için, detaylar profile.html'de.
-        }); // DOMContentLoaded BLOĞUNUN SONU
+            fetchUser2FAStatus();
+        });
     </script>
 </body>
 </html>
