@@ -50,6 +50,19 @@ connectDB(process.env.MONGODB_URI)
         app.use('/api', categoryRoutes);
         app.use('/api/reports', reportsRoutes); // Yeni eklenen: Raporlar rotalarını /api/reports altında kullan
 
+        // Tanımlanmamış API rotaları için 404 JSON yanıtı döndür
+        // Bu middleware, sadece /api ile başlayan ancak yukarıdaki rotalara uymayan istekleri yakalar.
+        app.use('/api/*', (req, res) => {
+            res.status(404).json({ message: 'API Rotası Bulunamadı.' });
+        });
+
+        // Diğer tüm tanımlanmamış rotalar için genel 404 yanıtı (HTML)
+        // Bu, frontend'den API dışı bir URL'e yanlışlıkla gidilirse devreye girer.
+        app.use((req, res) => {
+            res.status(404).send('Sayfa Bulunamadı.');
+        });
+
+
         // Sunucuyu başlat
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, () => {
