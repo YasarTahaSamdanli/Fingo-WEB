@@ -64,10 +64,17 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 2FA Modal için özel stil: Tailwind'in z-50'sinden daha yüksek bir z-index */
+        /* DÜZELTME: 2FA Modal için daha agresif stil */
         #twoFactorAuthModal {
-            z-index: 9999; /* Tüm diğer elementlerin üzerinde olmalı */
+            z-index: 99999; /* Çok yüksek bir z-index */
             background-color: rgba(0, 0, 0, 0.7); /* Daha koyu ve opak arka plan */
+            opacity: 1 !important; /* Opaklığı zorla */
+            visibility: visible !important; /* Görünürlüğü zorla */
+            display: flex !important; /* Display'i zorla */
+        }
+        /* Başlangıçta gizlemek için bu kuralı kullanacağız */
+        .modal-hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -79,7 +86,7 @@
         <!-- Giriş ve Kayıt Formları -->
         <div id="authForms">
             <!-- Giriş Formu -->
-            <div id="loginForm" class="space-y-4">
+            <form id="loginForm" class="space-y-4">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Giriş Yap</h2>
                 <div>
                     <label for="loginEmail" class="block text-gray-700 text-sm font-medium mb-1">E-posta:</label>
@@ -89,12 +96,12 @@
                     <label for="loginPassword" class="block text-gray-700 text-sm font-medium mb-1">Parola:</label>
                     <input type="password" id="loginPassword" placeholder="Parolanız" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
                 </div>
-                <button id="loginBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Giriş Yap</button>
-                <p class="text-center text-sm text-gray-600 mt-4">Hesabın yok mu? <a href="#" id="showRegister" class="text-blue-600 hover:underline">Kayıt Ol</a></p>
-            </div>
+                <button type="submit" id="loginBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Giriş Yap</button>
+                <p class="text-center text-sm text-gray-600 mt-4">Hesabın yok mu? <a href="#" id="showRegisterBtn" class="text-blue-600 hover:underline">Kayıt Ol</a></p>
+            </form>
 
             <!-- Kayıt Formu (Başlangıçta Gizli) -->
-            <div id="registerForm" class="space-y-4 hidden">
+            <form id="registerForm" class="space-y-4 hidden">
                 <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Kayıt Ol</h2>
                 <div>
                     <label for="registerEmail" class="block text-gray-700 text-sm font-medium mb-1">E-posta:</label>
@@ -108,13 +115,14 @@
                     <label for="confirmPassword" class="block text-gray-700 text-sm font-medium mb-1">Parola Tekrar:</label>
                     <input type="password" id="confirmPassword" placeholder="Parolanızı tekrar girin" class="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm">
                 </div>
-                <button id="registerBtn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors w-full text-sm">Kayıt Ol</button>
-                <p class="text-center text-sm text-gray-600 mt-4">Zaten hesabın var mı? <a href="#" id="showLogin" class="text-blue-600 hover:underline">Giriş Yap</a></p>
-            </div>
+                <button type="submit" id="registerBtn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors w-full text-sm">Kayıt Ol</button>
+                <p class="text-center text-sm text-gray-600 mt-4">Zaten hesabın var mı? <a href="#" id="showLoginFormBtn" class="text-blue-600 hover:underline">Giriş Yap</a></p>
+            </form>
         </div>
 
         <!-- 2FA Kodu Giriş Modalı -->
-        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
+        <!-- DÜZELTME: Başlangıçta 'modal-hidden' sınıfı ile gizli, JavaScript ile kaldırılacak -->
+        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50 modal-hidden">
             <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200 relative">
                 <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
                 <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-blue-700 mb-6 text-center">İki Faktörlü Kimlik Doğrulama</h2>
@@ -125,9 +133,9 @@
                     <label for="twoFactorAuthCode" class="block text-gray-700 text-sm font-medium mb-1">Doğrulama Kodu:</label>
                     <input type="text" id="twoFactorAuthCode" placeholder="######" maxlength="16" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-center tracking-widest">
                 </div>
-                <button id="verifyTwoFactorAuthBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm mt-4">Kodu Doğrula</button>
-                <button id="resendTwoFactorAuthCodeBtn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm mt-2">Kodu Tekrar Gönder</button>
-                <button id="useRecoveryCodeBtn" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors w-full text-sm mt-2">Kurtarma Kodu Kullan</button>
+                <button type="button" id="verifyTwoFactorAuthBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm mt-4">Kodu Doğrula</button>
+                <button type="button" id="resendTwoFactorAuthCodeBtn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm mt-2">Kodu Tekrar Gönder</button>
+                <button type="button" id="useRecoveryCodeBtn" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors w-full text-sm mt-2">Kurtarma Kodu Kullan</button>
             </div>
         </div>
 

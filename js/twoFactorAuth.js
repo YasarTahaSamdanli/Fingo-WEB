@@ -28,7 +28,8 @@ export const TwoFactorAuthHandler = {
         this._resendTwoFactorAuthCodeBtn = config.resendTwoFactorAuthCodeBtn;
         this._useRecoveryCodeBtn = config.useRecoveryCodeBtn;
         this._twoFactorAuthModalTitle = config.twoFactorAuthModalTitle;
-        this._showMessage = config.showMessage; // showMessage fonksiyonunu dışarıdan al
+        this._twoFactorAuthMessage = config.twoFactorAuthMessage; // Mesaj elementini alıyoruz
+        this._showMessage = config.showMessage;
 
         this._API_BASE_URL = config.apiBaseUrl;
 
@@ -59,33 +60,33 @@ export const TwoFactorAuthHandler = {
         console.log("2FA Modal element found:", this._twoFactorAuthModal);
 
         this._tempUserEmail = userEmail;
-        this._tempJwtToken = jwtToken; // Giriş akışı için token
-        this._setupUserEmail = userEmail; // Kurulum akışı için e-posta
-        this._setupJwtToken = jwtToken; // Kurulum akışı için token
+        this._tempJwtToken = jwtToken;
+        this._setupUserEmail = userEmail;
+        this._setupJwtToken = jwtToken;
 
         if (this._twoFactorAuthModalTitle) {
             this._twoFactorAuthModalTitle.textContent = mode === 'login' ? 'İki Faktörlü Kimlik Doğrulama' : '2FA Kurulumu';
         }
         if (this._twoFactorAuthCodeInput) {
-            this._twoFactorAuthCodeInput.value = ''; // Kodu temizle
+            this._twoFactorAuthCodeInput.value = '';
             this._twoFactorAuthCodeInput.placeholder = '######';
-            this._twoFactorAuthCodeInput.maxLength = 6; // OTP kodları 6 hanelidir
+            this._twoFactorAuthCodeInput.maxLength = 6;
         }
         if (this._verifyTwoFactorAuthBtn) {
             this._verifyTwoFactorAuthBtn.textContent = 'Kodu Doğrula';
-            this._verifyTwoFactorAuthBtn.dataset.mode = mode; // Buton modunu ayarla
+            this._verifyTwoFactorAuthBtn.dataset.mode = mode;
         }
         if (this._resendTwoFactorAuthCodeBtn) {
-            this._resendTwoFactorAuthCodeBtn.style.display = 'block'; // Tekrar gönder butonunu göster
+            this._resendTwoFactorAuthCodeBtn.style.display = 'block';
         }
         if (this._useRecoveryCodeBtn) {
-            this._useRecoveryCodeBtn.style.display = 'block'; // Kurtarma kodu kullan butonunu göster
+            this._useRecoveryCodeBtn.style.display = 'block';
         }
 
-        console.log("Before setting display: Current style.display =", this._twoFactorAuthModal.style.display);
-        this._twoFactorAuthModal.style.display = 'flex';
-        console.log("After setting display: New style.display =", this._twoFactorAuthModal.style.display);
-        console.log("Computed style after setting display:", window.getComputedStyle(this._twoFactorAuthModal).display);
+        // DÜZELTME: 'modal-hidden' sınıfını kaldırarak modalı göster
+        console.log("Before removing 'modal-hidden' class. Current classes:", this._twoFactorAuthModal.classList);
+        this._twoFactorAuthModal.classList.remove('modal-hidden');
+        console.log("After removing 'modal-hidden' class. New classes:", this._twoFactorAuthModal.classList);
     },
 
     /**
@@ -93,7 +94,8 @@ export const TwoFactorAuthHandler = {
      */
     hide2FAModal: function() {
         if (this._twoFactorAuthModal) {
-            this._twoFactorAuthModal.style.display = 'none';
+            // DÜZELTME: 'modal-hidden' sınıfını ekleyerek modalı gizle
+            this._twoFactorAuthModal.classList.add('modal-hidden');
         }
         this._tempUserEmail = null;
         this._tempJwtToken = null;
@@ -130,6 +132,7 @@ export const TwoFactorAuthHandler = {
             this._showMessage(result.message, 'success');
             this.hide2FAModal();
             // Başarılı doğrulama sonrası yönlendirme veya işlem auth.js'de yapılmalı
+            // Bu kısım auth.js'den yönetilecek, burada sadece modalı kapatıyoruz.
         } else {
             this._showMessage(result.message, 'error');
         }
@@ -160,7 +163,7 @@ export const TwoFactorAuthHandler = {
                 throw new Error(result.message || '2FA kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified };
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email }; // Düzeltme: token, userId, email de döndürülüyor
 
         } catch (error) {
             console.error('2FA doğrulama hatası:', error);
@@ -222,7 +225,7 @@ export const TwoFactorAuthHandler = {
                 throw new Error(result.message || 'Kurtarma kodu doğrulanamadı.');
             }
 
-            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified };
+            return { success: true, message: result.message, is2FAVerified: result.is2FAVerified, token: result.token, userId: result.userId, email: result.email }; // Düzeltme: token, userId, email de döndürülüyor
 
         } catch (error) {
             console.error('Kurtarma kodu doğrulama hatası:', error);
