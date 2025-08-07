@@ -51,10 +51,12 @@ export const TwoFactorAuthHandler = {
      * @param {string} mode - 'login' veya 'setup' (varsayılan 'login').
      */
     show2FAModal: function(userEmail, jwtToken = null, mode = 'login') {
+        console.log("show2FAModal called.");
         if (!this._twoFactorAuthModal) {
-            console.error("2FA modal element not found!");
+            console.error("2FA modal element not found in show2FAModal!");
             return;
         }
+        console.log("2FA Modal element found:", this._twoFactorAuthModal);
 
         this._tempUserEmail = userEmail;
         this._tempJwtToken = jwtToken; // Giriş akışı için token
@@ -62,7 +64,7 @@ export const TwoFactorAuthHandler = {
         this._setupJwtToken = jwtToken; // Kurulum akışı için token
 
         if (this._twoFactorAuthModalTitle) {
-            this._twoFactorAuthModalTitle.textContent = mode === 'login' ? 'İki Faktörlü Doğrulama' : '2FA Kurulumu';
+            this._twoFactorAuthModalTitle.textContent = mode === 'login' ? 'İki Faktörlü Kimlik Doğrulama' : '2FA Kurulumu';
         }
         if (this._twoFactorAuthCodeInput) {
             this._twoFactorAuthCodeInput.value = ''; // Kodu temizle
@@ -80,10 +82,10 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'block'; // Kurtarma kodu kullan butonunu göster
         }
 
-        // DÜZELTME: display stilini doğrudan 'flex' olarak ayarla
-        console.log("Attempting to show 2FA modal. Current display style:", this._twoFactorAuthModal.style.display);
+        console.log("Before setting display: Current style.display =", this._twoFactorAuthModal.style.display);
         this._twoFactorAuthModal.style.display = 'flex';
-        console.log("After setting display to 'flex'. New display style:", this._twoFactorAuthModal.style.display);
+        console.log("After setting display: New style.display =", this._twoFactorAuthModal.style.display);
+        console.log("Computed style after setting display:", window.getComputedStyle(this._twoFactorAuthModal).display);
     },
 
     /**
@@ -91,7 +93,6 @@ export const TwoFactorAuthHandler = {
      */
     hide2FAModal: function() {
         if (this._twoFactorAuthModal) {
-            // DÜZELTME: display stilini doğrudan 'none' olarak ayarla
             this._twoFactorAuthModal.style.display = 'none';
         }
         this._tempUserEmail = null;

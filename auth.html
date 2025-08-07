@@ -63,6 +63,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 2FA Modal için özel stil: Tailwind'in z-50'sinden daha yüksek bir z-index */
+        #twoFactorAuthModal {
+            z-index: 9999; /* Tüm diğer elementlerin üzerinde olmalı */
+            background-color: rgba(0, 0, 0, 0.7); /* Daha koyu ve opak arka plan */
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -108,7 +114,6 @@
         </div>
 
         <!-- 2FA Kodu Giriş Modalı -->
-        <!-- DÜZELTME: 'hidden' sınıfı kaldırıldı, yerine 'style="display: none;"' eklendi -->
         <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
             <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200 relative">
                 <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
