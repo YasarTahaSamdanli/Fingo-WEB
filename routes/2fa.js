@@ -5,8 +5,8 @@ const { getDb } = require('../db');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
-const nodemailer = require('nodemailer'); // E-posta gönderimi için
-const bcrypt = require('bcryptjs'); // DÜZELTME: bcrypt eklendi
+const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs');
 
 const router = express.Router();
 
@@ -165,7 +165,7 @@ router.post('/2fa/regenerate-recovery-codes', authenticateToken, async (req, res
     }
 });
 
-// DÜZELTME: Yeni 2FA Giriş Akışı Rotaları Eklendi
+// Yeni 2FA Giriş Akışı Rotaları
 
 // 2FA Kodu Gönderme Rotası (Giriş sırasında)
 router.post('/2fa/send-code', async (req, res) => {
@@ -182,39 +182,34 @@ router.post('/2fa/send-code', async (req, res) => {
             return res.status(400).json({ message: 'Kullanıcı bulunamadı veya 2FA etkin değil.' });
         }
 
-        // Yeni bir 2FA kodu oluştur
         const token = speakeasy.totp({
             secret: user.twoFactorSecret,
             encoding: 'base32'
         });
 
-        // Kodu ve son kullanma tarihini veritabanına kaydet
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 dakika geçerli
         await db.collection('users').updateOne(
             { _id: user._id },
             { $set: { current2FACode: token, twoFACodeExpiresAt: expiresAt } }
         );
 
-        // E-posta gönder
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: 'Fingo - İki Faktörlü Kimlik Doğrulama Kodunuz',
-            html: `
-                <p>Merhaba,</p>
-                <p>Fingo hesabınıza giriş yapmak için 2FA kodunuz: <strong>${token}</strong></p>
-                <p>Bu kod 5 dakika içinde geçerliliğini yitirecektir.</p>
-                <p>Eğer bu isteği siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.</p>
-                <p>Teşekkürler,</p>
-                <p>Fingo Ekibi</p>
-            `
-        };
+        // GEÇİCİ ÇÖZÜM: Gerçek e-posta adresleri olmadığı için Nodemailer'ı devre dışı bırakıyoruz.
+        // const mailOptions = {
+        //     from: process.env.EMAIL_USER,
+        //     to: user.email,
+        //     subject: 'Fingo - İki Faktörlü Kimlik Doğrulama Kodunuz',
+        //     html: `<p>Merhaba,</p><p>Fingo hesabınıza giriş yapmak için 2FA kodunuz: <strong>${token}</strong></p><p>Bu kod 5 dakika içinde geçerliliğini yitirecektir.</p><p>Eğer bu isteği siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.</p><p>Teşekkürler,</p><p>Fingo Ekibi</p>`
+        // };
+        // await transporter.sendMail(mailOptions);
 
-        await transporter.sendMail(mailOptions);
+        // DİKKAT: Backend'de oluşturulan kodu manuel olarak test etmek için bu console.log'u kullanabilirsin.
+        console.log(`2FA Kodu (${user.email} için): ${token}`);
+
         res.status(200).json({ message: '2FA kodu e-posta adresinize gönderildi.' });
 
     } catch (error) {
         console.error('2FA kodu gönderilirken hata:', error);
+        console.error('Nodemailer sendMail error details:', error.response);
         res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
     }
 });
@@ -240,7 +235,6 @@ router.post('/2fa/verify-login-code', async (req, res) => {
         }
 
         if (user.current2FACode === token) {
-            // Kodu kullandıktan sonra temizle
             await db.collection('users').updateOne(
                 { _id: user._id },
                 { $set: { current2FACode: null, twoFACodeExpiresAt: null, is2FAVerified: true } }
@@ -272,9 +266,8 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
             return res.status(400).json({ message: 'Kullanıcı bulunamadı veya kurtarma kodları ayarlı değil.' });
         }
 
-        const codeIndex = user.recoveryCodes.indexOf(recoveryCode.toUpperCase()); // Büyük/küçük harf duyarsızlığı için
+        const codeIndex = user.recoveryCodes.indexOf(recoveryCode.toUpperCase());
         if (codeIndex > -1) {
-            // Kullanılan kurtarma kodunu listeden kaldır
             user.recoveryCodes.splice(codeIndex, 1);
             await db.collection('users').updateOne(
                 { _id: user._id },
@@ -287,6 +280,44 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
 
     } catch (error) {
         console.error('Kurtarma kodu doğrulanırken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
+// Şifre Değiştirme Rotası (authenticateToken middleware'i ile korunuyor)
+router.post('/users/change-password', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Mevcut ve yeni şifreler gerekli.' });
+    }
+    if (newPassword.length < 8) {
+        return res.status(400).json({ message: 'Yeni şifre en az 8 karakter olmalıdır.' });
+    }
+
+    try {
+        const db = getDb();
+        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Mevcut şifre yanlış.' });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { password: hashedPassword } }
+        );
+
+        res.status(200).json({ message: 'Şifre başarıyla değiştirildi.' });
+    } catch (error) {
+        console.error('Şifre değiştirme hatası:', error);
         res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
     }
 });
