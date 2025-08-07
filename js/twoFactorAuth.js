@@ -80,7 +80,10 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'block'; // Kurtarma kodu kullan butonunu göster
         }
 
+        // DÜZELTME: Modalın görünürlüğünü kontrol eden log eklendi
+        console.log("Attempting to show 2FA modal. Current classes:", this._twoFactorAuthModal.classList);
         this._twoFactorAuthModal.classList.remove('hidden');
+        console.log("After removing 'hidden' class. New classes:", this._twoFactorAuthModal.classList);
     },
 
     /**
@@ -114,11 +117,11 @@ export const TwoFactorAuthHandler = {
 
         let result;
         if (mode === 'login') {
-            result = await this.verify2FACodeLogin(this._tempUserEmail, token); // DÜZELTME: email parametresi eklendi
+            result = await this.verify2FACodeLogin(this._tempUserEmail, token);
         } else if (mode === 'setup') {
-            result = await this.verify2FACodeSetup(this._setupUserEmail, token, this._setupJwtToken); // DÜZELTME: email parametresi eklendi
+            result = await this.verify2FACodeSetup(this._setupUserEmail, token, this._setupJwtToken);
         } else if (mode === 'recovery') {
-            result = await this.verifyRecoveryCode(this._tempUserEmail, token); // DÜZELTME: email parametresi eklendi
+            result = await this.verifyRecoveryCode(this._tempUserEmail, token);
         }
 
         if (result.success) {
@@ -139,14 +142,14 @@ export const TwoFactorAuthHandler = {
      * @param {string} token - Kullanıcının girdiği 2FA kodu.
      * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
      */
-    verify2FACodeLogin: async function(email, token) { // DÜZELTME: email parametresi eklendi
+    verify2FACodeLogin: async function(email, token) {
         try {
             const response = await fetch(`${this._API_BASE_URL}/2fa/verify-login-code`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: email, token: token }) // DÜZELTME: email gönderiliyor
+                body: JSON.stringify({ email: email, token: token })
             });
 
             const result = await response.json();
@@ -201,14 +204,14 @@ export const TwoFactorAuthHandler = {
      * @param {string} recoveryCode - Kullanıcının girdiği kurtarma kodu.
      * @returns {Object} İşlem sonucu (success: boolean, message: string, is2FAVerified: boolean)
      */
-    verifyRecoveryCode: async function(email, recoveryCode) { // DÜZELTME: email parametresi eklendi
+    verifyRecoveryCode: async function(email, recoveryCode) {
         try {
             const response = await fetch(`${this._API_BASE_URL}/2fa/verify-recovery-code`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email: email, recoveryCode: recoveryCode }) // DÜZELTME: email gönderiliyor
+                body: JSON.stringify({ email: email, recoveryCode: recoveryCode })
             });
 
             const result = await response.json();
@@ -229,12 +232,12 @@ export const TwoFactorAuthHandler = {
      * Tekrar gönder butonuna tıklandığında çalışır.
      */
     _handleResendButtonClick: async function() {
-        const email = this._tempUserEmail; // DÜZELTME: email parametresi kullanılıyor
+        const email = this._tempUserEmail;
         if (!email) {
             this._showMessage('E-posta adresi bulunamadı. Lütfen tekrar giriş yapın.', 'error');
             return;
         }
-        const result = await this.resend2FACode(email, this._tempJwtToken); // DÜZELTME: email parametresi eklendi
+        const result = await this.resend2FACode(email, this._tempJwtToken);
         if (!result.success) {
             this._showMessage(result.message, 'error');
         }
@@ -246,7 +249,7 @@ export const TwoFactorAuthHandler = {
      * @param {string} token - Kullanıcının JWT tokenı (opsiyonel, giriş sonrası için).
      * @returns {Object} İşlem sonucu (success: boolean, message: string)
      */
-    resend2FACode: async function(email, token) { // DÜZELTME: email parametresi eklendi
+    resend2FACode: async function(email, token) {
         this._resendTwoFactorAuthCodeBtn.disabled = true;
         this._resendTwoFactorAuthCodeBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Gönderiliyor...';
 
@@ -257,7 +260,7 @@ export const TwoFactorAuthHandler = {
                     'Content-Type': 'application/json',
                     // 'Authorization': `Bearer ${token}` // send-code rotası authenticateToken kullanmıyor
                 },
-                body: JSON.stringify({ email: email }) // DÜZELTME: email gönderiliyor
+                body: JSON.stringify({ email: email })
             });
 
             const result = await response.json();
@@ -274,8 +277,11 @@ export const TwoFactorAuthHandler = {
             this._showMessage(`Kod tekrar gönderilirken bir hata oluştu: ${error.message}`, 'error');
             return { success: false, message: error.message };
         } finally {
-            this._resendTwoFactorAuthAuthBtn.disabled = false;
-            this._resendTwoFactorAuthAuthBtn.innerHTML = 'Kodu Tekrar Gönder';
+            // DÜZELTME: Yazım hatası düzeltildi
+            if (this._resendTwoFactorAuthCodeBtn) {
+                this._resendTwoFactorAuthCodeBtn.disabled = false;
+                this._resendTwoFactorAuthCodeBtn.innerHTML = 'Kodu Tekrar Gönder';
+            }
         }
     },
 
@@ -302,9 +308,4 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'none'; // Kurtarma kodu kullan butonunu gizle
         }
     },
-
-    // auth.js tarafından çağrılan yardımcı fonksiyonlar
-    // showRecoveryCodeInput: function() { // Bu fonksiyon artık _handleUseRecoveryCodeClick tarafından yönetiliyor
-    //     this._handleUseRecoveryCodeClick();
-    // }
 };
