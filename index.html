@@ -1239,7 +1239,7 @@
                 if (monthSelect) monthSelect.value = currentMonth;
             }
 
-            // Kullanıcının 2FA durumunu çek
+            // Kullanıcının 2FA durumunu çek (artık profile.js'de daha detaylı yönetilecek)
             async function fetchUser2FAStatus() {
                 const token = getToken();
                 const userId = getUserId();
@@ -1255,14 +1255,14 @@
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                     if (!response.ok) {
                         const errorData = await response.json();
-                        throw new Error(errorData.message || '2FA durumu çekilemedi.');
+                        throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
                     }
                     const data = await response.json();
-                    // 2FA durumu burada kontrol edilebilir, örneğin bir uyarı göstermek için
-                    // console.log('User 2FA Status:', data.is2FAEnabled);
+                    // Bu bilgiyi burada kullanmıyoruz, sadece API'nin çalıştığını kontrol etmek için çağırılıyor.
+                    // Detaylı 2FA durumu profile.html sayfasında gösterilecek.
                 } catch (error) {
-                    console.error('2FA durumu çekilirken hata:', error);
-                    // addNotification(`2FA durumu yüklenirken hata: ${error.message}`, 'error');
+                    console.error('Kullanıcı bilgileri çekilirken hata:', error);
+                    // addNotification(`Kullanıcı bilgileri yüklenirken hata: ${error.message}`, 'error');
                 }
             }
 
@@ -1368,9 +1368,6 @@
             }
 
             // Logout Button
-            // Bu kısım, butonların bazen çalışıp bazen çalışmamasının ana nedeni olabilir.
-            // Butonun varlığını kontrol ettikten sonra olay dinleyicisini ekliyoruz.
-            // Bu kısım zaten doğru görünüyor, ancak emin olmak için tekrar kontrol edildi.
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
@@ -1381,12 +1378,10 @@
                 });
             }
 
-            // Profil Yönetimi Butonu
+            // Profil Yönetimi Butonu - DÜZELTME: profile.html sayfasına yönlendir
             if (profileManagementBtn) {
                 profileManagementBtn.addEventListener('click', () => {
-                    // Profil Yönetimi sayfasına yönlendirme veya modal açma
-                    addNotification('Profil Yönetimi özelliği geliştiriliyor...', 'info');
-                    // window.location.href = '/Fingo-WEB/profile.html'; // Eğer bir profil sayfanız varsa
+                    window.location.href = '/Fingo-WEB/profile.html'; // Yeni profil sayfasına yönlendirme
                 });
             }
 
@@ -1402,7 +1397,7 @@
             fetchMonthlySummary(currentYear, currentMonth);
             fetchAnnualSummary(currentYear);
             fetchCategories();
-            fetchUser2FAStatus();
+            fetchUser2FAStatus(); // Bu çağrı artık sadece API'nin çalıştığını kontrol etmek için, detaylar profile.html'de.
         }); // DOMContentLoaded BLOĞUNUN SONU
     </script>
 </body>

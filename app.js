@@ -13,7 +13,7 @@ const salesRoutes = require('./routes/sales');
 const financialSummaryRoutes = require('./routes/financialSummary');
 const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
-const twoFARoutes = require('./routes/2fa');
+const twoFARoutes = require('./routes/2fa'); // BURAYI KONTROL ET / EKLE
 const userRoutes = require('./routes/users');
 const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
@@ -44,7 +44,7 @@ connectDB(process.env.MONGODB_URI)
         app.use('/api', financialSummaryRoutes);
         app.use('/api', supplierRoutes);
         app.use('/api', purchaseOrderRoutes);
-        app.use('/api', twoFARoutes);
+        app.use('/api', twoFARoutes); // BURAYI KONTROL ET / EKLE
         app.use('/api', userRoutes);
         app.use('/api', transactionRoutes);
         app.use('/api', categoryRoutes);

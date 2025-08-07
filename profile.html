@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingo - Profil Yönetimi</title>
+    <!-- Tailwind CSS -->
+    <link href="/Fingo-WEB/output.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 250px;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.error { background-color: #f44336; }
+        .message-box.info { background-color: #2196F3; }
+        .message-box.warning { background-color: #ff9800; }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        /* Spinner CSS */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 1em;
+            height: 1em;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center z-40 relative">
+        <div class="flex items-center">
+            <button id="backToDashboardBtn" class="p-2 rounded-md hover:bg-gray-200 mr-4">
+                <i class="fas fa-arrow-left text-gray-700 text-xl"></i>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-700">Profil Yönetimi</h1>
+        </div>
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <span id="loggedInUser" class="text-gray-700 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-600 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+        </div>
+    </header>
+
+    <!-- Ana İçerik -->
+    <main class="flex-1 p-4 md:p-6 lg:p-8 mt-4 mb-4 bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-4xl mx-auto">
+        <h2 class="text-3xl font-bold text-blue-700 mb-6 text-center">Hesap Ayarları</h2>
+        <p class="text-lg text-gray-700 text-center mb-10 font-light">E-posta: <span id="userEmailSpan" class="font-semibold">Yükleniyor...</span></p>
+
+        <!-- Şifre Değiştirme Formu -->
+        <section class="mb-10 p-6 bg-gray-50 rounded-xl border border-gray-200 shadow-lg">
+            <h3 class="text-2xl font-bold text-blue-800 mb-4 text-center">Şifre Değiştir</h3>
+            <form id="changePasswordForm" class="space-y-4">
+                <div>
+                    <label for="currentPassword" class="block text-gray-700 text-sm font-medium mb-1">Mevcut Şifre:</label>
+                    <input type="password" id="currentPassword" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                <div>
+                    <label for="newPassword" class="block text-gray-700 text-sm font-medium mb-1">Yeni Şifre:</label>
+                    <input type="password" id="newPassword" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                <div>
+                    <label for="confirmNewPassword" class="block text-gray-700 text-sm font-medium mb-1">Yeni Şifre Tekrar:</label>
+                    <input type="password" id="confirmNewPassword" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                </div>
+                <button type="submit" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Şifreyi Değiştir</button>
+            </form>
+        </section>
+
+        <!-- İki Faktörlü Kimlik Doğrulama (2FA) Yönetimi -->
+        <section class="mb-10 p-6 bg-gray-50 rounded-xl border border-gray-200 shadow-lg">
+            <h3 class="text-2xl font-bold text-blue-800 mb-4 text-center">İki Faktörlü Kimlik Doğrulama (2FA)</h3>
+            <div class="flex items-center justify-between mb-4">
+                <p class="text-gray-700 text-lg">2FA Durumu: <span id="twoFAStatus" class="font-semibold text-red-500">Devre Dışı</span></p>
+                <button id="toggle2FABtn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors text-sm">2FA'yı Etkinleştir</button>
+            </div>
+
+            <!-- 2FA Etkinleştirme Alanı (QR Kodu ve Kod Girişi) -->
+            <div id="enable2FASection" class="hidden space-y-4 mt-6">
+                <p class="text-gray-700 text-center">Aşağıdaki QR kodunu bir kimlik doğrulama uygulaması (örn: Google Authenticator) ile tarayın veya kodu manuel girin.</p>
+                <div class="flex justify-center">
+                    <div id="qrCodeContainer" class="p-4 bg-white border border-gray-300 rounded-md">
+                        <!-- QR Kodu buraya JS ile yüklenecek -->
+                    </div>
+                </div>
+                <p class="text-center text-sm text-gray-600 break-all" id="secretKeyText"></p>
+                <div>
+                    <label for="twoFACodeInput" class="block text-gray-700 text-sm font-medium mb-1">Uygulamanızdaki Kodu Girin:</label>
+                    <input type="text" id="twoFACodeInput" placeholder="######" maxlength="6" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-center tracking-widest">
+                </div>
+                <button id="verify2FAEnableBtn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors w-full text-sm">2FA'yı Doğrula ve Etkinleştir</button>
+                <button id="cancel2FAEnableBtn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm mt-2">İptal</button>
+            </div>
+
+            <!-- Kurtarma Kodları Alanı -->
+            <div id="recoveryCodesSection" class="hidden space-y-4 mt-6">
+                <p class="text-gray-700 text-center">Bu kurtarma kodlarını güvenli bir yerde saklayın. Cihazınıza erişemediğinizde hesabınıza giriş yapmak için kullanabilirsiniz.</p>
+                <ul id="recoveryCodesList" class="bg-white p-4 border border-gray-300 rounded-md grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-800 text-sm">
+                    <!-- Kurtarma kodları buraya JS ile yüklenecek -->
+                </ul>
+                <button id="copyRecoveryCodesBtn" class="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors w-full text-sm">Kodları Kopyala</button>
+                <button id="regenerateRecoveryCodesBtn" class="bg-orange-500 text-white p-2 rounded-md hover:bg-orange-600 transition-colors w-full text-sm mt-2">Kodları Yeniden Oluştur</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Message Box -->
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <script type="module" src="/Fingo-WEB/js/profile.js"></script>
+</body>
+</html>
