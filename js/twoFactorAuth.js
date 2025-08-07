@@ -80,10 +80,10 @@ export const TwoFactorAuthHandler = {
             this._useRecoveryCodeBtn.style.display = 'block'; // Kurtarma kodu kullan butonunu göster
         }
 
-        // DÜZELTME: Modalın görünürlüğünü kontrol eden log eklendi
-        console.log("Attempting to show 2FA modal. Current classes:", this._twoFactorAuthModal.classList);
-        this._twoFactorAuthModal.classList.remove('hidden');
-        console.log("After removing 'hidden' class. New classes:", this._twoFactorAuthModal.classList);
+        // DÜZELTME: display stilini doğrudan 'flex' olarak ayarla
+        console.log("Attempting to show 2FA modal. Current display style:", this._twoFactorAuthModal.style.display);
+        this._twoFactorAuthModal.style.display = 'flex';
+        console.log("After setting display to 'flex'. New display style:", this._twoFactorAuthModal.style.display);
     },
 
     /**
@@ -91,7 +91,8 @@ export const TwoFactorAuthHandler = {
      */
     hide2FAModal: function() {
         if (this._twoFactorAuthModal) {
-            this._twoFactorAuthModal.classList.add('hidden');
+            // DÜZELTME: display stilini doğrudan 'none' olarak ayarla
+            this._twoFactorAuthModal.style.display = 'none';
         }
         this._tempUserEmail = null;
         this._tempJwtToken = null;
@@ -277,35 +278,10 @@ export const TwoFactorAuthHandler = {
             this._showMessage(`Kod tekrar gönderilirken bir hata oluştu: ${error.message}`, 'error');
             return { success: false, message: error.message };
         } finally {
-            // DÜZELTME: Yazım hatası düzeltildi
             if (this._resendTwoFactorAuthCodeBtn) {
                 this._resendTwoFactorAuthCodeBtn.disabled = false;
                 this._resendTwoFactorAuthCodeBtn.innerHTML = 'Kodu Tekrar Gönder';
             }
-        }
-    },
-
-    /**
-     * Kurtarma kodu kullan butonuna tıklandığında çalışır.
-     */
-    _handleUseRecoveryCodeClick: function() {
-        if (this._twoFactorAuthModalTitle) {
-            this._twoFactorAuthModalTitle.textContent = 'Kurtarma Kodu Kullan';
-        }
-        if (this._twoFactorAuthCodeInput) {
-            this._twoFactorAuthCodeInput.value = '';
-            this._twoFactorAuthCodeInput.placeholder = 'Kurtarma Kodunuz';
-            this._twoFactorAuthCodeInput.maxLength = 20; // Kurtarma kodları daha uzun olabilir
-        }
-        if (this._verifyTwoFactorAuthBtn) {
-            this._verifyTwoFactorAuthBtn.textContent = 'Kodu Doğrula';
-            this._verifyTwoFactorAuthBtn.dataset.mode = 'recovery'; // Modu kurtarma olarak ayarla
-        }
-        if (this._resendTwoFactorAuthCodeBtn) {
-            this._resendTwoFactorAuthCodeBtn.style.display = 'none'; // Tekrar gönder butonunu gizle
-        }
-        if (this._useRecoveryCodeBtn) {
-            this._useRecoveryCodeBtn.style.display = 'none'; // Kurtarma kodu kullan butonunu gizle
         }
     },
 };

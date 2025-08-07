@@ -108,7 +108,8 @@
         </div>
 
         <!-- 2FA Kodu Giriş Modalı -->
-        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <!-- DÜZELTME: 'hidden' sınıfı kaldırıldı, yerine 'style="display: none;"' eklendi -->
+        <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
             <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200 relative">
                 <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
                 <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-blue-700 mb-6 text-center">İki Faktörlü Kimlik Doğrulama</h2>
@@ -133,6 +134,6 @@
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <script type="module" src="/Fingo-WEB/js/auth.js"></script> <!-- Yeni 2FA modülünü içe aktarıyoruz -->
+    <script type="module" src="/Fingo-WEB/js/auth.js"></script>
 </body>
 </html>
