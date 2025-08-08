@@ -1,4 +1,4 @@
-// public/js/profile.js
+ü// public/js/profile.js
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Profile.js script loaded.");
 
@@ -242,8 +242,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
                 }
 
-                // DÜZELTME: QRCode global olarak tanımlandığı için window objesinden eriş
-                // DÜZELTME: CorrectLevel yerine doğrudan 2 sayısal değerini kullan
+                // DÜZELTME: window.QRCode bir constructor değilse doğrudan çağır (veya global objeye güvende)
+                // En iyi uygulama: qrcode.js kütüphanesini 'type="module"' olarak import etmek veya
+                // bu scripti 'type="module"' olmadan yüklemek. Şimdilik doğrudan çağrıyı deneriz.
+                // Eğer hala sorun olursa, qrcode.js'i <script type="module"> içinde import etmeyi deneyebiliriz.
+
+                // Bu kütüphanenin qrcode.js olduğunu varsayarsak, constructor'ı bu şekilde çağrılır:
+                // new QRCode(el, options);
+                // Ancak hata "is not a constructor" dediği için, ya kütüphane doğru yüklenmiyor
+                // ya da qrcode.js'in farklı bir versiyonu kullanılıyor olabilir.
+                // qrcode.min.js'in CDN'den yüklenmesi, global olarak "QRCode" objesini oluşturur.
+                // window.QRCode'e eriştiğimiz için buradaki sorun ya bu CDN'deki versiyonun constructor olmaması
+                // ya da modül kapsamından dolayı constructor'a erişilememesi.
+                // Global "QRCode" objesinin varlığını kontrol edelim.
+
+                if (typeof window.QRCode !== 'function') {
+                    console.error("HATA: window.QRCode bir fonksiyon veya constructor değil!");
+                    showMessageBox("QR kod kütüphanesi yüklenemedi veya yanlış. Geliştiriciye başvurun.", "error");
+                    return;
+                }
+
                 currentQRCode = new window.QRCode(qrcodeCanvas, {
                     text: otpauthUrl,
                     width: 180,
