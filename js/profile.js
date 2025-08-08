@@ -242,15 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
                 }
 
-                // QRCode nesnesini oluştururken, QR kodunun çizileceği elementi parametre olarak geçmeliyiz.
-                // qrcodeCanvas id'li div elementini kullanıyoruz.
-                currentQRCode = new QRCode(qrcodeCanvas, {
+                // DÜZELTME: QRCode global olarak tanımlandığı için window objesinden eriş
+                currentQRCode = new window.QRCode(qrcodeCanvas, {
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
+                    correctLevel : window.QRCode.CorrectLevel.H // DÜZELTME: CorrectLevel'e de window üzerinden eriş
                 });
 
                 secretKeyDisplay.textContent = secretBase32;
