@@ -5,6 +5,7 @@ const cors = require('cors');
 
 // Yeni oluşturduğumuz modülleri içe aktarıyoruz
 const { connectDB } = require('./db'); // db.js dosyasından connectDB fonksiyonunu al
+// const { sendVerificationEmail } = require('./utils/emailSender'); // emailSender'ı dahil ettik (app.js'de doğrudan kullanılmadığı için burada yorum satırı kalsın)
 
 // Rota modüllerini içe aktarıyoruz
 const authRoutes = require('./routes/auth');
