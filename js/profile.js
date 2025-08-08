@@ -1,101 +1,135 @@
-// js/profile.js
-// API Base URL'i
-const API_BASE_URL = 'https://fingo-web.onrender.com/api';
-
-// Yardımcı Fonksiyonlar
-const getToken = () => localStorage.getItem('jwtToken');
-const getUserId = () => localStorage.getItem('userId');
-const getUserEmail = () => localStorage.getItem('userEmail');
-
-// Mesaj Kutusu Fonksiyonu
-function showMessageBox(message, type = 'success') {
-    const messageBox = document.getElementById('messageBox');
-    const messageText = document.getElementById('messageText');
-    if (!messageBox || !messageText) {
-        console.error("Message box elements not found!");
-        return;
-    }
-    messageText.innerHTML = message;
-    messageBox.className = `message-box show ${type}`;
-    messageBox.classList.remove('hidden');
-    setTimeout(() => {
-        messageBox.classList.remove('show');
-        setTimeout(() => {
-            messageBox.classList.add('hidden');
-        }, 300);
-    }, 3000);
-}
-
-// Kimlik Doğrulama Hatası Yönetimi
-function handleAuthError() {
-    showMessageBox('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
-    localStorage.removeItem('jwtToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userEmail');
-    window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
-}
-
-// DOMContentLoaded olayı, tüm HTML yüklendikten sonra tetiklenir
+// public/js/profile.js
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Profile page DOMContentLoaded fired. Initializing...");
+    console.log("Profile.js script loaded.");
 
-    // Token ve Kullanıcı ID'sini kontrol et
-    const jwtToken = getToken();
-    const userId = getUserId();
-    const userEmail = getUserEmail();
-
-    if (!jwtToken || !userId || !userEmail) {
-        handleAuthError();
-        return;
-    }
+    // API Base URL
+    const API_BASE_URL = 'https://fingo-web.onrender.com/api';
 
     // DOM Elementleri
-    const loggedInUserSpan = document.getElementById('loggedInUser');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const backToDashboardBtn = document.getElementById('backToDashboardBtn');
-    const userEmailSpan = document.getElementById('userEmailSpan');
-
+    const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+    const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const twoFAStatusDisplay = document.getElementById('2FAStatusDisplay');
     const changePasswordForm = document.getElementById('changePasswordForm');
     const currentPasswordInput = document.getElementById('currentPassword');
     const newPasswordInput = document.getElementById('newPassword');
     const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
 
-    const twoFAStatusSpan = document.getElementById('twoFAStatus');
-    const toggle2FABtn = document.getElementById('toggle2FABtn');
+    // 2FA Elementleri
     const enable2FASection = document.getElementById('enable2FASection');
-    const qrCodeContainer = document.getElementById('qrCodeContainer');
-    const secretKeyText = document.getElementById('secretKeyText');
-    const twoFACodeInput = document.getElementById('twoFACodeInput');
+    const disable2FASection = document.getElementById('disable2FASection');
+    const generateSecretBtn = document.getElementById('generateSecretBtn');
+    const qrcodeDisplayArea = document.getElementById('qrcodeDisplayArea');
+    const qrcodeCanvas = document.getElementById('qrcodeCanvas');
+    const secretKeyDisplay = document.getElementById('secretKeyDisplay');
+    const twoFACodeInput = document.getElementById('2faCodeInput');
     const verify2FAEnableBtn = document.getElementById('verify2FAEnableBtn');
-    const cancel2FAEnableBtn = document.getElementById('cancel2FAEnableBtn');
+    const cancel2FASetupBtn = document.getElementById('cancel2FASetupBtn');
+    const disable2FABtn = document.getElementById('disable2FABtn');
     const recoveryCodesSection = document.getElementById('recoveryCodesSection');
-    const recoveryCodesList = document.getElementById('recoveryCodesList');
+    const recoveryCodesDisplay = document.getElementById('recoveryCodesDisplay');
     const copyRecoveryCodesBtn = document.getElementById('copyRecoveryCodesBtn');
-    const regenerateRecoveryCodesBtn = document.getElementById('regenerateRecoveryCodesBtn');
+    const closeRecoveryCodesBtn = document.getElementById('closeRecoveryCodesBtn');
 
-    // Kullanıcı e-postasını göster
-    if (userEmailSpan) userEmailSpan.textContent = userEmail;
-    if (loggedInUserSpan) loggedInUserSpan.textContent = `Hoş Geldin, ${userEmail.split('@')[0]}...`;
+    const messageBox = document.getElementById('messageBox');
+    const messageText = document.getElementById('messageText');
 
-    // Çıkış Yap Butonu
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('jwtToken');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('fingoNotifications');
+    let currentQRCode = null; // QR kodu örneğini tutmak için
+
+    // Yardımcı Fonksiyon: Mesaj Kutusu Göster
+    function showMessageBox(message, type = 'success') {
+        if (!messageBox || !messageText) {
+            console.error("Message box elements not found!");
+            return;
+        }
+        messageText.innerHTML = message;
+        messageBox.className = `message-box show ${type}`;
+        messageBox.classList.remove('hidden');
+        setTimeout(() => {
+            messageBox.classList.remove('show');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000); // 3 saniye sonra gizle
+        }, 500); // 0.5 saniye sonra gizle (daha hızlı tepki)
+    }
+
+    // JWT Token'ı çözümleme fonksiyonu (index.html'den kopyalandı)
+    function parseJwt (token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            console.error("JWT parse error:", e);
+            return null;
+        }
+    };
+
+    // Kimlik Doğrulama Hatası Yönetimi
+    function handleAuthError() {
+        console.error("Authentication error detected in profile page. Redirecting to login.");
+        showMessageBox('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('fingoNotifications');
+        setTimeout(() => {
             window.location.href = '/Fingo-WEB/auth.html'; // GitHub Pages için mutlak yol
-        });
+        }, 1000);
     }
 
-    // Ana Sayfaya Dön Butonu
-    if (backToDashboardBtn) {
-        backToDashboardBtn.addEventListener('click', () => {
-            window.location.href = '/Fingo-WEB/index.html'; // GitHub Pages için mutlak yol
-        });
+    // Kullanıcı Bilgilerini ve 2FA Durumunu Çek
+    async function fetchUserProfile() {
+        const token = localStorage.getItem('jwtToken');
+        const userId = localStorage.getItem('userId');
+
+        if (!token || !userId) {
+            handleAuthError();
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                handleAuthError();
+                return;
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
+            }
+
+            const userData = await response.json();
+            userEmailDisplay.textContent = userData.email;
+            twoFAStatusDisplay.textContent = userData.is2FAEnabled ? 'Etkin' : 'Devre Dışı';
+            twoFAStatusDisplay.classList.toggle('text-green-600', userData.is2FAEnabled);
+            twoFAStatusDisplay.classList.toggle('text-red-600', !userData.is2FAEnabled);
+
+            // 2FA bölümlerinin görünürlüğünü ayarla
+            if (userData.is2FAEnabled) {
+                enable2FASection.classList.add('hidden');
+                disable2FASection.classList.remove('hidden');
+                qrcodeDisplayArea.classList.add('hidden'); // Etkinse QR alanı gizli kalsın
+                recoveryCodesSection.classList.add('hidden'); // Kurtarma kodları da gizli kalsın
+            } else {
+                enable2FASection.classList.remove('hidden');
+                disable2FASection.classList.add('hidden');
+            }
+
+        } catch (error) {
+            console.error('Kullanıcı profili çekilirken hata:', error);
+            showMessageBox(`Profil bilgileri yüklenirken hata: ${error.message}`, 'error');
+        }
     }
 
-    // Şifre Değiştirme Formu
+    // Şifre Değiştirme Formu Gönderimi
     if (changePasswordForm) {
         changePasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -104,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmNewPassword = confirmNewPasswordInput.value;
 
             if (!currentPassword || !newPassword || !confirmNewPassword) {
-                showMessageBox('Tüm şifre alanları zorunludur.', 'warning');
+                showMessageBox('Lütfen tüm şifre alanlarını doldurun.', 'warning');
                 return;
             }
             if (newPassword !== confirmNewPassword) {
@@ -116,19 +150,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            changePasswordBtn.disabled = true;
+            changePasswordBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Değiştiriliyor...';
+
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                handleAuthError();
+                changePasswordBtn.disabled = false;
+                changePasswordBtn.innerHTML = 'Şifreyi Değiştir';
+                return;
+            }
+
             try {
-                // DÜZELTME: Doğru API rotasını kullan
                 const response = await fetch(`${API_BASE_URL}/users/change-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwtToken}`
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ userId, currentPassword, newPassword })
+                    body: JSON.stringify({ currentPassword, newPassword })
                 });
 
                 const result = await response.json();
-                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                if (response.status === 401 || response.status === 403) {
+                    handleAuthError();
+                    return;
+                }
                 if (!response.ok) {
                     throw new Error(result.message || 'Şifre değiştirme başarısız oldu.');
                 }
@@ -138,78 +185,66 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Şifre değiştirme hatası:', error);
                 showMessageBox(`Şifre değiştirilirken hata: ${error.message}`, 'error');
+            } finally {
+                changePasswordBtn.disabled = false;
+                changePasswordBtn.innerHTML = 'Şifreyi Değiştir';
             }
         });
     }
 
-    // 2FA Durumunu Çek ve Göster
-    async function fetch2FAStatus() {
-        try {
-            // DÜZELTME: Doğru API rotasını kullan -> /users/me
-            const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
-                headers: { 'Authorization': `Bearer ${jwtToken}` }
-            });
+    // 2FA Gizli Anahtar Oluştur ve QR Kodu Göster
+    if (generateSecretBtn) {
+        generateSecretBtn.addEventListener('click', async () => {
+            generateSecretBtn.disabled = true;
+            generateSecretBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Oluşturuluyor...';
+            showMessageBox('2FA gizli anahtar oluşturuluyor...', 'info');
 
-            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || '2FA durumu çekilemedi.');
-            }
-            const data = await response.json();
-            // DÜZELTME: is2FAEnabled özelliğini doğrudan kullanıcı verisinden al
-            const is2FAEnabled = data.is2FAEnabled;
-
-            if (twoFAStatusSpan) {
-                twoFAStatusSpan.textContent = is2FAEnabled ? 'Etkin' : 'Devre Dışı';
-                twoFAStatusSpan.classList.toggle('text-green-500', is2FAEnabled);
-                twoFAStatusSpan.classList.toggle('text-red-500', !is2FAEnabled);
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                handleAuthError();
+                generateSecretBtn.disabled = false;
+                generateSecretBtn.innerHTML = '2FA Etkinleştir';
+                return;
             }
 
-            if (toggle2FABtn) {
-                toggle2FABtn.textContent = is2FAEnabled ? '2FA\'yı Devre Dışı Bırak' : '2FA\'yı Etkinleştir';
-                toggle2FABtn.classList.toggle('bg-red-500', is2FAEnabled);
-                toggle2FABtn.classList.toggle('hover:bg-red-600', is2FAEnabled);
-                toggle2FABtn.classList.toggle('bg-blue-600', !is2FAEnabled);
-                toggle2FABtn.classList.toggle('hover:bg-blue-700', !is2FAEnabled);
-            }
+            try {
+                const response = await fetch(`${API_BASE_URL}/2fa/generate-secret`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const result = await response.json();
+                console.log("Response from /2fa/generate-secret:", result); // KRİTİK LOG
 
-            // Eğer 2FA etkinse kurtarma kodlarını göster
-            if (is2FAEnabled) {
-                fetchRecoveryCodes();
-            } else {
-                if (recoveryCodesSection) recoveryCodesSection.classList.add('hidden');
-            }
+                if (response.status === 401 || response.status === 403) {
+                    handleAuthError();
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error(result.message || '2FA gizli anahtarı oluşturulamadı.');
+                }
 
-        } catch (error) {
-            console.error('2FA durumu çekilirken hata:', error);
-            showMessageBox(`2FA durumu yüklenirken hata: ${error.message}`, 'error');
-        }
-    }
+                const otpauthUrl = result.otpauthUrl;
+                const secretBase32 = result.secret;
 
-    // QR Kodu Oluştur ve Gizli Anahtarı Göster
-    async function generate2FASecret() {
-        try {
-            // DÜZELTME: Doğru API rotasını kullan
-            const response = await fetch(`${API_BASE_URL}/2fa/generate-secret`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwtToken}`
-                },
-                body: JSON.stringify({ userId })
-            });
+                console.log("OTP Auth URL received:", otpauthUrl); // KRİTİK LOG
+                console.log("Secret Base32 received:", secretBase32); // KRİTİK LOG
 
-            const result = await response.json();
-            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-            if (!response.ok) {
-                throw new Error(result.message || '2FA gizli anahtarı oluşturulamadı.');
-            }
+                if (!otpauthUrl || !secretBase32) {
+                    throw new Error("Backend'den geçerli OTP Auth URL veya gizli anahtar alınamadı.");
+                }
 
-            const { secret, otpauthUrl } = result;
+                // QR kodunu temizle ve yeniden oluştur
+                if (currentQRCode) {
+                    currentQRCode.clear(); // Mevcut QR kodunu temizle
+                    qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
+                }
 
-            if (qrCodeContainer) {
-                qrCodeContainer.innerHTML = ''; // Önceki QR'ı temizle
-                new QRCode(qrCodeContainer, {
+                // QRCode nesnesini oluştururken, QR kodunun çizileceği elementi parametre olarak geçmeliyiz.
+                // qrcodeCanvas id'li div elementini kullanıyoruz.
+                currentQRCode = new QRCode(qrcodeCanvas, {
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
@@ -217,187 +252,169 @@ document.addEventListener('DOMContentLoaded', () => {
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.H
                 });
-            }
-            if (secretKeyText) secretKeyText.textContent = `Gizli Anahtar: ${secret}`;
-            if (enable2FASection) enable2FASection.classList.remove('hidden');
 
-        } catch (error) {
-            console.error('2FA gizli anahtarı oluşturulurken hata:', error);
-            showMessageBox(`2FA etkinleştirme hatası: ${error.message}`, 'error');
-        }
-    }
-
-    // 2FA Etkinleştir/Devre Dışı Bırak Butonu
-    if (toggle2FABtn) {
-        toggle2FABtn.addEventListener('click', async () => {
-            const currentStatus = twoFAStatusSpan.textContent === 'Etkin';
-            if (currentStatus) {
-                // 2FA'yı devre dışı bırakma isteği
-                const confirmDisable = confirm("İki Faktörlü Kimlik Doğrulamayı devre dışı bırakmak istediğinizden emin misiniz?");
-                if (!confirmDisable) return;
-
-                try {
-                    // DÜZELTME: Doğru API rotasını kullan
-                    const response = await fetch(`${API_BASE_URL}/2fa/disable`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${jwtToken}`
-                        },
-                        body: JSON.stringify({ userId })
-                    });
-
-                    const result = await response.json();
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                    if (!response.ok) {
-                        throw new Error(result.message || '2FA devre dışı bırakılamadı.');
-                    }
-                    showMessageBox(result.message, 'success');
-                    fetch2FAStatus(); // Durumu güncelle
-                    if (enable2FASection) enable2FASection.classList.add('hidden'); // Etkinleştirme alanını gizle
-                } catch (error) {
-                    console.error('2FA devre dışı bırakılırken hata:', error);
-                    showMessageBox(`2FA devre dışı bırakılırken hata: ${error.message}`, 'error');
-                }
-            } else {
-                // 2FA'yı etkinleştirme akışını başlat
-                generate2FASecret();
+                secretKeyDisplay.textContent = secretBase32;
+                qrcodeDisplayArea.classList.remove('hidden');
+                showMessageBox('QR kodu başarıyla oluşturuldu.', 'success');
+            } catch (error) {
+                console.error('2FA gizli anahtarı oluşturulurken hata:', error);
+                showMessageBox(`2FA gizli anahtar oluşturulurken hata: ${error.message}`, 'error');
+            } finally {
+                generateSecretBtn.disabled = false;
+                generateSecretBtn.innerHTML = '2FA Etkinleştir';
             }
         });
     }
 
-    // 2FA Etkinleştirme Kodunu Doğrula
+    // 2FA'yı Doğrula ve Etkinleştir
     if (verify2FAEnableBtn) {
         verify2FAEnableBtn.addEventListener('click', async () => {
-            const token = twoFACodeInput.value.trim();
+            const code = twoFACodeInput.value.trim();
+            if (!code) {
+                showMessageBox('Lütfen 6 haneli doğrulama kodunu girin.', 'warning');
+                return;
+            }
+
+            verify2FAEnableBtn.disabled = true;
+            verify2FAEnableBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Doğrulanıyor...';
+
+            const token = localStorage.getItem('jwtToken');
             if (!token) {
-                showMessageBox('Lütfen kimlik doğrulama uygulamasındaki kodu girin.', 'warning');
+                handleAuthError();
+                verify2FAEnableBtn.disabled = false;
+                verify2FAEnableBtn.innerHTML = '2FA\'yı Doğrula ve Etkinleştir';
                 return;
             }
 
             try {
-                // DÜZELTME: Doğru API rotasını kullan
                 const response = await fetch(`${API_BASE_URL}/2fa/verify-enable`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwtToken}`
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ userId, token })
+                    body: JSON.stringify({ token: code }) // Backend'deki isimlendirmeye dikkat
                 });
-
                 const result = await response.json();
-                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                console.log("Response from /2fa/verify-enable:", result); // KRİTİK LOG
+
+                if (response.status === 401 || response.status === 403) {
+                    handleAuthError();
+                    return;
+                }
                 if (!response.ok) {
-                    throw new Error(result.message || '2FA doğrulama başarısız oldu.');
+                    throw new Error(result.message || '2FA etkinleştirme başarısız oldu.');
                 }
 
                 showMessageBox(result.message, 'success');
-                if (enable2FASection) enable2FASection.classList.add('hidden');
+                qrcodeDisplayArea.classList.add('hidden'); // QR kod alanını gizle
                 twoFACodeInput.value = ''; // Kodu temizle
-                fetch2FAStatus(); // Durumu güncelle
-            } catch (error) {
-                console.error('2FA doğrulama hatası:', error);
-                showMessageBox(`2FA doğrulanırken hata: ${error.message}`, 'error');
-            }
-        });
-    }
+                fetchUserProfile(); // 2FA durumunu güncelle
 
-    // 2FA Etkinleştirme İptal Butonu
-    if (cancel2FAEnableBtn) {
-        cancel2FAEnableBtn.addEventListener('click', () => {
-            if (enable2FASection) enable2FASection.classList.add('hidden');
-            twoFACodeInput.value = '';
-            // İptal edildiğinde 2FA gizli anahtarını sunucudan silmek isteyebiliriz
-            // Ancak bu, backend'de ayrı bir rota gerektirir. Şimdilik sadece gizliyoruz.
-        });
-    }
-
-    // Kurtarma Kodlarını Çek ve Göster
-    async function fetchRecoveryCodes() {
-        try {
-            // DÜZELTME: Doğru API rotasını kullan
-            const response = await fetch(`${API_BASE_URL}/2fa/recovery-codes?userId=${userId}`, {
-                headers: { 'Authorization': `Bearer ${jwtToken}` }
-            });
-
-            if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Kurtarma kodları çekilemedi.');
-            }
-            const data = await response.json();
-            const recoveryCodes = data.recoveryCodes || [];
-
-            if (recoveryCodesList) {
-                recoveryCodesList.innerHTML = '';
-                if (recoveryCodes.length > 0) {
-                    recoveryCodes.forEach(code => {
-                        const li = document.createElement('li');
-                        li.textContent = code;
-                        recoveryCodesList.appendChild(li);
-                    });
-                    if (recoveryCodesSection) recoveryCodesSection.classList.remove('hidden');
-                } else {
-                    if (recoveryCodesSection) recoveryCodesSection.classList.add('hidden');
+                // Kurtarma kodlarını göster
+                if (result.recoveryCodes && result.recoveryCodes.length > 0) {
+                    recoveryCodesDisplay.innerHTML = result.recoveryCodes.map(c => `<span class="bg-gray-200 px-3 py-1 rounded-md text-sm">${c}</span>`).join('');
+                    recoveryCodesSection.classList.remove('hidden');
                 }
+
+            } catch (error) {
+                console.error('2FA etkinleştirme hatası:', error);
+                showMessageBox(`2FA etkinleştirilirken hata: ${error.message}`, 'error');
+            } finally {
+                verify2FAEnableBtn.disabled = false;
+                verify2FAEnableBtn.innerHTML = '2FA\'yı Doğrula ve Etkinleştir';
             }
-        } catch (error) {
-            console.error('Kurtarma kodları çekilirken hata:', error);
-            showMessageBox(`Kurtarma kodları yüklenirken hata: ${error.message}`, 'error');
-        }
+        });
     }
 
-    // Kurtarma Kodlarını Kopyala Butonu
+    // 2FA Kurulumunu İptal Et
+    if (cancel2FASetupBtn) {
+        cancel2FASetupBtn.addEventListener('click', () => {
+            qrcodeDisplayArea.classList.add('hidden');
+            twoFACodeInput.value = '';
+            // Backend'den gizli anahtarı silmek istersen burada bir API çağrısı yapabilirsin.
+            // Şimdilik sadece frontend'de gizliyoruz.
+            showMessageBox('2FA kurulumu iptal edildi.', 'info');
+            fetchUserProfile(); // Durumu tazelemek için
+        });
+    }
+
+    // Kurtarma Kodlarını Kopyala
     if (copyRecoveryCodesBtn) {
         copyRecoveryCodesBtn.addEventListener('click', () => {
-            const codes = Array.from(recoveryCodesList.children).map(li => li.textContent).join('\n');
-            if (codes) {
-                // Modern Clipboard API'si yerine document.execCommand kullanıldı (iframe uyumluluğu için)
-                const tempInput = document.createElement('textarea');
-                tempInput.value = codes;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
+            const codesText = Array.from(recoveryCodesDisplay.children).map(span => span.textContent).join('\n');
+            navigator.clipboard.writeText(codesText).then(() => {
                 showMessageBox('Kurtarma kodları panoya kopyalandı!', 'success');
-            } else {
-                showMessageBox('Kopyalanacak kurtarma kodu bulunamadı.', 'warning');
-            }
+            }).catch(err => {
+                console.error('Kurtarma kodlarını kopyalarken hata:', err);
+                showMessageBox('Kurtarma kodları kopyalanamadı.', 'error');
+            });
         });
     }
 
-    // Kurtarma Kodlarını Yeniden Oluştur Butonu
-    if (regenerateRecoveryCodesBtn) {
-        regenerateRecoveryCodesBtn.addEventListener('click', async () => {
-            const confirmRegenerate = confirm("Yeni kurtarma kodları oluşturmak istediğinizden emin misiniz? Eski kodlar geçersiz olacaktır.");
-            if (!confirmRegenerate) return;
+    // Kurtarma Kodları Alanını Kapat
+    if (closeRecoveryCodesBtn) {
+        closeRecoveryCodesBtn.addEventListener('click', () => {
+            recoveryCodesSection.classList.add('hidden');
+        });
+    }
+
+    // 2FA Devre Dışı Bırak
+    if (disable2FABtn) {
+        disable2FABtn.addEventListener('click', async () => {
+            const confirmDisable = confirm("İki faktörlü kimlik doğrulamayı devre dışı bırakmak istediğinizden emin misiniz? Bu, hesabınızın güvenliğini azaltacaktır.");
+            if (!confirmDisable) return;
+
+            disable2FABtn.disabled = true;
+            disable2FABtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> Devre Dışı Bırakılıyor...';
+
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                handleAuthError();
+                disable2FABtn.disabled = false;
+                disable2FABtn.innerHTML = '2FA Devre Dışı Bırak';
+                return;
+            }
 
             try {
-                // DÜZELTME: Doğru API rotasını kullan
-                const response = await fetch(`${API_BASE_URL}/2fa/regenerate-recovery-codes`, {
-                    method: 'POST',
+                const response = await fetch(`${API_BASE_URL}/users/disable-2fa`, { // Yeni bir rota varsayıyoruz
+                    method: 'POST', // veya DELETE
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${jwtToken}`
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ userId })
+                    body: JSON.stringify({ userId: localStorage.getItem('userId') })
                 });
-
                 const result = await response.json();
-                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                if (!response.ok) {
-                    throw new Error(result.message || 'Kurtarma kodları yeniden oluşturulamadı.');
+                console.log("Response from /users/disable-2fa:", result); // KRİTİK LOG
+
+                if (response.status === 401 || response.status === 403) {
+                    handleAuthError();
+                    return;
                 }
+                if (!response.ok) {
+                    throw new Error(result.message || '2FA devre dışı bırakılamadı.');
+                }
+
                 showMessageBox(result.message, 'success');
-                fetchRecoveryCodes(); // Yeni kodları çek ve göster
+                fetchUserProfile(); // Durumu güncelle
             } catch (error) {
-                console.error('Kurtarma kodları yeniden oluşturulurken hata:', error);
-                showMessageBox(`Kurtarma kodları yeniden oluşturulurken hata: ${error.message}`, 'error');
+                console.error('2FA devre dışı bırakılırken hata:', error);
+                showMessageBox(`2FA devre dışı bırakılırken hata: ${error.message}`, 'error');
+            } finally {
+                disable2FABtn.disabled = false;
+                disable2FABtn.innerHTML = '2FA Devre Dışı Bırak';
             }
         });
     }
 
-    // Sayfa yüklendiğinde 2FA durumunu çek
-    fetch2FAStatus();
+    // Sayfa Yüklendiğinde
+    if (goToDashboardBtn) {
+        goToDashboardBtn.addEventListener('click', () => {
+            window.location.href = '/Fingo-WEB/index.html'; // Ana sayfaya dön
+        });
+    }
+
+    // Sayfa yüklendiğinde kullanıcı profilini ve 2FA durumunu çek
+    fetchUserProfile();
 });
