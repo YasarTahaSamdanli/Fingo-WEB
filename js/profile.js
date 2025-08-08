@@ -243,13 +243,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // DÜZELTME: QRCode global olarak tanımlandığı için window objesinden eriş
+                // DÜZELTME: CorrectLevel yerine doğrudan 2 sayısal değerini kullan
                 currentQRCode = new window.QRCode(qrcodeCanvas, {
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
-                    correctLevel : window.QRCode.CorrectLevel.H // DÜZELTME: CorrectLevel'e de window üzerinden eriş
+                    correctLevel : 2 // QRCode.CorrectLevel.H yerine doğrudan sayısal değer (2) kullanıldı
                 });
 
                 secretKeyDisplay.textContent = secretBase32;
