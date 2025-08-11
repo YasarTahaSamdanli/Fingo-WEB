@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ message: 'Bu e-posta adresi zaten kayıtlı.' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10); // Buradaki fazla ters eğik çizgi kaldırıldı
         const verificationToken = crypto.randomBytes(32).toString('hex'); // Rastgele token oluştur
         const verificationTokenExpires = new Date(Date.now() + 24 * 3600 * 1000); // 24 saat geçerli
 
@@ -121,30 +121,110 @@ router.get('/verify-email', async (req, res) => {
             { $set: { isVerified: true }, $unset: { verificationToken: "", verificationTokenExpires: "" } }
         );
 
-        // Başarılı doğrulama sonrası kullanıcıyı giriş sayfasına yönlendir
         res.status(200).send(`
             <!DOCTYPE html>
             <html lang="tr">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>E-posta Doğrulama Başarılı</title>
+                <title>Fingo - E-posta Doğrulama Başarılı</title>
                 <script src="https://cdn.tailwindcss.com"></script>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
                 <style>
-                    body { font-family: 'Inter', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-                    .container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); text-align: center; max-width: 500px; width: 90%; }
-                    h1 { color: #22C55E; font-size: 2rem; font-weight: bold; margin-bottom: 20px; }
-                    p { color: #4B5563; font-size: 1rem; margin-bottom: 20px; }
-                    a { background-color: #3B82F6; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: background-color 0.3s ease; }
-                    a:hover { background-color: #2563EB; }
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+                    body {
+                        font-family: 'Inter', sans-serif;
+                        background: linear-gradient(135deg, #e0f2f7 0%, #c1e4ee 100%);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                        margin: 0;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    }
+                    .card {
+                        background-color: white;
+                        padding: 40px;
+                        border-radius: 12px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                        text-align: center;
+                        max-width: 500px;
+                        width: 100%;
+                        transform: translateY(0);
+                        transition: transform 0.5s ease-out;
+                    }
+                    .card.animate {
+                        animation: fadeInScale 0.6s ease-out forwards;
+                    }
+                    @keyframes fadeInScale {
+                        from { opacity: 0; transform: scale(0.9) translateY(20px); }
+                        to { opacity: 1; transform: scale(1) translateY(0); }
+                    }
+                    .icon-circle {
+                        display: inline-flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        background-color: #d1fae5; /* Tailwind green-100 */
+                        color: #059669; /* Tailwind green-600 */
+                        font-size: 3rem;
+                        margin-bottom: 25px;
+                    }
+                    h1 {
+                        color: #10B981; /* Tailwind green-500 */
+                        font-size: 2.25rem; /* text-4xl */
+                        font-weight: 700; /* font-bold */
+                        margin-bottom: 15px;
+                    }
+                    p {
+                        color: #4B5563; /* Tailwind gray-600 */
+                        font-size: 1.125rem; /* text-lg */
+                        margin-bottom: 30px;
+                        line-height: 1.8;
+                    }
+                    .button {
+                        background-color: #3B82F6; /* Tailwind blue-500 */
+                        color: white;
+                        padding: 14px 28px;
+                        border-radius: 8px;
+                        text-decoration: none;
+                        font-weight: 600; /* font-semibold */
+                        transition: background-color 0.3s ease, transform 0.2s ease;
+                        display: inline-block;
+                        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+                    }
+                    .button:hover {
+                        background-color: #2563EB; /* Tailwind blue-600 */
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+                    }
+                    .button:active {
+                        transform: translateY(0);
+                        box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+                    }
                 </style>
             </head>
             <body>
-                <div class="container">
-                    <h1>✅ E-posta Doğrulama Başarılı!</h1>
-                    <p>E-posta adresiniz başarıyla doğrulandı. Şimdi giriş yapabilirsiniz.</p>
-                    <a href="https://yasartahasamdanli.github.io/Fingo-WEB/auth.html">Giriş Yapmak İçin Tıklayın</a>
+                <div id="successCard" class="card">
+                    <div class="icon-circle">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h1>E-posta Doğrulama Başarılı!</h1>
+                    <p>E-posta adresiniz başarıyla doğrulandı. Artık Fingo hesabınıza güvenle giriş yapabilirsiniz.</p>
+                    <a href="https://yasartahasamdanli.github.io/Fingo-WEB/auth.html" class="button">Giriş Yapmak İçin Tıklayın</a>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const successCard = document.getElementById('successCard');
+                        // Sayfa yüklendiğinde kartı animasyonla göster
+                        setTimeout(() => {
+                            successCard.classList.add('animate');
+                        }, 100); // Küçük bir gecikme ekleyelim
+                    });
+                </script>
             </body>
             </html>
         `);
