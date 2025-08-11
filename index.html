@@ -14,10 +14,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f9; /* Açık gri arka plan */
-            color: #334155; /* Varsayılan koyu gri metin */
-        }
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f7f9;
+    color: #334155;
+    /* YENİ KOD: Hafif bir gradient arka plan ekle */
+    background-image: linear-gradient(to bottom right, #f8fafc, #e2e8f0); /* Tailwind gray-50'den gray-200'e geçiş */
+    /* Alternatif gradient:
+    background-image: linear-gradient(to bottom right, #f4f7f9, #e0f2fe);
+    background-image: linear-gradient(to right, #eef2ff, #e0e7ff);
+    background-image: linear-gradient(to bottom, #f4f7f9, #f0f4f7);
+    */
+}
 
         /* Sidebar Geçiş Animasyonu */
         #sidebar {
