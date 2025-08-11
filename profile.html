@@ -59,6 +59,13 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* QR kod imajı için stil, responsive olması için */
+        #qrcodeCanvas img {
+            max-width: 180px; /* Belirli bir genişlik sınırı */
+            height: auto;    /* Oranını koru */
+            display: block;  /* Ortalamak için */
+            margin: 0 auto;  /* Ortala */
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
@@ -123,7 +130,9 @@
                 <!-- QR Kodu ve Gizli Anahtar Alanı -->
                 <div id="qrcodeDisplayArea" class="hidden flex flex-col items-center justify-center p-4 border border-gray-300 rounded-md bg-gray-50 mt-4 space-y-4">
                     <p class="text-gray-700 text-center font-medium">Lütfen telefonunuzdaki Google Authenticator veya benzeri bir uygulama ile aşağıdaki QR kodu tarayın:</p>
-                    <div id="qrcodeCanvas" class="p-2 bg-white border border-gray-200 rounded-md"></div>
+                    <div id="qrcodeCanvas" class="p-2 bg-white border border-gray-200 rounded-md flex items-center justify-center">
+                        <!-- QR Kodu buraya çizilecek veya img olarak gelecek -->
+                    </div>
                     <p class="text-gray-700 text-center">Veya manuel olarak şu gizli anahtarı girin:</p>
                     <p id="secretKeyDisplay" class="font-bold text-lg text-blue-800 break-all bg-gray-200 p-2 rounded-md select-all"></p>
                     <p class="text-gray-700 text-center font-medium">Uygulamadaki 6 haneli kodu aşağıya girerek 2FA'yı etkinleştirin:</p>
@@ -162,7 +171,7 @@
     </div>
 
     <!-- QRCode kütüphanesi - profile.js'den ÖNCE ve doğru CDN'den yükleniyor -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- profile.js -->
     <script src="/Fingo-WEB/js/profile.js"></script>
 </body>
