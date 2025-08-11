@@ -4,12 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Reyon Kartları</title>
-    <!-- Tailwind CSS (Derlenmiş dosyamızı kullanıyoruz) -->
-    <link href="/Fingo-WEB/output.css" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons (Dönüş butonu için) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Sadece yazıcı çıktısı için özel stiller */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Ana koyu ton */
+            color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
+
+            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            background-image:
+                /* Büyük, yumuşak, mavimsi bulutsu */
+                radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
+                /* Büyük, yumuşak, morumsu bulutsu */
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
+                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
+                radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
+
+                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
+                radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
+                radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.8px 1.8px at 90% 40%, #ffffff 0%, transparent 50%),
+                radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
+                radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
+
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
+            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+        }
+
+        /* Input ve Select Elementleri için Tema Uyumu */
+        .form-input, .form-select {
+            background-color: #1A202C; /* Koyu input arkaplanı */
+            color: #E2E8F0; /* Açık metin rengi */
+            border-color: #4A5568; /* Koyu border */
+        }
+        .form-input::placeholder {
+            color: #A0AEC0; /* Açık placeholder */
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #60A5FA; /* Mavi odaklama rengi */
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
+        }
+
+        /* Message Box stilleri (güncellendi) */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1000;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.success { background-color: #10B981; } /* Tailwind green-500 */
+        .message-box.error { background-color: #EF4444; } /* Tailwind red-500 */
+        .message-box.info { background-color: #3B82F6; } /* Tailwind blue-500 */
+        .message-box.warning { background-color: #F59E0B; } /* Tailwind amber-500 */
+        .message-box.confirm {
+            background-color: #607D8B; /* Tailwind blue-gray-500 */
+            min-width: 300px;
+            flex-direction: column; /* Butonları alt alta sırala */
+            align-items: center;
+        }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 15px;
+            line-height: 1;
+        }
+        .message-box.confirm .message-box-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+        /* Spinner CSS */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 1em;
+            height: 1em;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sadece yazıcı çıktısı için özel stiller (DOKUNULMADI) */
         @media print {
             body {
                 background-color: #fff; /* Yazdırırken arka plan beyaz olsun */
@@ -89,111 +193,75 @@
                 margin-top: auto; /* En alta hizala */
             }
         }
-
-        /* Message Box stilleri (aynı kalabilir) */
-        .message-box {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            z-index: 1000;
-        }
-        .message-box.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .message-box.success { background-color: #4CAF50; }
-        .message-box.error { background-color: #f44336; }
-        .message-box.info { background-color: #2196F3; }
-        .message-box.warning { background-color: #ff9800; }
-        .message-box.confirm { background-color: #607D8B; }
-        .message-box-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            margin-left: 15px;
-        }
     </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-100 font-sans">
+<body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Navigasyon -->
-    <header class="bg-white shadow-md p-4 flex justify-between items-center z-40 relative">
+    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
         <div class="flex items-center">
             <!-- Ana Sayfa Butonu -->
-            <button id="goToDashboardBtn" class="p-2 rounded-md hover:bg-gray-200 mr-4">
-                <i class="fas fa-home text-gray-700 text-xl"></i>
+            <button id="goToDashboardBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-home text-white text-xl"></i>
             </button>
-            <h1 class="text-2xl md:text-3xl font-bold text-blue-700">Reyon Kartları Oluştur</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Reyon Kartları Oluştur</h1>
         </div>
         <div class="flex items-center space-x-3 md:space-x-4">
-            <span id="loggedInUser" class="text-gray-700 text-sm md:text-base font-medium hidden md:block"></span>
-            <button id="logoutBtn" class="bg-red-500 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-600 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
     <!-- Ana İçerik Alanı -->
-    <main class="flex-1 p-4 md:p-6 lg:p-8 mt-4 mb-4 bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-7xl mx-auto">
-        <p class="text-sm text-gray-600 text-center mb-8">Yazdırmak istediğiniz ürünleri seçin ve reyon kartlarını oluşturun.</p>
+    <main class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl pt-20"> <!-- Header yüksekliği kadar padding-top -->
+        <p class="text-lg text-gray-400 text-center mb-10 font-light">Yazdırmak istediğiniz ürünleri seçin ve reyon kartlarını oluşturun.</p>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Sol Sütun: Ürün Arama ve Seçim -->
             <div class="lg:col-span-1 filter-section">
-                <div class="p-4 bg-purple-50 rounded-lg border border-purple-200 shadow-md h-full flex flex-col">
-                    <h2 class="text-xl font-semibold text-purple-600 mb-4 text-center">Ürünleri Seçin</h2>
-                    <div class="grid grid-cols-1 gap-3 mb-3">
+                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
+                    <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Ürünleri Seçin</h2>
+                    <div class="grid grid-cols-1 gap-4 mb-4">
                         <div>
-                            <label for="searchProductInput" class="block text-gray-700 text-sm font-medium mb-1">Ürün Adı Ara:</label>
-                            <input type="text" id="searchProductInput" placeholder="Ürün adına göre ara" class="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 text-sm">
+                            <label for="searchProductInput" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
+                            <input type="text" id="searchProductInput" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
                         </div>
                         <div>
-                            <label for="filterCategorySelect" class="block text-gray-700 text-sm font-medium mb-1">Kategoriye Göre Filtrele:</label>
-                            <select id="filterCategorySelect" class="w-full p-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 text-sm">
+                            <label for="filterCategorySelect" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
+                            <select id="filterCategorySelect" class="form-select w-full p-3 text-base shadow-sm">
                                 <option value="">Tüm Kategoriler</option>
                                 <!-- Kategoriler JS ile yüklenecek -->
                             </select>
                         </div>
                     </div>
-                    <div class="flex space-x-2 mt-4 mb-4">
-                        <button id="applyFilterBtn" class="flex-1 bg-purple-600 text-white p-2 rounded-md hover:bg-purple-700 transition-colors text-sm">Filtrele</button>
-                        <button id="clearFilterBtn" class="flex-1 bg-gray-400 text-white p-2 rounded-md hover:bg-gray-500 transition-colors text-sm">Filtreleri Temizle</button>
+                    <div class="flex space-x-3 mt-6 mb-4">
+                        <button id="applyFilterBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Filtrele</button>
+                        <button id="clearFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Filtreleri Temizle</button>
                     </div>
 
-                    <div id="availableProductsList" class="space-y-3 max-h-[400px] overflow-y-auto p-2 bg-gray-50 rounded-md border border-gray-200 flex-1 relative">
+                    <div id="availableProductsList" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1 relative">
                         <!-- Ürünler buraya JS ile yüklenecek -->
-                        <p class="text-center text-gray-500 py-4">Ürünler yükleniyor...</p>
-                        <div id="productsLoadingOverlay" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden rounded-lg">
-                            <p class="text-center text-gray-700 text-lg">
+                        <p class="text-center text-gray-400 py-4">Ürünler yükleniyor...</p>
+                        <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                            <p class="text-center text-gray-300 text-lg">
                                 <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
                                 Yükleniyor...
                             </p>
                         </div>
                     </div>
-                    <button id="addAllToCardsBtn" class="mt-4 bg-teal-600 text-white p-2 rounded-md hover:bg-teal-700 transition-colors text-sm">Tüm Filtrelenenleri Kartlara Ekle</button>
+                    <button id="addAllToCardsBtn" class="mt-6 bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md font-semibold text-lg">Tüm Filtrelenenleri Kartlara Ekle</button>
                 </div>
             </div>
 
             <!-- Sağ Sütun: Seçilen Kartlar ve Yazdırma -->
             <div class="lg:col-span-1 product-selection-section">
-                <div class="p-4 bg-green-50 rounded-lg border border-green-200 shadow-md h-full flex flex-col">
-                    <h2 class="text-xl font-semibold text-green-600 mb-4 text-center">Yazdırılacak Reyon Kartları</h2>
-                    <div id="selectedProductsForCards" class="space-y-3 max-h-[400px] overflow-y-auto p-2 bg-gray-50 rounded-md border border-gray-200 flex-1">
-                        <p class="text-center text-gray-500 py-4" id="noSelectedProductsMessage">Henüz seçilen ürün yok.</p>
+                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
+                    <h2 class="text-2xl font-bold text-green-300 mb-6 text-center">Yazdırılacak Reyon Kartları</h2>
+                    <div id="selectedProductsForCards" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1">
+                        <p class="text-center text-gray-400 py-4" id="noSelectedProductsMessage">Henüz seçilen ürün yok.</p>
                         <!-- Seçilen ürünler buraya JS ile yüklenecek -->
                     </div>
-                    <button id="clearSelectedProductsBtn" class="mt-4 bg-orange-500 text-white p-2 rounded-md hover:bg-orange-600 transition-colors text-sm">Tüm Seçilenleri Temizle</button>
+                    <button id="clearSelectedProductsBtn" class="mt-6 bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition-colors shadow-md font-semibold text-lg">Tüm Seçilenleri Temizle</button>
                 </div>
             </div>
         </div>
@@ -247,6 +315,7 @@
             console.warn("JWT geçersiz veya süresi dolmuş. Giriş sayfasına yönlendiriliyor.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
+            localStorage.removeItem('fingoNotifications');
             window.location.href = 'auth.html';
         }
 
@@ -300,6 +369,7 @@
             function handleAuthError() {
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('userId');
+                localStorage.removeItem('fingoNotifications');
                 showMessage('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'error');
                 setTimeout(() => {
                     window.location.href = 'auth.html';
@@ -333,14 +403,14 @@
                     allProducts = await response.json(); // Tüm ürünleri hafızada tut
 
                     if (allProducts.length === 0) {
-                        if (availableProductsListDiv) availableProductsListDiv.innerHTML = '<p class="text-center text-gray-500 py-4">Filtrelere uygun ürün bulunmamaktadır.</p>';
+                        if (availableProductsListDiv) availableProductsListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Filtrelere uygun ürün bulunmamaktadır.</p>';
                     } else {
                         renderAvailableProducts();
                     }
 
                 } catch (error) {
                     console.error('Ürünleri çekerken hata:', error);
-                    if (availableProductsListDiv) availableProductsListDiv.innerHTML = `<p class="text-center text-red-500 py-4">Ürünler yüklenirken bir hata oluştu: ${error.message}</p>`;
+                    if (availableProductsListDiv) availableProductsListDiv.innerHTML = `<p class="text-center text-red-400 py-4">Ürünler yüklenirken bir hata oluştu: ${error.message}</p>`;
                 } finally {
                     if (productsLoadingOverlay) productsLoadingOverlay.classList.add('hidden');
                 }
@@ -351,15 +421,15 @@
                 if (availableProductsListDiv) availableProductsListDiv.innerHTML = '';
                 allProducts.forEach(product => {
                     const productItem = document.createElement('div');
-                    productItem.className = `flex items-center justify-between p-2 bg-white border border-gray-100 rounded-md shadow-sm`;
+                    productItem.className = `flex items-center justify-between p-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm`;
                     productItem.innerHTML = `
                         <label class="flex items-center cursor-pointer flex-1">
-                            <input type="checkbox" data-id="${product._id}" class="product-checkbox mr-2 rounded text-blue-600">
-                            <span class="text-gray-800 font-medium text-sm">
-                                ${product.name} (${product.price.toFixed(2)} TL / ${product.displayGrammage})
+                            <input type="checkbox" data-id="${product._id}" class="product-checkbox mr-2 rounded text-blue-600 focus:ring-blue-500">
+                            <span class="text-gray-200 font-medium text-sm">
+                                ${product.name} (${product.price.toFixed(2)} TL / ${product.displayGrammage || product.unit})
                             </span>
                         </label>
-                        <button data-id="${product._id}" class="add-to-card-btn bg-blue-500 text-white text-xs px-2 py-1 rounded-md hover:bg-blue-600 transition-colors ml-2">Ekle</button>
+                        <button data-id="${product._id}" class="add-to-card-btn bg-blue-600 text-white text-xs px-2 py-1 rounded-md hover:bg-blue-700 transition-colors ml-2">Ekle</button>
                     `;
                     availableProductsListDiv.appendChild(productItem);
                 });
@@ -377,6 +447,9 @@
                             selectedProducts.push(productToAdd);
                             renderSelectedProducts();
                             updateCheckboxStates();
+                            showMessage(`"${productToAdd.name}" kartlara eklendi.`, 'info');
+                        } else if (productToAdd) {
+                             showMessage(`"${productToAdd.name}" zaten seçilenler listesinde.`, 'warning');
                         }
                     };
                 });
@@ -388,9 +461,11 @@
                         if (checkbox.checked) {
                             if (product && !selectedProducts.some(p => p._id === productId)) {
                                 selectedProducts.push(product);
+                                showMessage(`"${product.name}" kartlara eklendi.`, 'info');
                             }
                         } else {
                             selectedProducts = selectedProducts.filter(p => p._id !== productId);
+                            showMessage(`"${product.name}" kartlardan kaldırıldı.`, 'info');
                         }
                         renderSelectedProducts();
                     };
@@ -414,12 +489,12 @@
                     if (noSelectedProductsMessage) noSelectedProductsMessage.classList.add('hidden');
                     selectedProducts.forEach(product => {
                         const productItem = document.createElement('div');
-                        productItem.className = `flex items-center justify-between p-2 bg-white border border-gray-100 rounded-md shadow-sm`;
+                        productItem.className = `flex items-center justify-between p-2 bg-gray-800 border border-gray-700 rounded-md shadow-sm`;
                         productItem.innerHTML = `
-                            <span class="text-gray-800 font-medium text-sm">
+                            <span class="text-gray-200 font-medium text-sm">
                                 ${product.name}
                             </span>
-                            <button data-id="${product._id}" class="remove-from-card-btn bg-red-500 text-white text-xs px-2 py-1 rounded-md hover:bg-red-600 transition-colors ml-2">Kaldır</button>
+                            <button data-id="${product._id}" class="remove-from-card-btn bg-red-600 text-white text-xs px-2 py-1 rounded-md hover:bg-red-700 transition-colors ml-2">Kaldır</button>
                         `;
                         selectedProductsForCardsDiv.appendChild(productItem);
                     });
@@ -432,9 +507,13 @@
                 document.querySelectorAll('.remove-from-card-btn').forEach(button => {
                     button.onclick = (event) => {
                         const productId = button.dataset.id;
+                        const removedProduct = selectedProducts.find(p => p._id === productId);
                         selectedProducts = selectedProducts.filter(p => p._id !== productId);
                         renderSelectedProducts();
                         updateCheckboxStates();
+                        if (removedProduct) {
+                            showMessage(`"${removedProduct.name}" kartlardan kaldırıldı.`, 'info');
+                        }
                     };
                 });
             }
@@ -478,20 +557,32 @@
             if (addAllToCardsBtn) {
                 addAllToCardsBtn.addEventListener('click', () => {
                     // Sadece filtre uygulanmış ürünleri ekle
+                    let addedCount = 0;
                     allProducts.forEach(product => {
                         if (!selectedProducts.some(p => p._id === product._id)) {
                             selectedProducts.push(product);
+                            addedCount++;
                         }
                     });
                     renderSelectedProducts();
                     updateCheckboxStates();
+                    if (addedCount > 0) {
+                        showMessage(`${addedCount} ürün kartlara eklendi.`, 'success');
+                    } else {
+                        showMessage('Zaten tüm filtrelenen ürünler kartlarda.', 'info');
+                    }
                 });
             }
             if (clearSelectedProductsBtn) {
                 clearSelectedProductsBtn.addEventListener('click', () => {
+                    if (selectedProducts.length === 0) {
+                        showMessage('Kartlar zaten boş.', 'info');
+                        return;
+                    }
                     selectedProducts = [];
                     renderSelectedProducts();
                     updateCheckboxStates();
+                    showMessage('Tüm seçilen ürünler kartlardan kaldırıldı.', 'success');
                 });
             }
 
@@ -517,16 +608,16 @@
                     card.className = 'shelf-card'; // Tailwind ve özel print CSS'i burada
 
                     // Fiyat güncelleme tarihi
-                    const updateDate = product.priceUpdateDate || 'Tarih Yok';
+                    const updateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleDateString('tr-TR') : 'Tarih Yok';
 
                     card.innerHTML = `
                         <h3 class="product-name">${product.name}</h3>
                         <div class="price">${product.price.toFixed(2)} TL</div>
-                        ${product.unit === 'adet' && product.weightOrVolumePerUnit > 0 ?
-                            `<div class="grammage">${(product.weightOrVolumePerUnit * 1000).toFixed(0)} gr / Adet</div>` :
+                        ${(product.unit === 'adet' && product.weightOrVolumePerUnit > 0 && product.displayGrammage) ?
+                            `<div class="grammage">${product.displayGrammage} / Adet</div>` :
                             (product.unit === 'kg' || product.unit === 'litre' ? `<div class="grammage">${product.weightOrVolumePerUnit} ${product.unit}</div>` : '')
                         }
-                        ${(product.unit === 'adet' && product.weightOrVolumePerUnit > 0) || product.unit === 'kg' || product.unit === 'litre' ?
+                        ${((product.unit === 'adet' && product.weightOrVolumePerUnit > 0) || product.unit === 'kg' || product.unit === 'litre') && product.pricePerUnitKgOrLiter ?
                             `<div class="unit-price">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: ${product.pricePerUnitKgOrLiter} TL</div>` : ''
                         }
                         <div class="update-date">Güncelleme: ${updateDate}</div>
@@ -556,6 +647,8 @@
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
                     localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('fingoNotifications'); // Bildirimleri de temizle
                     window.location.href = 'auth.html';
                 });
             } else { console.error("Logout button not found!"); }
