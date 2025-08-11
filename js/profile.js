@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const disable2FASection = document.getElementById('disable2FASection');
     const generateSecretBtn = document.getElementById('generateSecretBtn');
     const qrcodeDisplayArea = document.getElementById('qrcodeDisplayArea');
-    const qrcodeCanvas = document.getElementById('qrcodeCanvas');
+    const qrcodeCanvas = document.getElementById('qrcodeCanvas'); // Bu div'in içine QR kodu yerleştireceğiz
     const secretKeyDisplay = document.getElementById('secretKeyDisplay');
     const twoFACodeInput = document.getElementById('2faCodeInput');
     const verify2FAEnableBtn = document.getElementById('verify2FAEnableBtn');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageBox = document.getElementById('messageBox');
     const messageText = document.getElementById('messageText');
 
-    let currentQRCode = null; // QR kodu örneğini tutmak için
+    let currentQRCodeInstance = null; // QR kodu örneğini tutmak için (QRCode.js için)
 
     // Yardımcı Fonksiyon: Mesaj Kutusu Göster
     function showMessageBox(message, type = 'success') {
@@ -238,22 +238,40 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error("Backend'den geçerli OTP Auth URL veya gizli anahtar alınamadı.");
                 }
 
-                // QR kodunu temizle ve yeniden oluştur
-                if (currentQRCode) {
-                    currentQRCode.clear(); // Mevcut QR kodunu temizle
-                    qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
-                }
+                // QR kodunu temizle
+                qrcodeCanvas.innerHTML = ''; // Önceki QR kodu veya içeriği temizle
 
-                // DÜZELTME: Doğrudan global 'QRCode' objesini kullan
-                // Doğru CDN yüklendiği için artık 'new QRCode' constructor olarak çalışacaktır.
-                currentQRCode = new QRCode(qrcodeCanvas, {
-                    text: otpauthUrl,
-                    width: 180,
-                    height: 180,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H // Global QRCode objesinden CorrectLevel'e erişildi
-                });
+                // Backend'den gelen verinin formatına göre QR kodu göster
+                if (otpauthUrl.startsWith("data:image/png;base64,")) {
+                    // Eğer Base64 PNG imajı geliyorsa, direkt <img> olarak göster
+                    const img = document.createElement("img");
+                    img.src = otpauthUrl;
+                    img.alt = "QR Code";
+                    // img.style.width = "200px"; // HTML/CSS ile responsive yapalım
+                    img.classList.add('w-48', 'h-48', 'object-contain', 'rounded-md'); // Tailwind ile stil
+                    qrcodeCanvas.appendChild(img); // qrcodeCanvas div'ine ekle
+                    console.log("QR Code displayed as an <img> from Base64 data.");
+                } else if (otpauthUrl.startsWith("otpauth://")) {
+                    // Eğer otpauth:// URI geliyorsa, QRCode.js ile üret
+                    // Mevcut bir QRCode instance'ı varsa temizle
+                    if (currentQRCodeInstance) {
+                        currentQRCodeInstance.clear();
+                        currentQRCodeInstance = null; // Eski instance'ı sıfırla
+                    }
+                    currentQRCodeInstance = new QRCode(qrcodeCanvas, {
+                        text: otpauthUrl,
+                        width: 180,
+                        height: 180,
+                        colorDark : "#000000",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                    console.log("QR Code generated using QRCode.js from otpauth:// URI.");
+                } else {
+                    console.error("Bilinmeyen QR kod formatı. Backend çıktısını kontrol edin:", otpauthUrl);
+                    showMessageBox("QR kodu gösterilemedi: Bilinmeyen format.", "error");
+                    return;
+                }
 
                 secretKeyDisplay.textContent = secretBase32;
                 qrcodeDisplayArea.classList.remove('hidden');
