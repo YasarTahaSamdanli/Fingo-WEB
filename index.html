@@ -215,6 +215,37 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* SIDEBAR CSS BAŞLANGICI */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Başlangıçta gizli */
+            width: 256px; /* Sidebar genişliği */
+            z-index: 50; /* Diğer her şeyden üstte */
+            /* Tailwind sınıfları zaten top-0, left-0, h-full, fixed, bg-blue-900, text-white, p-4, shadow-lg, pt-20 içeriyor */
+        }
+        #sidebar.open {
+            transform: translateX(0); /* Açıkken görünür */
+        }
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0; /* Tüm ekranı kapla */
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40; /* Sidebar'ın altında, içeriğin üstünde */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* mainContent'in sidebar açıldığında kayması için */
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out; /* margin-left için geçiş */
+            flex-grow: 1; /* Esnek kutuda alanı doldur */
+        }
+        /* END SIDEBAR CSS */
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -244,7 +275,7 @@
     <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
 
         <!-- Yan Menü (Sidebar) -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transition-transform duration-300 ease-in-out shadow-lg pt-20">
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
                 <!-- Sidebar Kapatma Butonu -->
@@ -1213,6 +1244,7 @@
                     console.error("monthlySummaryChart canvas context not found.");
                     return;
                 }
+                // Eğer Chart objesi zaten varsa, yenisini oluşturmadan önce yok et
                 if (monthlyChart) {
                     monthlyChart.destroy();
                 }
@@ -1220,14 +1252,20 @@
                 // Veri yoksa grafik yerine bilgilendirici mesaj göster
                 if (data.length === 0) {
                     console.log("Aylık özet için veri yok.");
-                    // Canvas üzerinde bir "Veri yok" mesajı gösterme veya canvas'ı gizleme
-                    // Örneğin: monthlySummaryChartCtx.canvas.style.display = 'none';
-                    // Canvas elementinin parent div'ine bir "Veri yok" mesajı ekleyebiliriz.
                     const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
                     if (chartContainer) {
+                        // Var olan canvas'ı kaldırıp yerine mesajı yerleştir
                         chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili ay için finansal özet verisi bulunamadı.</p>';
                     }
                     return;
+                } else {
+                    // Veri varsa, mesajı kaldırıp canvas'ı tekrar ekle (eğer daha önce kaldırılmışsa)
+                    const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
+                    if (chartContainer && !monthlySummaryChartCtx.canvas.isConnected) {
+                        chartContainer.innerHTML = '<canvas id="monthlySummaryChart"></canvas>';
+                        // Canvas context'ini tekrar al
+                        monthlySummaryChartCtx = document.getElementById('monthlySummaryChart').getContext('2d');
+                    }
                 }
 
 
@@ -1348,9 +1386,18 @@
                     console.log("Yıllık özet için veri yok.");
                     const chartContainer = annualSummaryChartCtx.canvas.parentElement;
                     if (chartContainer) {
+                        // Var olan canvas'ı kaldırıp yerine mesajı yerleştir
                         chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili yıl için finansal özet verisi bulunamadı.</p>';
                     }
                     return;
+                } else {
+                     // Veri varsa, mesajı kaldırıp canvas'ı tekrar ekle (eğer daha önce kaldırılmışsa)
+                    const chartContainer = annualSummaryChartCtx.canvas.parentElement;
+                    if (chartContainer && !annualSummaryChartCtx.canvas.isConnected) {
+                        chartContainer.innerHTML = '<canvas id="annualSummaryChart"></canvas>';
+                        // Canvas context'ini tekrar al
+                        annualSummaryChartCtx = document.getElementById('annualSummaryChart').getContext('2d');
+                    }
                 }
 
                 const labels = data.map(item => item.year);
@@ -1470,7 +1517,7 @@
                 applyMonthlySummaryFilterBtn.addEventListener('click', () => {
                     const selectedYear = yearSelect ? parseInt(yearSelect.value) : new Date().getFullYear();
                     const selectedMonth = monthSelect ? parseInt(monthSelect.value) : new Date().getMonth();
-                    fetchMonthlySummary(selectedYear, selectedMonth); // API'ye 0-tabanlı ay gönderiyoruz, API içinde +1 ile halledilecek
+                    fetchMonthlySummary(selectedYear, selectedMonth);
                 });
             }
 
@@ -1509,8 +1556,10 @@
 
             // Sidebar Fonksiyonları
             const closeSidebar = () => {
-                if (sidebar) sidebar.classList.add('-translate-x-full');
-                if (sidebarOverlay) sidebarOverlay.classList.add('hidden');
+                if (sidebar) sidebar.classList.remove('open'); // 'open' sınıfını kaldır
+                if (sidebar) sidebar.classList.add('-translate-x-full'); // translate ile gizle
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // overlay'i kapat
+
                 // Masaüstünde sidebar kapandığında mainContent'in sol marjını kaldır
                 if (window.innerWidth >= 1024 && mainContent) {
                     mainContent.classList.remove('lg:ml-64');
@@ -1518,20 +1567,24 @@
             };
 
             const openSidebar = () => {
-                if (sidebar) sidebar.classList.remove('-translate-x-full');
-                if (sidebarOverlay) sidebarOverlay.classList.remove('hidden');
-                // Masaüstünde sidebar açıldığında mainContent'e sol marj ekle
+                if (sidebar) sidebar.classList.add('open'); // 'open' sınıfını ekle
+                if (sidebar) sidebar.classList.remove('-translate-x-full'); // translate'i kaldır
+
+                // Eğer ekran genişliği large (lg) ve daha büyükse, mainContent'e sol marj ekle
                 if (window.innerWidth >= 1024 && mainContent) {
                     mainContent.classList.add('lg:ml-64');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Masaüstünde overlay gösterme
+                } else {
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active'); // Mobil'de overlay göster
                 }
             };
 
             const initializeSidebarState = () => {
-                // Sayfa yüklendiğinde varsayılan olarak sidebar'ı kapat
-                closeSidebar();
-                // Eğer ekran genişliği large (lg) ve daha büyükse, sidebar'ı aç
+                // Sayfa yüklendiğinde ve yeniden boyutlandırıldığında doğru durumu ayarla
                 if (window.innerWidth >= 1024) {
-                    openSidebar();
+                    openSidebar(); // Masaüstünde açık kalsın
+                } else {
+                    closeSidebar(); // Mobil'de kapalı başlasın
                 }
             };
 
@@ -1540,10 +1593,10 @@
             if (sidebarToggleBtn) {
                 sidebarToggleBtn.addEventListener('click', () => {
                     // Sidebar açıksa kapat, kapalıysa aç
-                    if (sidebar && sidebar.classList.contains('-translate-x-full')) {
-                        openSidebar();
-                    } else {
+                    if (sidebar && sidebar.classList.contains('open')) {
                         closeSidebar();
+                    } else {
+                        openSidebar();
                     }
                 });
             }
