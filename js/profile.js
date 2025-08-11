@@ -1,5 +1,4 @@
 // public/js/profile.js
-// DÜZELTME: Bu dosya artık type="module" olarak yüklenmediği için 'import' statements kaldırıldı.
 // QRCode kütüphanesi profile.html içinde profile.js'den önce yüklendiği için global olarak erişilebilir.
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -246,7 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // DÜZELTME: Doğrudan global 'QRCode' objesini kullan
-                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' anahtar kelimesiyle doğrudan global QRCode kullanıldı
+                // Doğru CDN yüklendiği için artık 'new QRCode' constructor olarak çalışacaktır.
+                currentQRCode = new QRCode(qrcodeCanvas, {
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
