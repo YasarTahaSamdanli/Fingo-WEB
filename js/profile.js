@@ -1,6 +1,6 @@
 // public/js/profile.js
-// DÜZELTME: Bu dosya artık type="module" olarak yüklenmediği için 'import' statements kaldırıldı.
-// Eğer gelecekte başka modüllerden import yapılması gerekirse, bu durum yeniden değerlendirilmelidir.
+// DÜZELTME: qrcode.js kütüphanesi doğrudan import ediliyor
+import QRCode from '../../node_modules/qrcode.js/qrcode.min.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Profile.js script loaded.");
@@ -245,22 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
                 }
 
-                // DÜZELTME: Doğrudan 'QRCode' constructor'ına eriş.
-                // Eğer QRCode globalde bir fonksiyon olarak tanımlıysa (ki qrcode.js genellikle böyledir),
-                // 'new' ile çağrılabilir olmalı.
-                if (typeof QRCode !== 'function') { // Globalde QRCode yoksa veya constructor değilse
-                    console.error("HATA: QRCode globalde bulunamadı veya bir constructor değil!");
-                    showMessageBox("QR kod kütüphanesi yüklenemedi veya yanlış. Geliştiriciye başvurun.", "error");
-                    return;
-                }
-
-                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' ve 'window.' kaldırıldı
+                // DÜZELTME: Import edilen QRCode objesini kullan
+                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' anahtar kelimesiyle doğrudan import edilen QRCode kullanıldı
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
-                    correctLevel : 2 // QRCode.CorrectLevel.H yerine doğrudan sayısal değer (2) kullanıldı
+                    correctLevel : QRCode.CorrectLevel.H // Import edilen QRCode objesinden CorrectLevel'e erişildi
                 });
 
                 secretKeyDisplay.textContent = secretBase32;
