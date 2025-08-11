@@ -1,4 +1,7 @@
 // public/js/profile.js
+// DÜZELTME: Bu dosya artık type="module" olarak yüklenmediği için 'import' statements kaldırıldı.
+// Eğer gelecekte başka modüllerden import yapılması gerekirse, bu durum yeniden değerlendirilmelidir.
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Profile.js script loaded.");
 
@@ -242,27 +245,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
                 }
 
-                // DÜZELTME: window.QRCode bir constructor değilse doğrudan çağır (veya global objeye güvende)
-                // En iyi uygulama: qrcode.js kütüphanesini 'type="module"' olarak import etmek veya
-                // bu scripti 'type="module"' olmadan yüklemek. Şimdilik doğrudan çağrıyı deneriz.
-                // Eğer hala sorun olursa, qrcode.js'i <script type="module"> içinde import etmeyi deneyebiliriz.
-
-                // Bu kütüphanenin qrcode.js olduğunu varsayarsak, constructor'ı bu şekilde çağrılır:
-                // new QRCode(el, options);
-                // Ancak hata "is not a constructor" dediği için, ya kütüphane doğru yüklenmiyor
-                // ya da qrcode.js'in farklı bir versiyonu kullanılıyor olabilir.
-                // qrcode.min.js'in CDN'den yüklenmesi, global olarak "QRCode" objesini oluşturur.
-                // window.QRCode'e eriştiğimiz için buradaki sorun ya bu CDN'deki versiyonun constructor olmaması
-                // ya da modül kapsamından dolayı constructor'a erişilememesi.
-                // Global "QRCode" objesinin varlığını kontrol edelim.
-
-                if (typeof window.QRCode !== 'function') {
-                    console.error("HATA: window.QRCode bir fonksiyon veya constructor değil!");
+                // DÜZELTME: Doğrudan 'QRCode' constructor'ına eriş.
+                // Eğer QRCode globalde bir fonksiyon olarak tanımlıysa (ki qrcode.js genellikle böyledir),
+                // 'new' ile çağrılabilir olmalı.
+                if (typeof QRCode !== 'function') { // Globalde QRCode yoksa veya constructor değilse
+                    console.error("HATA: QRCode globalde bulunamadı veya bir constructor değil!");
                     showMessageBox("QR kod kütüphanesi yüklenemedi veya yanlış. Geliştiriciye başvurun.", "error");
                     return;
                 }
 
-                currentQRCode = new window.QRCode(qrcodeCanvas, {
+                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' ve 'window.' kaldırıldı
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
