@@ -161,7 +161,9 @@
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <!-- DÜZELTME: qrcode.min.js CDN kaldırıldı -->
-    <script type="module" src="/Fingo-WEB/js/profile.js"></script>
+    <!-- qrcode.min.js CDN - profile.js'den ÖNCE yükleniyor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
+    <!-- profile.js - type="module" kaldırıldı -->
+    <script src="/Fingo-WEB/js/profile.js"></script>
 </body>
 </html>

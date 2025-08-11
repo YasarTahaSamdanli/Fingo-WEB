@@ -1,6 +1,6 @@
 // public/js/profile.js
-// DÜZELTME: qrcode.js kütüphanesi doğrudan import ediliyor
-import QRCode from '../../node_modules/qrcode.js/qrcode.min.js';
+// DÜZELTME: Bu dosya artık type="module" olarak yüklenmediği için 'import' statements kaldırıldı.
+// QRCode kütüphanesi profile.html içinde profile.js'den önce yüklendiği için global olarak erişilebilir.
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Profile.js script loaded.");
@@ -245,14 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     qrcodeCanvas.innerHTML = ''; // HTML içeriğini de temizle
                 }
 
-                // DÜZELTME: Import edilen QRCode objesini kullan
-                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' anahtar kelimesiyle doğrudan import edilen QRCode kullanıldı
+                // DÜZELTME: Doğrudan global 'QRCode' objesini kullan
+                currentQRCode = new QRCode(qrcodeCanvas, { // 'new' anahtar kelimesiyle doğrudan global QRCode kullanıldı
                     text: otpauthUrl,
                     width: 180,
                     height: 180,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H // Import edilen QRCode objesinden CorrectLevel'e erişildi
+                    correctLevel : QRCode.CorrectLevel.H // Global QRCode objesinden CorrectLevel'e erişildi
                 });
 
                 secretKeyDisplay.textContent = secretBase32;
