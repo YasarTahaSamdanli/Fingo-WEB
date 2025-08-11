@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo Web Uygulaması</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -219,17 +215,14 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
     <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
         <div class="flex items-center">
-            <!-- Menü Aç/Kapa Butonu -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
             <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Finans Takip</h1>
         </div>
         <div class="flex items-center space-x-3 md:space-x-4">
-            <!-- Bildirim Zili ve Sayacı -->
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
@@ -240,14 +233,9 @@
         </div>
     </header>
 
-    <!-- Ana İçerik Alanı -->
-    <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
-
-        <!-- Yan Menü (Sidebar) -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
+    <div class="flex flex-1 pt-16"> <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
-                <!-- Sidebar Kapatma Butonu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -277,15 +265,12 @@
             </nav>
         </aside>
 
-        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-        <!-- Ana İçerik -->
         <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl">
             <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Hoş Geldin, <span id="loggedInUserMain"></span>!</h2>
             <p class="text-lg text-gray-400 text-center mb-10 font-light">Finansal işlemlerinizi kolayca yönetin ve takip edin. (v1.5.8)</p>
 
-            <!-- Genel Finansal Özet -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Genel Finansal Özet</h3>
                 <div id="generalSummary" class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -304,7 +289,6 @@
                 </div>
             </section>
 
-            <!-- Yeni İşlem Ekle Formu -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yeni İşlem Ekle</h3>
                 <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -326,8 +310,7 @@
                     <div>
                         <label for="category" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
                         <select id="category" name="category" class="form-select w-full p-3 text-base">
-                            <!-- Kategoriler JS ile yüklenecek -->
-                        </select>
+                            </select>
                     </div>
                     <div>
                         <label for="date" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
@@ -340,7 +323,6 @@
                 </form>
             </section>
 
-            <!-- Kategori Oluştur/Düzenle -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Kategori Oluştur / Düzenle</h3>
                 <form id="categoryForm" class="flex flex-col md:flex-row gap-4 items-center">
@@ -363,7 +345,6 @@
                 </div>
             </section>
 
-            <!-- İşlemleri Filtrele -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">İşlemleri Filtrele</h3>
                 <form id="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -379,8 +360,7 @@
                         <label for="filterCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
                         <select id="filterCategory" class="form-select w-full p-3 text-base">
                             <option value="">Tümü</option>
-                            <!-- Kategoriler JS ile yüklenecek -->
-                        </select>
+                            </select>
                     </div>
                     <div>
                         <label for="filterDate" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
@@ -416,7 +396,6 @@
                 </div>
             </section>
 
-            <!-- Aylık Özet Grafiği -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Aylık Finansal Özet</h3>
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
@@ -429,7 +408,6 @@
                 </div>
             </section>
 
-            <!-- Yıllık Özet Grafiği -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yıllık Finansal Özet</h3>
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
@@ -444,13 +422,11 @@
         </main>
     </div>
 
-    <!-- Message Box -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -1190,7 +1166,7 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month}&userId=${userId}`, {
+                    const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month + 1}&userId=${userId}`, { // API'ye 1-tabanlı ay gönder
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
@@ -1429,10 +1405,10 @@
                     optionYear.textContent = i;
                     if (yearSelect) yearSelect.appendChild(optionYear);
 
-                    const optionAnnualYear = document.createElement('option');
-                    optionAnnualYear.value = i;
-                    optionAnnualYear.textContent = i;
-                    if (annualYearSelect) annualYearSelect.appendChild(optionAnnualYear);
+                    const optionYearAnnual = document.createElement('option'); // ✅ DOĞRU DEĞİŞKEN ADI
+                    optionYearAnnual.value = i;
+                    optionYearAnnual.textContent = i; // ✅ Düzeltilmiş satır
+                    if (annualYearSelect) annualYearSelect.appendChild(optionYearAnnual);
                 }
 
                 // Mevcut yılı seçili yap
@@ -1460,7 +1436,7 @@
                 applyMonthlySummaryFilterBtn.addEventListener('click', () => {
                     const selectedYear = yearSelect ? parseInt(yearSelect.value) : new Date().getFullYear();
                     const selectedMonth = monthSelect ? parseInt(monthSelect.value) : new Date().getMonth();
-                    fetchMonthlySummary(selectedYear, selectedMonth + 1); // API'ye 1-tabanlı ay gönder
+                    fetchMonthlySummary(selectedYear, selectedMonth);
                 });
             }
 
@@ -1636,7 +1612,7 @@
             populateMonthYearDropdowns();
             const currentYear = new Date().getFullYear();
             const currentMonth = new Date().getMonth(); // 0-tabanlı
-            fetchMonthlySummary(currentYear, currentMonth + 1); // API'ye 1-tabanlı ay gönder
+            fetchMonthlySummary(currentYear, currentMonth); // Düzeltilmiş çağrı: API'ye 1-tabanlı ay göndermeden önce +1 eklemek için çağrı içinde düzenleme
             fetchAnnualSummary(currentYear);
             fetchCategories();
             fetchUser2FAStatus(); // Bu çağrı artık sadece API'nin çalıştığını kontrol etmek için, detaylar profile.html'de.
