@@ -1,4 +1,4 @@
-ü// public/js/profile.js
+// public/js/profile.js
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Profile.js script loaded.");
 
