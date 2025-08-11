@@ -9,7 +9,30 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #0d1117; /* Ana koyu ton */
+            color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
+
+            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            background-image:
+                /* Büyük, yumuşak, mavimsi bulutsu */
+                radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
+                /* Büyük, yumuşak, morumsu bulutsu */
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
+                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
+                radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
+
+                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
+                radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
+                radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.8px 1.8px at 90% 40%, #ffffff 0%, transparent 50%),
+                radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
+                radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
+
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
+            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
         }
         .message-box {
             position: fixed;
@@ -33,15 +56,10 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .message-box.error {
-            background-color: #f44336;
-        }
-        .message-box.info {
-            background-color: #2196F3;
-        }
-        .message-box.warning {
-            background-color: #ff9800;
-        }
+        .message-box.success { background-color: #10B981; } /* Tailwind green-500 */
+        .message-box.error { background-color: #EF4444; } /* Tailwind red-500 */
+        .message-box.info { background-color: #3B82F6; } /* Tailwind blue-500 */
+        .message-box.warning { background-color: #F59E0B; } /* Tailwind amber-500 */
         .message-box-close {
             background: none;
             border: none;
@@ -64,71 +82,85 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 2FA Modal için özel stil: Sadece z-index ve arka plan rengi */
+        /* 2FA Modal için özel stil: Yeni koyu tema uyumlu */
         #twoFactorAuthModal {
-            z-index: 9999; /* Tüm diğer elementlerin üzerinde olmalı */
-            background-color: rgba(0, 0, 0, 0.7); /* Daha koyu ve opak arka plan */
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Input ve Select Elementleri için Tema Uyumu */
+        .form-input, .form-select {
+            background-color: #1A202C; /* Koyu input arkaplanı */
+            color: #E2E8F0; /* Açık metin rengi */
+            border-color: #4A5568; /* Koyu border */
+        }
+        .form-input::placeholder {
+            color: #A0AEC0; /* Açık placeholder */
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #60A5FA; /* Mavi odaklama rengi */
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-200">
-        <h1 class="text-3xl font-bold text-blue-700 text-center mb-6">Fingo Giriş / Kayıt</h1>
-        <p class="text-sm text-gray-600 text-center mb-8">(v1.0.1)</p>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <!-- Ana İçerik Kapsayıcısı (Giriş/Kayıt Formları) -->
+    <div class="bg-gray-800 bg-opacity-70 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
+        <h1 class="text-3xl font-bold text-blue-300 text-center mb-6">Fingo Giriş / Kayıt</h1>
+        <p class="text-sm text-gray-400 text-center mb-8">(v1.0.1)</p>
 
         <!-- Giriş ve Kayıt Formları -->
         <div id="authForms">
             <!-- Giriş Formu -->
             <form id="loginForm" class="space-y-4">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Giriş Yap</h2>
+                <h2 class="text-2xl font-semibold text-gray-200 mb-4 text-center">Giriş Yap</h2>
                 <div>
-                    <label for="loginEmail" class="block text-gray-700 text-sm font-medium mb-1">E-posta:</label>
-                    <input type="email" id="loginEmail" placeholder="e-posta@ornek.com" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <label for="loginEmail" class="block text-gray-300 text-sm font-medium mb-1">E-posta:</label>
+                    <input type="email" id="loginEmail" placeholder="e-posta@ornek.com" class="form-input w-full p-2 text-sm">
                 </div>
                 <div>
-                    <label for="loginPassword" class="block text-gray-700 text-sm font-medium mb-1">Parola:</label>
-                    <input type="password" id="loginPassword" placeholder="Parolanız" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <label for="loginPassword" class="block text-gray-300 text-sm font-medium mb-1">Parola:</label>
+                    <input type="password" id="loginPassword" placeholder="Parolanız" class="form-input w-full p-2 text-sm">
                 </div>
                 <button type="submit" id="loginBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Giriş Yap</button>
-                <p class="text-center text-sm text-gray-600 mt-4">Hesabın yok mu? <a href="#" id="showRegisterBtn" class="text-blue-600 hover:underline">Kayıt Ol</a></p>
+                <p class="text-center text-sm text-gray-400 mt-4">Hesabın yok mu? <a href="#" id="showRegisterBtn" class="text-blue-400 hover:underline">Kayıt Ol</a></p>
             </form>
 
             <!-- Kayıt Formu (Başlangıçta Gizli) -->
             <form id="registerForm" class="space-y-4 hidden">
-                <h2 class="text-2xl font-semibold text-gray-700 mb-4 text-center">Kayıt Ol</h2>
+                <h2 class="text-2xl font-semibold text-gray-200 mb-4 text-center">Kayıt Ol</h2>
                 <div>
-                    <label for="registerEmail" class="block text-gray-700 text-sm font-medium mb-1">E-posta:</label>
-                    <input type="email" id="registerEmail" placeholder="e-posta@ornek.com" class="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm">
+                    <label for="registerEmail" class="block text-gray-300 text-sm font-medium mb-1">E-posta:</label>
+                    <input type="email" id="registerEmail" placeholder="e-posta@ornek.com" class="form-input w-full p-2 text-sm">
                 </div>
                 <div>
-                    <label for="registerPassword" class="block text-gray-700 text-sm font-medium mb-1">Parola:</label>
-                    <input type="password" id="registerPassword" placeholder="Parolanız (min 8 karakter)" class="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm">
+                    <label for="registerPassword" class="block text-gray-300 text-sm font-medium mb-1">Parola:</label>
+                    <input type="password" id="registerPassword" placeholder="Parolanız (min 8 karakter)" class="form-input w-full p-2 text-sm">
                 </div>
                 <div>
-                    <label for="confirmPassword" class="block text-gray-700 text-sm font-medium mb-1">Parola Tekrar:</label>
-                    <input type="password" id="confirmPassword" placeholder="Parolanızı tekrar girin" class="w-full p-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 text-sm">
+                    <label for="confirmPassword" class="block text-gray-300 text-sm font-medium mb-1">Parola Tekrar:</label>
+                    <input type="password" id="confirmPassword" placeholder="Parolanızı tekrar girin" class="form-input w-full p-2 text-sm">
                 </div>
                 <button type="submit" id="registerBtn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors w-full text-sm">Kayıt Ol</button>
-                <p class="text-center text-sm text-gray-600 mt-4">Zaten hesabın var mı? <a href="#" id="showLoginFormBtn" class="text-blue-600 hover:underline">Giriş Yap</a></p>
+                <p class="text-center text-sm text-gray-400 mt-4">Zaten hesabın var mı? <a href="#" id="showLoginFormBtn" class="text-blue-400 hover:underline">Giriş Yap</a></p>
             </form>
         </div>
 
         <!-- 2FA Kodu Giriş Modalı -->
-        <!-- DÜZELTME: Tailwind'in 'hidden' sınıfıyla başlangıçta gizli -->
         <div id="twoFactorAuthModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-            <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-200 relative">
-                <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
-                <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-blue-700 mb-6 text-center">İki Faktörlü Kimlik Doğrulama</h2>
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-sm border border-gray-700 relative">
+                <button id="closeTwoFactorAuthModalBtn" class="absolute top-3 right-3 text-gray-400 hover:text-gray-200 text-2xl font-bold">&times;</button>
+                <h2 id="twoFactorAuthModalTitle" class="text-2xl font-bold text-blue-300 mb-6 text-center">İki Faktörlü Kimlik Doğrulama</h2>
 
-                <p id="twoFactorAuthMessage" class="text-gray-700 text-sm mb-4 text-center">E-posta adresinize gönderilen 6 haneli kodu girin.</p>
+                <p id="twoFactorAuthMessage" class="text-gray-300 text-sm mb-4 text-center">E-posta adresinize gönderilen 6 haneli kodu girin.</p>
 
                 <div>
-                    <label for="twoFactorAuthCode" class="block text-gray-700 text-sm font-medium mb-1">Doğrulama Kodu:</label>
-                    <input type="text" id="twoFactorAuthCode" placeholder="######" maxlength="16" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm text-center tracking-widest">
+                    <label for="twoFactorAuthCode" class="block text-gray-300 text-sm font-medium mb-1">Doğrulama Kodu:</label>
+                    <input type="text" id="twoFactorAuthCode" placeholder="######" maxlength="16" class="form-input w-full p-2 text-sm text-center tracking-widest">
                 </div>
                 <button type="button" id="verifyTwoFactorAuthBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm mt-4">Kodu Doğrula</button>
-                <button type="button" id="resendTwoFactorAuthCodeBtn" class="bg-gray-500 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm mt-2">Kodu Tekrar Gönder</button>
-                <button type="button" id="useRecoveryCodeBtn" class="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition-colors w-full text-sm mt-2">Kurtarma Kodu Kullan</button>
+                <button type="button" id="resendTwoFactorAuthCodeBtn" class="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm mt-2">Kodu Tekrar Gönder</button>
+                <button type="button" id="useRecoveryCodeBtn" class="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors w-full text-sm mt-2">Kurtarma Kodu Kullan</button>
             </div>
         </div>
 
