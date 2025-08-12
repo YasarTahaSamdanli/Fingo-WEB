@@ -67,17 +67,17 @@ connectDB(process.env.MONGODB_URI)
 
         // Rotaları tanımla
         // Auth rotasını doğru prefix ile bağladık!
-        app.use('/api/auth', authRoutes); // <<<< BURASI DEĞİŞTİ! /api/auth/login yolu için
+        app.use('/api/auth', authRoutes); // <<<< Login endpoint'i için doğru prefix
         app.use('/api', productRoutes);
         app.use('/api', salesRoutes);
         app.use('/api', financialSummaryRoutes);
         app.use('/api', supplierRoutes);
         app.use('/api', purchaseOrderRoutes);
         app.use('/api', twoFARoutes);
-        app.use('/api', userRoutes); // Örneğin, /api/users
+        app.use('/api', userRoutes);
         app.use('/api', transactionRoutes);
         app.use('/api', categoryRoutes);
-        app.use('/api/reports', reportsRoutes); // Örneğin, /api/reports/...
+        app.use('/api/reports', reportsRoutes);
         app.use('/api', customerRoutes);
         console.log('Tüm API rotaları /api altında kaydedildi.');
 
