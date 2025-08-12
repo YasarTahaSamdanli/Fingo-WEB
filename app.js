@@ -19,6 +19,8 @@ const userRoutes = require('./routes/users');
 const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
 const reportsRoutes = require('./routes/reports');
+const customerRoutes = require('./routes/customerRoutes');
+
 
 const app = express();
 
@@ -75,6 +77,7 @@ connectDB(process.env.MONGODB_URI)
         app.use('/api', transactionRoutes);
         app.use('/api', categoryRoutes);
         app.use('/api/reports', reportsRoutes);
+        app.use('/api', customerRoutes);
         console.log('Tüm API rotaları /api altında kaydedildi.');
 
         // Tanımlanmamış API rotaları için 404 JSON yanıtı döndür
