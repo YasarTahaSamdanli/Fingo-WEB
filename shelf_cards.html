@@ -113,7 +113,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Sadece yazıcı çıktısı için özel stiller (DOKUNULMADI) */
+        /* Sadece yazıcı çıktısı için özel stiller - BURADA DÜZELTMELER YAPILDI */
         @media print {
             body {
                 background-color: #fff; /* Yazdırırken arka plan beyaz olsun */
@@ -123,7 +123,7 @@
             /* Yazdırırken görünmesini istemediğimiz elementleri gizle */
             header,
             main .filter-section,
-            main .product-selection-section,
+            main .product-selection-section, /* Ürün seçim bölümünü gizle */
             main .print-button-container,
             #messageBox,
             #goToDashboardBtn,
@@ -133,23 +133,24 @@
             }
             /* Sadece reyon kartları görünür olsun ve sayfa genişliğini kaplasın */
             .shelf-cards-container {
-                display: flex;
+                display: flex !important; /* Yazdırırken görünür yap */
                 flex-wrap: wrap;
                 justify-content: flex-start; /* Kartları baştan itibaren sırala */
                 align-items: flex-start;
-                page-break-after: always; /* Her sayfadan sonra sayfa sonu */
+                /* page-break-after: always; */ /* Her sayfadan sonra sayfa sonu */
                 width: 100%; /* Sayfa genişliğini kapla */
                 margin: 0;
                 padding: 0;
             }
             .shelf-card-wrapper {
-                width: 33.33%; /* A4 kağıdında yan yana 3 kart için (yaklaşık 99mm genişlik) */
-                flex: 0 0 33.33%; /* Esnekliği kapat ve sabit genişlik ver */
+                width: 33.33% !important; /* A4 kağıdında yan yana 3 kart için (yaklaşık 99mm genişlik) */
+                flex: 0 0 33.33% !important; /* Esnekliği kapat ve sabit genişlik ver */
                 box-sizing: border-box; /* Padding ve border genişliğe dahil olsun */
                 padding: 5mm; /* Kartlar arası boşluk için */
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                page-break-inside: avoid; /* Kartın sayfa sonuna bölünmemesini sağla */
             }
             .shelf-card {
                 border: 1px dashed #ccc; /* Yazdırırken görünür bir sınır */
@@ -191,6 +192,13 @@
                 text-align: right;
                 color: #777;
                 margin-top: auto; /* En alta hizala */
+            }
+            .shelf-card .product-image { /* Resim için yeni stil */
+                max-width: 60mm;
+                max-height: 40mm;
+                object-fit: contain;
+                margin: 0 auto 5mm auto;
+                display: block;
             }
         }
     </style>
@@ -406,17 +414,10 @@
                         if (availableProductsListDiv) availableProductsListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Filtrelere uygun ürün bulunmamaktadır.</p>';
                     } else {
                         renderAvailableProducts();
-                        // <<<< BURADAKİ DÜZELTME BAŞLANGICI >>>>
                         // Sayfa yüklendiğinde veya ürünler filtrelendiğinde, tüm ürünleri otomatik olarak seçilenlere ekle
-                        selectedProducts = []; // Önceki seçimleri temizle
-                        allProducts.forEach(product => {
-                            if (!selectedProducts.some(p => p._id === product._id)) {
-                                selectedProducts.push(product);
-                            }
-                        });
+                        selectedProducts = [...allProducts]; // <<<< Derin kopya ile atama yapıldı
                         renderSelectedProducts(); // Seçilen ürünleri tekrar render et
                         updateCheckboxStates(); // Checkbox durumlarını güncelle
-                        // <<<< BURADAKİ DÜZELTME SONU >>>>
                     }
 
                 } catch (error) {
@@ -609,7 +610,10 @@
 
             // Kartları Oluştur ve Yazdır Fonksiyonu
             function generateAndPrintCards() {
-                if (shelfCardsContainer) shelfCardsContainer.innerHTML = ''; // Önceki kartları temizle
+                if (shelfCardsContainer) {
+                    shelfCardsContainer.innerHTML = ''; // Önceki kartları temizle
+                    shelfCardsContainer.classList.remove('hidden'); // Yazdırma modunda görünür yap
+                }
 
                 selectedProducts.forEach(product => {
                     const cardWrapper = document.createElement('div');
@@ -619,29 +623,38 @@
                     card.className = 'shelf-card'; // Tailwind ve özel print CSS'i burada
 
                     // Fiyat güncelleme tarihi
-                    // product.priceUpdateDate veya product.updatedAt kullanılabilir.
-                    const updateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleDateString('tr-TR') : 'Tarih Yok';
+                    const updateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleDateString('tr-TR', { year: 'numeric', month: 'numeric', day: 'numeric' }) : 'Tarih Yok';
 
                     // Kilo/litre birimi ve fiyatı için düzenleme
-                    let unitPriceDisplay = '';
-                    if (product.unit === 'adet' && product.weightOrVolumePerUnit && product.weightOrVolumePerUnit > 0) {
-                        unitPriceDisplay = `${(product.weightOrVolumePerUnit < 1 ? product.weightOrVolumePerUnit * 1000 + 'gr' : product.weightOrVolumePerUnit + 'kg')} / Adet`;
-                    } else if (product.unit === 'kg' || product.unit === 'litre') {
-                        unitPriceDisplay = `1 ${product.unit} Fiyatı: ${product.price.toFixed(2)} TL`;
+                    let displayUnitPricePerKgOrLiter = '';
+                    if (product.pricePerUnitKgOrLiter) {
+                        displayUnitPricePerKgOrLiter = `1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: ${parseFloat(product.pricePerUnitKgOrLiter).toFixed(2)} TL`;
                     }
+
+                    // Resim URL'si için placeholder ve fallback
+                    const imageUrlToDisplay = product.imageUrl && product.imageUrl !== 'null' ? product.imageUrl : `https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok`; // Placehold.co ile daha iyi bir placeholder
+                    const imageHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok';">`;
+
 
                     card.innerHTML = `
                         <h3 class="product-name">${product.name}</h3>
+                        ${imageHtml}
                         <div class="price">${product.price.toFixed(2)} TL</div>
                         ${product.displayGrammage ? `<div class="grammage">${product.displayGrammage}</div>` : ''}
-                        ${product.pricePerUnitKgOrLiter ? `<div class="unit-price">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: ${product.pricePerUnitKgOrLiter} TL</div>` : ''}
+                        ${displayUnitPricePerKgOrLiter ? `<div class="unit-price">${displayUnitPricePerKgOrLiter}</div>` : ''}
                         <div class="update-date">Güncelleme: ${updateDate}</div>
                     `;
                     cardWrapper.appendChild(card);
                     shelfCardsContainer.appendChild(cardWrapper);
                 });
 
-                // Yazdırma işlemi
+                // Yazdırma işlemi tamamlandıktan sonra konteyneri tekrar gizle
+                window.onafterprint = () => {
+                    if (shelfCardsContainer) shelfCardsContainer.classList.add('hidden');
+                    window.onafterprint = null; // Event listener'ı kaldır
+                };
+
+                // Yazdırma işlemini başlat
                 window.print();
             }
 
