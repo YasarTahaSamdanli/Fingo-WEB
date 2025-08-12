@@ -197,12 +197,12 @@
                 margin-top: auto;
             }
 
-            /* YATAY KART STİLLERİ - ETİKET.PNG BENZERİ (BARKODSUZ VE SIKILAŞTIRILMIŞ) */
+            /* YATAY KART STİLLERİ - ETİKET.PNG BENZERİ (BARKODSUZ VE SIKIŞTIRILMIŞ) */
             .horizontal-shelf-card-wrapper {
                 width: 50% !important; /* A4 kağıdında yan yana 2 kart için */
                 flex: 0 0 50% !important;
                 box-sizing: border-box;
-                padding: 2mm; /* Genel dış boşluğu azalt */
+                padding: 1mm; /* Genel dış boşluğu daha da azalt */
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -210,78 +210,91 @@
             }
             .horizontal-shelf-card {
                 border: 1px dashed #ccc;
-                padding: 4mm; /* İç boşluğu azalt */
-                width: 120mm; /* Yatay kart genişliği (görseldeki gibi) */
-                height: 65mm; /* Yatay kart yüksekliği (görseldeki gibi) */
+                padding: 2mm 3mm; /* Yatayda biraz daha boşluk, dikeyde daha az */
+                width: 120mm; /* Yatay kart genişliği */
+                height: 60mm; /* Yatay kart yüksekliği (biraz daha küçültüldü) */
                 font-family: 'Arial', sans-serif;
                 color: #000;
                 background-color: #fff;
                 display: flex;
-                flex-direction: column; /* Ana içeriği dikeyde sırala (üst ve alt bölümler) */
+                flex-direction: column; /* Ana içeriği dikeyde sırala */
                 box-shadow: none;
                 border-radius: 0;
                 justify-content: space-between; /* İçeriği dikeyde yay */
+                overflow: hidden; /* Taşmaları engellemek için */
             }
 
             .horizontal-shelf-card .card-top-row {
                 display: flex;
-                flex-direction: row; /* Ürün adı ve fiyatı yatayda */
+                flex-direction: row;
                 justify-content: space-between;
                 align-items: flex-start; /* Üstte hizala */
-                flex-grow: 1; /* Mevcut alanı doldur */
-                margin-bottom: 1mm; /* Alt bölüme boşluğu azalt */
+                flex-grow: 1;
+                margin-bottom: 0mm; /* Boşluk sıfırlandı */
             }
 
             .horizontal-shelf-card .product-name-section {
-                flex-basis: 60%; /* Ürün adı için daha fazla yer */
+                flex-basis: 65%; /* Ürün adı için daha fazla yer */
                 display: flex;
                 flex-direction: column;
                 align-items: flex-start;
                 justify-content: flex-start;
-                padding-right: 2mm; /* Fiyata yakınlaşmak için */
+                padding-right: 1mm; /* Fiyata yakınlaşmak için daha az boşluk */
+                line-height: 1.1; /* Metin içindeki satır aralığı */
+                overflow: hidden; /* Metin taşmasını engelle */
             }
             .horizontal-shelf-card .product-name {
                 font-size: 11pt; /* Ürün adı fontu küçültüldü */
                 font-weight: bold;
                 text-align: left;
-                margin-bottom: 0mm; /* Boşluk azaltıldı */
-                line-height: 1.1; /* Satır aralığı daralt */
+                margin-bottom: 0mm; /* Boşluk sıfırlandı */
+                white-space: normal; /* Normal kelime sarma */
+                word-break: break-word; /* Kelimeyi kırabilir */
+                max-height: 3.3em; /* Yaklaşık 3 satır */
+                overflow: hidden;
+                text-overflow: ellipsis; /* Taşarsa üç nokta */
             }
             .horizontal-shelf-card .grammage {
                 font-size: 8pt; /* Gramaj fontu küçültüldü */
                 text-align: left;
                 color: #555;
                 margin-top: 0mm;
+                line-height: 1.1;
+                white-space: nowrap; /* Tek satırda kalmasını sağla */
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .horizontal-shelf-card .price-section {
-                flex-basis: 40%; /* Fiyat için ayrılan yer */
+                flex-basis: 35%; /* Fiyat için ayrılan yer biraz azaltıldı */
                 display: flex;
+                flex-direction: row; /* Fiyatı ve TL'yi yan yana hizala */
                 justify-content: flex-end; /* Fiyatı sağa hizala */
                 align-items: flex-end; /* Fiyatı dikeyde alta hizala */
-                padding-right: 0mm; /* Sağdan boşluğu azalt */
+                padding-right: 0mm;
                 font-weight: bold;
                 color: #000;
                 line-height: 0.8; /* Satır aralığı daha da daraltıldı */
-                margin-top: -3mm; /* Fiyatı daha da yukarı çekmek için */
+                margin-top: -4mm; /* Fiyatı daha da yukarı çekmek için */
+                white-space: nowrap; /* Tüm fiyat bloğunun tek satırda kalmasını sağla */
             }
             .horizontal-shelf-card .price-main {
-                font-size: 26pt; /* Büyük tam kısım biraz küçültüldü */
+                font-size: 24pt; /* Büyük tam kısım daha da küçültüldü */
                 display: inline-block;
                 vertical-align: baseline;
             }
             .horizontal-shelf-card .price-decimal {
-                font-size: 14pt; /* Küçük ondalık kısım biraz küçültüldü */
-                vertical-align: super; /* Yukarıya hizala */
+                font-size: 13pt; /* Küçük ondalık kısım daha da küçültüldü */
+                vertical-align: super;
                 display: inline-block;
                 margin-left: -1.5mm; /* Yakınlaştır */
             }
             .horizontal-shelf-card .price-currency {
-                font-size: 11pt; /* TL yazısı küçültüldü */
+                font-size: 10pt; /* TL yazısı daha da küçültüldü */
                 font-weight: bold;
                 display: inline-block;
-                vertical-align: bottom; /* En alta hizala */
-                margin-left: 0.5mm; /* TL yazısını yakınlaştır */
+                vertical-align: bottom;
+                margin-left: 0.5mm;
             }
 
             .horizontal-shelf-card .card-bottom-row {
@@ -291,10 +304,16 @@
                 align-items: flex-end; /* En alttaki bilgileri alta hizala */
                 font-size: 7pt; /* Küçük font boyutu */
                 color: #555;
-                margin-top: 2mm; /* Üstteki içerikten sonra boşluğu azalt */
+                margin-top: 1mm; /* Üstteki içerikten sonra boşluğu azalt */
+                width: 100%; /* Tüm genişliği kapla */
+                text-align: right;
             }
             .horizontal-shelf-card .price-per-kg {
                 text-align: right;
+                flex-grow: 1; /* Mevcut alanı kapla */
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     </style>
