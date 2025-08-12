@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+,<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -233,12 +233,7 @@
                 color: #777;
                 margin-top: 2mm; /* Diğer bilgilerden sonra boşluk */
             }
-            .product-image { /* Hem dikey hem yatay için genel resim stili */
-                max-width: 60mm; /* Daha esnek bir max genişlik */
-                max-height: 40mm; /* Daha esnek bir max yükseklik */
-                object-fit: contain;
-                flex-shrink: 0; /* Küçülmesini engelle */
-            }
+            /* .product-image stili kaldırıldı */
         }
     </style>
 </head>
@@ -687,14 +682,12 @@
                         displayUnitPricePerKgOrLiter = `1 ${product.unit === 'adet' ? (product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg') : product.unit} Fiyatı: ${parseFloat(product.pricePerUnitKgOrLiter).toFixed(2)} TL`;
                     }
 
-                    // Resim URL'si için placeholder ve fallback
-                    const imageUrlToDisplay = product.imageUrl && product.imageUrl !== 'null' ? product.imageUrl : `https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok`;
-                    const imageHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok';">`;
+                    // Resim HTML'i tamamen kaldırıldı
+                    // const imageHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok';">`;
 
                     if (selectedOrientation === 'horizontal') {
-                        // Yatay kart için farklı HTML yapısı
+                        // Yatay kart için HTML yapısı (resimsiz)
                         card.innerHTML = `
-                            ${imageHtml}
                             <div class="product-info">
                                 <h3 class="product-name">${product.name}</h3>
                                 <div class="price">${product.price.toFixed(2)} TL</div>
@@ -704,10 +697,9 @@
                             </div>
                         `;
                     } else {
-                        // Dikey kart için mevcut HTML yapısı
+                        // Dikey kart için HTML yapısı (resimsiz)
                         card.innerHTML = `
                             <h3 class="product-name">${product.name}</h3>
-                            ${imageHtml}
                             <div class="price">${product.price.toFixed(2)} TL</div>
                             ${product.displayGrammage ? `<div class="grammage">${product.displayGrammage}</div>` : ''}
                             ${displayUnitPricePerKgOrLiter ? `<div class="unit-price">${displayUnitPricePerKgOrLiter}</div>` : ''}
@@ -755,7 +747,6 @@
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
             populateCategoryDropdowns();
             fetchProducts();
-            // renderSelectedProducts(); // Bu zaten fetchProducts içinde çağrılıyor
         });
     </script>
 </body>
