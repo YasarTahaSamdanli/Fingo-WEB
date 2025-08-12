@@ -227,7 +227,7 @@
                             <input type="text" id="searchProductInput" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
                         </div>
                         <div>
-                            <label for="filterCategorySelect" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
+                            <label for="filterCategorySelect" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Gööre Filtrele:</label>
                             <select id="filterCategorySelect" class="form-select w-full p-3 text-base shadow-sm">
                                 <option value="">Tüm Kategoriler</option>
                                 <!-- Kategoriler JS ile yüklenecek -->
@@ -406,6 +406,17 @@
                         if (availableProductsListDiv) availableProductsListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Filtrelere uygun ürün bulunmamaktadır.</p>';
                     } else {
                         renderAvailableProducts();
+                        // <<<< BURADAKİ DÜZELTME BAŞLANGICI >>>>
+                        // Sayfa yüklendiğinde veya ürünler filtrelendiğinde, tüm ürünleri otomatik olarak seçilenlere ekle
+                        selectedProducts = []; // Önceki seçimleri temizle
+                        allProducts.forEach(product => {
+                            if (!selectedProducts.some(p => p._id === product._id)) {
+                                selectedProducts.push(product);
+                            }
+                        });
+                        renderSelectedProducts(); // Seçilen ürünleri tekrar render et
+                        updateCheckboxStates(); // Checkbox durumlarını güncelle
+                        // <<<< BURADAKİ DÜZELTME SONU >>>>
                     }
 
                 } catch (error) {
@@ -608,18 +619,22 @@
                     card.className = 'shelf-card'; // Tailwind ve özel print CSS'i burada
 
                     // Fiyat güncelleme tarihi
+                    // product.priceUpdateDate veya product.updatedAt kullanılabilir.
                     const updateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleDateString('tr-TR') : 'Tarih Yok';
+
+                    // Kilo/litre birimi ve fiyatı için düzenleme
+                    let unitPriceDisplay = '';
+                    if (product.unit === 'adet' && product.weightOrVolumePerUnit && product.weightOrVolumePerUnit > 0) {
+                        unitPriceDisplay = `${(product.weightOrVolumePerUnit < 1 ? product.weightOrVolumePerUnit * 1000 + 'gr' : product.weightOrVolumePerUnit + 'kg')} / Adet`;
+                    } else if (product.unit === 'kg' || product.unit === 'litre') {
+                        unitPriceDisplay = `1 ${product.unit} Fiyatı: ${product.price.toFixed(2)} TL`;
+                    }
 
                     card.innerHTML = `
                         <h3 class="product-name">${product.name}</h3>
                         <div class="price">${product.price.toFixed(2)} TL</div>
-                        ${(product.unit === 'adet' && product.weightOrVolumePerUnit > 0 && product.displayGrammage) ?
-                            `<div class="grammage">${product.displayGrammage} / Adet</div>` :
-                            (product.unit === 'kg' || product.unit === 'litre' ? `<div class="grammage">${product.weightOrVolumePerUnit} ${product.unit}</div>` : '')
-                        }
-                        ${((product.unit === 'adet' && product.weightOrVolumePerUnit > 0) || product.unit === 'kg' || product.unit === 'litre') && product.pricePerUnitKgOrLiter ?
-                            `<div class="unit-price">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: ${product.pricePerUnitKgOrLiter} TL</div>` : ''
-                        }
+                        ${product.displayGrammage ? `<div class="grammage">${product.displayGrammage}</div>` : ''}
+                        ${product.pricePerUnitKgOrLiter ? `<div class="unit-price">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: ${product.pricePerUnitKgOrLiter} TL</div>` : ''}
                         <div class="update-date">Güncelleme: ${updateDate}</div>
                     `;
                     cardWrapper.appendChild(card);
@@ -656,7 +671,7 @@
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
             populateCategoryDropdowns();
             fetchProducts();
-            renderSelectedProducts(); // Başlangıçta boş listeyi göster
+            // renderSelectedProducts(); // Bu zaten fetchProducts içinde çağrılıyor
         });
     </script>
 </body>
