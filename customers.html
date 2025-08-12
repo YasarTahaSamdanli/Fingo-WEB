@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Yönetimi - Fingo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Ana koyu ton */
+            color: #e2e8f0; /* Varsayılan açık gri metin */
+            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            background-image:
+                radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
+                radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.8px 1.8px at 90% 40%, #ffffff 0%, transparent 50%),
+                radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
+                radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .form-input, .form-select {
+            background-color: #1A202C;
+            color: #E2E8F0;
+            border-color: #4A5568;
+        }
+        .form-input::placeholder {
+            color: #A0AEC0;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+        }
+
+        /* Mesaj Kutusu Stillleri */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 280px;
+            max-width: 90%;
+            font-size: 0.95rem;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .message-box.success { background-color: #10B981; }
+        .message-box.error { background-color: #EF4444; }
+        .message-box.info { background-color: #3B82F6; }
+        .message-box.warning { background-color: #F59E0B; }
+        .message-box.confirm {
+            background-color: #607D8B;
+            min-width: 300px;
+            flex-direction: column;
+            align-items: center;
+        }
+        .message-box-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 15px;
+            line-height: 1;
+        }
+        .message-box.confirm .message-box-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+
+        /* Bildirim Merkezi Stillleri */
+        .notification-center {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background-color: #2D3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900;
+            transform: translateX(110%);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-center.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #4A5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+        .notification-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .notification-item.unread {
+            background-color: #1A202C;
+            border-left: 4px solid #6366F1;
+            color: #E2E8F0;
+        }
+        .notification-item.read {
+            background-color: #2D3748;
+            border-left: 4px solid #4A5568;
+            color: #A0AEC0;
+        }
+        .notification-item.success { border-left-color: #34D399; }
+        .notification-item.error { border-left-color: #F87171; }
+        .notification-item.warning { border-left-color: #F59E0B; }
+        .notification-item.info { border-left-color: #60A5FA; }
+
+        .notification-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            color: #A0AEC0;
+        }
+        .notification-item.success .notification-item-icon { color: #34D399; }
+        .notification-item.error .notification-item-icon { color: #F87171; }
+        .notification-item.warning .notification-item-icon { color: #FBBF24; }
+        .notification-item.info .notification-item-icon { color: #60A5FA; }
+
+        .notification-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #4A5568;
+            text-align: center;
+        }
+        .notification-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+        .low-stock-warning {
+            color: #ef4444;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 1em;
+            height: 1em;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* SIDEBAR CSS */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            width: 256px;
+            z-index: 50;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
+
+    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
+        <div class="flex items-center">
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Web Uygulaması</h1>
+        </div>
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-white text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+            </button>
+            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="profileManagementBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm">Profil Yönetimi</button>
+            <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 pt-16">
+
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transition-transform duration-300 ease-in-out shadow-lg pt-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
+                <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
+                </a>
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
+                    <i class="fas fa-users"></i> <span class="text-gray-100">Müşteri Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
+                </a>
+                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
+                </a>
+                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
+                </a>
+                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
+                </a>
+            </nav>
+        </aside>
+
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl">
+            <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Müşteri Yönetimi</h2>
+            <p class="text-lg text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve takip edin.</p>
+
+            <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yeni Müşteri Ekle</h3>
+                <form id="customerForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="customerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı:</label>
+                        <input type="text" id="customerName" name="name" class="form-input w-full p-3 text-base" placeholder="Örn: Ahmet Yılmaz">
+                    </div>
+                    <div>
+                        <label for="shopName" class="block text-gray-300 text-sm font-semibold mb-2">Dükkan/İşletme Adı:</label>
+                        <input type="text" id="shopName" name="shopName" class="form-input w-full p-3 text-base" placeholder="Örn: Yılmaz Market">
+                    </div>
+                    <div>
+                        <label for="phoneNumber" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası:</label>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" class="form-input w-full p-3 text-base" placeholder="Örn: 5xx xxx xx xx">
+                    </div>
+                    <div>
+                        <label for="address" class="block text-gray-300 text-sm font-semibold mb-2">Adres:</label>
+                        <input type="text" id="address" name="address" class="form-input w-full p-3 text-base" placeholder="Örn: Ankara/Çankaya">
+                    </div>
+                    <div class="md:col-span-2 flex justify-end space-x-4 mt-4">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">Müşteri Ekle</button>
+                        <button type="button" id="resetFormBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">İptal</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Mevcut Müşteriler</h3>
+                <div id="customerList" class="overflow-x-auto">
+                    <table class="min-w-full bg-gray-900 bg-opacity-70 rounded-lg shadow-md border border-gray-700">
+                        <thead>
+                            <tr class="bg-gray-700 text-gray-200 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Müşteri Adı</th>
+                                <th class="py-3 px-6 text-left">Dükkan Adı</th>
+                                <th class="py-3 px-6 text-left">Telefon</th>
+                                <th class="py-3 px-6 text-left">Adres</th>
+                                <th class="py-3 px-6 text-center">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody" class="text-gray-300 text-sm font-light">
+                            <tr id="loadingCustomersRow">
+                                <td colspan="5" class="py-3 px-6 text-center text-gray-400">Müşteriler yükleniyor...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <div id="notificationCenter" class="notification-center">
+        <div class="notification-header">
+            <span>Bildirimler</span>
+            <button id="clearNotificationsBtn" class="text-blue-400 hover:text-blue-200 text-sm">Tümünü Temizle</button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>
+        </div>
+        <div class="notification-footer">
+            <button id="closeNotificationsBtn" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm">Kapat</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // API Base URL'i (Canlı backend adresine güncellendi)
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+
+        // JWT Token ve Kullanıcı ID'sini localStorage'dan al
+        const initialJwtToken = localStorage.getItem('jwtToken');
+        const initialUserId = localStorage.getItem('userId');
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("JWT parse error:", e);
+                return null;
+            }
+        }
+        const decodedToken = parseJwt(initialJwtToken);
+        const isTokenPresent = !!initialJwtToken;
+        const isUserIdPresent = !!initialUserId;
+        const isTokenExpired = decodedToken ? (decodedToken.exp * 1000 < Date.now()) : true;
+        const isUserIdMismatch = decodedToken ? (decodedToken.userId !== initialUserId) : true;
+        const is2FARequiredButNotVerified = decodedToken ? (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified) : false;
+
+        if (!isTokenPresent || !isUserIdPresent || isTokenExpired || isUserIdMismatch || is2FARequiredButNotVerified) {
+            console.warn("Authentication check failed. Redirecting to login.");
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('fingoNotifications');
+            window.location.href = '/Fingo-WEB/auth.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const getToken = () => localStorage.getItem('jwtToken');
+            const getUserId = () => localStorage.getItem('userId');
+
+            // DOM Elements
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+
+            const customerForm = document.getElementById('customerForm');
+            const resetFormBtn = document.getElementById('resetFormBtn');
+            const customersTableBody = document.getElementById('customersTableBody');
+            const loadingCustomersRow = document.getElementById('loadingCustomersRow');
+
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const profileManagementBtn = document.getElementById('profileManagementBtn');
+            const loggedInUserSpan = document.getElementById('loggedInUser');
+
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead });
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+                showMessageBox(message, type);
+            }
+
+            function showMessageBox(message, type = 'success') {
+                if (!messageBox || !messageText) return;
+                messageText.innerHTML = message;
+                messageBox.className = `message-box show ${type}`;
+                messageBox.classList.remove('hidden');
+                setTimeout(() => {
+                    messageBox.classList.remove('show');
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 300);
+                }, 3000);
+            }
+
+            function showConfirmBox(message, onConfirm) {
+                if (!messageBox || !messageText) return;
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
+                messageBox.classList.add('show', 'confirm');
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
+                document.getElementById('confirmYes').onclick = () => { onConfirm(); messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
+                document.getElementById('confirmNo').onclick = () => { messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
+            }
+
+            function renderNotifications() {
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index;
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
+                    notificationList.appendChild(notificationItem);
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
+                });
+            }
+
+            function updateNotificationCount() {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
+
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    notifications = [];
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                });
+            }
+
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        notifications.forEach(notif => {
+                            if (notif.type === 'warning' && !notif.isRead) {
+                                notif.isRead = true;
+                            }
+                        });
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
+
+            function handleAuthError() {
+                console.error("Authentication error detected. Redirecting to login page.");
+                addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                window.location.href = '/Fingo-WEB/auth.html';
+            }
+
+            // Müşterileri Çekme Fonksiyonu
+            async function fetchCustomers() {
+                if (loadingCustomersRow) loadingCustomersRow.style.display = 'table-row';
+                if (customersTableBody) customersTableBody.innerHTML = '';
+
+                const token = getToken();
+                if (!token) {
+                    handleAuthError();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/customers`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.status === 401 || response.status === 403) {
+                        handleAuthError();
+                        return;
+                    }
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Müşteriler çekilemedi.');
+                    }
+                    const customers = await response.json();
+
+                    if (customersTableBody) customersTableBody.innerHTML = '';
+
+                    if (customers.length === 0) {
+                        const noDataRow = document.createElement('tr');
+                        noDataRow.innerHTML = `<td colspan="5" class="py-3 px-6 text-center text-gray-400">Henüz müşteri kaydı bulunmuyor.</td>`;
+                        if (customersTableBody) customersTableBody.appendChild(noDataRow);
+                        return;
+                    }
+
+                    customers.forEach(customer => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b border-gray-700 hover:bg-gray-700';
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${customer.name}</td>
+                            <td class="py-3 px-6 text-left">${customer.shopName}</td>
+                            <td class="py-3 px-6 text-left">${customer.phoneNumber}</td>
+                            <td class="py-3 px-6 text-left">${customer.address || 'N/A'}</td>
+                            <td class="py-3 px-6 text-center">
+                                <button class="edit-btn text-blue-400 hover:text-blue-200 mr-2" data-id="${customer._id}"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn text-red-400 hover:text-red-200" data-id="${customer._id}"><i class="fas fa-trash-alt"></i></button>
+                            </td>
+                        `;
+                        if (customersTableBody) customersTableBody.appendChild(row);
+                    });
+
+                    document.querySelectorAll('.edit-btn').forEach(button => {
+                        button.addEventListener('click', (e) => editCustomer(e.currentTarget.dataset.id));
+                    });
+                    document.querySelectorAll('.delete-btn').forEach(button => {
+                        button.addEventListener('click', (e) => deleteCustomer(e.currentTarget.dataset.id));
+                    });
+                } catch (error) {
+                    console.error('Müşteriler çekilirken hata:', error);
+                    addNotification(`Müşteriler yüklenirken hata: ${error.message}`, 'error');
+                    if (customersTableBody) customersTableBody.innerHTML = `<tr><td colspan="5" class="py-3 px-6 text-center text-red-400">Müşteriler yüklenemedi.</td></tr>`;
+                } finally {
+                    if (loadingCustomersRow) loadingCustomersRow.style.display = 'none';
+                }
+            }
+
+            // Form İşlemleri (Ekleme/Güncelleme)
+            if (customerForm) {
+                customerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(customerForm);
+                    const customerData = Object.fromEntries(formData.entries());
+
+                    const token = getToken();
+                    if (!token) {
+                        handleAuthError();
+                        return;
+                    }
+                    if (!customerData.name || !customerData.shopName || !customerData.phoneNumber) {
+                        addNotification("Müşteri Adı, Dükkan Adı ve Telefon Numarası zorunludur.", 'warning');
+                        return;
+                    }
+
+                    const method = customerForm.dataset.editingId ? 'PUT' : 'POST';
+                    const url = customerForm.dataset.editingId
+                        ? `${API_BASE_URL}/customers/${customerForm.dataset.editingId}`
+                        : `${API_BASE_URL}/customers`;
+
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(customerData)
+                        });
+
+                        const result = await response.json();
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        if (!response.ok) {
+                            throw new Error(result.message || 'Müşteri işlemi başarısız oldu.');
+                        }
+                        addNotification(result.message, 'success');
+                        resetForm();
+                        fetchCustomers();
+                    } catch (error) {
+                        console.error('Müşteri ekleme/güncelleme hatası:', error);
+                        addNotification(`Müşteri işlemi yapılırken hata: ${error.message}`, 'error');
+                    }
+                });
+            }
+
+            // Müşteri Düzenleme Formunu Doldur
+            async function editCustomer(id) {
+                const token = getToken();
+                if (!token) {
+                    handleAuthError();
+                    return;
+                }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Müşteri bilgisi çekilemedi.');
+                    }
+                    const customer = await response.json();
+
+                    if (document.getElementById('customerName')) document.getElementById('customerName').value = customer.name;
+                    if (document.getElementById('shopName')) document.getElementById('shopName').value = customer.shopName;
+                    if (document.getElementById('phoneNumber')) document.getElementById('phoneNumber').value = customer.phoneNumber;
+                    if (document.getElementById('address')) document.getElementById('address').value = customer.address;
+
+                    if (customerForm) customerForm.dataset.editingId = customer._id;
+                    if (customerForm) customerForm.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                    if (resetFormBtn) resetFormBtn.textContent = 'İptal';
+                } catch (error) {
+                    console.error('Müşteri düzenleme için çekilirken hata:', error);
+                    addNotification(`Müşteri düzenlenirken hata: ${error.message}`, 'error');
+                }
+            }
+
+            // Müşteri Silme
+            async function deleteCustomer(id) {
+                showConfirmBox("Bu müşteriyi silmek istediğinizden emin misiniz?", async () => {
+                    const token = getToken();
+                    if (!token) {
+                        handleAuthError();
+                        return;
+                    }
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/customers/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const result = await response.json();
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        if (!response.ok) {
+                            throw new Error(result.message || 'Müşteri silinemedi.');
+                        }
+                        addNotification(result.message, 'success');
+                        fetchCustomers();
+                    } catch (error) {
+                        console.error('Müşteri silme hatası:', error);
+                        addNotification(`Müşteri silinirken hata: ${error.message}`, 'error');
+                    }
+                });
+            }
+
+            // Formu Sıfırla
+            function resetForm() {
+                if (customerForm) customerForm.reset();
+                if (customerForm) delete customerForm.dataset.editingId;
+                if (customerForm) customerForm.querySelector('button[type="submit"]').textContent = 'Müşteri Ekle';
+                if (resetFormBtn) resetFormBtn.textContent = 'İptal';
+            }
+
+            if (resetFormBtn) {
+                resetFormBtn.addEventListener('click', resetForm);
+            }
+
+            // Sidebar ve Header Fonksiyonları
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.remove('open');
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.remove('lg:ml-64');
+                }
+            };
+
+            const openSidebar = () => {
+                if (sidebar) sidebar.classList.add('open');
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.add('lg:ml-64');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                } else {
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                }
+            };
+
+            const initializeSidebarState = () => {
+                if (window.innerWidth >= 1024) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Logged In User Info
+            if (loggedInUserSpan && decodedToken && decodedToken.email) {
+                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}`.substring(0, 20) + "...";
+            }
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('fingoNotifications');
+                    window.location.href = '/Fingo-WEB/auth.html';
+                });
+            }
+
+            if (profileManagementBtn) {
+                profileManagementBtn.addEventListener('click', () => {
+                    window.location.href = '/Fingo-WEB/profile.html';
+                });
+            }
+
+            // Initial call
+            initializeSidebarState();
+            fetchCustomers();
+        });
+    </script>
+</body>
+</html>

@@ -287,6 +287,9 @@
                 <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
                     <i class="fas fa-home"></i> <span class="text-gray-100">Ana Sayfa</span>
                 </a>
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
+                </a>
                 <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
                 </a>
@@ -569,6 +572,7 @@
 
             // Yan menü butonları
             const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const manageCustomersBtn = document.getElementById('manageCustomersBtn');
             const manageProductsBtn = document.getElementById('manageProductsBtn');
             const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
             const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
@@ -603,8 +607,9 @@
             const totalExpenseSpan = document.getElementById('totalExpense');
             const netBalanceSpan = document.getElementById('netBalance');
 
-            const monthlySummaryChartCtx = document.getElementById('monthlySummaryChart') ? document.getElementById('monthlySummaryChart').getContext('2d') : null;
-            const annualSummaryChartCtx = document.getElementById('annualSummaryChart') ? document.getElementById('annualSummaryChart').getContext('2d') : null;
+            // !!! DÜZELTME: const yerine let kullanıyoruz, böylece canvas yenilendiğinde tekrar atama yapabiliriz.
+            let monthlySummaryChartCtx = document.getElementById('monthlySummaryChart') ? document.getElementById('monthlySummaryChart').getContext('2d') : null;
+            let annualSummaryChartCtx = document.getElementById('annualSummaryChart') ? document.getElementById('annualSummaryChart').getContext('2d') : null;
             let monthlyChart, annualChart;
 
             const monthSelect = document.getElementById('monthSelect');
@@ -1241,8 +1246,13 @@
 
             function renderMonthlySummaryChart(data) {
                 if (!monthlySummaryChartCtx) {
-                    console.error("monthlySummaryChart canvas context not found.");
-                    return;
+                    console.error("monthlySummaryChart canvas context not found. Re-initializing.");
+                    // Canvas yeniden oluşturulduğunda context'i tekrar al
+                    monthlySummaryChartCtx = document.getElementById('monthlySummaryChart') ? document.getElementById('monthlySummaryChart').getContext('2d') : null;
+                    if (!monthlySummaryChartCtx) { // Hala null ise hata ver
+                        console.error("Failed to get monthlySummaryChart canvas context after re-initialization.");
+                        return;
+                    }
                 }
                 // Eğer Chart objesi zaten varsa, yenisini oluşturmadan önce yok et
                 if (monthlyChart) {
@@ -1261,7 +1271,8 @@
                 } else {
                     // Veri varsa, mesajı kaldırıp canvas'ı tekrar ekle (eğer daha önce kaldırılmışsa)
                     const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
-                    if (chartContainer && !monthlySummaryChartCtx.canvas.isConnected) {
+                    // Eğer canvas container içinde p elementi varsa (veri yok mesajı), onu kaldır ve canvas'ı geri ekle
+                    if (chartContainer && chartContainer.querySelector('p')) {
                         chartContainer.innerHTML = '<canvas id="monthlySummaryChart"></canvas>';
                         // Canvas context'ini tekrar al
                         monthlySummaryChartCtx = document.getElementById('monthlySummaryChart').getContext('2d');
@@ -1374,8 +1385,13 @@
 
             function renderAnnualSummaryChart(data) {
                 if (!annualSummaryChartCtx) {
-                    console.error("annualSummaryChart canvas context not found.");
-                    return;
+                    console.error("annualSummaryChart canvas context not found. Re-initializing.");
+                    // Canvas yeniden oluşturulduğunda context'i tekrar al
+                    annualSummaryChartCtx = document.getElementById('annualSummaryChart') ? document.getElementById('annualSummaryChart').getContext('2d') : null;
+                    if (!annualSummaryChartCtx) { // Hala null ise hata ver
+                        console.error("Failed to get annualSummaryChart canvas context after re-initialization.");
+                        return;
+                    }
                 }
                 if (annualChart) {
                     annualChart.destroy();
@@ -1393,7 +1409,8 @@
                 } else {
                      // Veri varsa, mesajı kaldırıp canvas'ı tekrar ekle (eğer daha önce kaldırılmışsa)
                     const chartContainer = annualSummaryChartCtx.canvas.parentElement;
-                    if (chartContainer && !annualSummaryChartCtx.canvas.isConnected) {
+                    // Eğer canvas container içinde p elementi varsa (veri yok mesajı), onu kaldır ve canvas'ı geri ekle
+                    if (chartContainer && chartContainer.querySelector('p')) {
                         chartContainer.innerHTML = '<canvas id="annualSummaryChart"></canvas>';
                         // Canvas context'ini tekrar al
                         annualSummaryChartCtx = document.getElementById('annualSummaryChart').getContext('2d');
@@ -1618,6 +1635,13 @@
                 goToDashboardBtn.addEventListener('click', (e) => {
                     e.preventDefault(); // Varsayılan a tagı davranışını engelle
                     window.location.href = '/Fingo-WEB/index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageCustomersBtn) {
+                manageCustomersBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/customers.html';
                     closeSidebar();
                 });
             }
