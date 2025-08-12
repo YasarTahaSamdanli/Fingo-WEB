@@ -1,238 +1,325 @@
-// routes/auth.js
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { getDb } = require('../db');
-const { ObjectId } = require('mongodb'); // ObjectId'yi ekledik
-const { sendVerificationEmail } = require('../utils/emailSender'); // Yeni e-posta gönderme yardımcı fonksiyonunu içe aktarıyoruz
-const crypto = require('crypto'); // Token oluşturmak için
+// auth.js
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded fired. Initializing Auth page.");
 
-const router = express.Router();
+    const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // Render.com API'nin kök URL'si
 
-// Kullanıcı Kayıt Rotası
-router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'E-posta ve şifre gerekli.' });
+    // DOM Element Referansları
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const toggleToRegisterBtn = document.getElementById('toggleToRegister');
+    const toggleToLoginBtn = document.getElementById('toggleToLogin');
+    const emailInputLogin = document.getElementById('emailLogin');
+    const passwordInputLogin = document.getElementById('passwordLogin');
+    const emailInputRegister = document.getElementById('emailRegister');
+    const passwordInputRegister = document.getElementById('passwordRegister');
+    const passwordConfirmInputRegister = document.getElementById('passwordConfirmRegister');
+    const twoFactorAuthModal = document.getElementById('twoFactorAuthModal');
+    const twoFactorAuthCodeInput = document.getElementById('twoFactorAuthCode');
+    const verifyTwoFactorAuthBtn = document.getElementById('verifyTwoFactorAuthBtn');
+    const resendTwoFactorAuthCodeBtn = document.getElementById('resendTwoFactorAuthCodeBtn');
+    const useRecoveryCodeBtn = document.getElementById('useRecoveryCodeBtn');
+    const recoveryCodeInput = document.getElementById('recoveryCodeInput'); // Kurtarma kodu inputu
+    const verifyRecoveryCodeBtn = document.getElementById('verifyRecoveryCodeBtn'); // Kurtarma kodu doğrulama butonu
+    const recoveryCodeSection = document.getElementById('recoveryCodeSection'); // Kurtarma kodu bölümü
+
+    // Mesaj Kutusu Elementleri
+    const messageBox = document.getElementById('messageBox');
+    const messageText = document.getElementById('messageText');
+
+    // Elementlerin varlığını kontrol et
+    if (!loginForm) console.error("Login form element not found!");
+    if (!registerForm) console.error("Register form element not found!");
+    if (!twoFactorAuthModal) console.error("TwoFactorAuthModal element not found!");
+    else console.log("SUCCESS: 'twoFactorAuthModal' element found:", twoFactorAuthModal);
+
+    // Global Değişkenler
+    let currentUserId = null; // 2FA işlemi sırasında kullanıcının ID'sini saklamak için
+
+    // Mesaj Kutusu Göster/Gizle
+    function showMessage(message, type = 'success') {
+        if (!messageBox || !messageText) {
+            console.error("Message box elements not found!");
+            return;
+        }
+        messageText.innerHTML = message;
+        messageBox.className = `message-box show ${type}`;
+        messageBox.classList.remove('hidden'); // Gizli sınıfını kaldır
+        setTimeout(() => {
+            messageBox.classList.remove('show');
+            setTimeout(() => {
+                messageBox.classList.add('hidden'); // Gizli sınıfını ekle
+            }, 300); // Transition süresi kadar bekle
+        }, 3000);
     }
 
-    try {
-        const db = getDb();
-        const existingUser = await db.collection('users').findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: 'Bu e-posta adresi zaten kayıtlı.' });
+    // Confirm Box fonksiyonu
+    function showConfirmBox(message, onConfirm) {
+        if (!messageBox || !messageText) {
+            console.error("Message box elements not found! Cannot display confirm box.");
+            return;
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); // Buradaki fazla ters eğik çizgi kaldırıldı
-        const verificationToken = crypto.randomBytes(32).toString('hex'); // Rastgele token oluştur
-        const verificationTokenExpires = new Date(Date.now() + 24 * 3600 * 1000); // 24 saat geçerli
+        messageBox.innerHTML = `
+            <span id="messageText">${message}</span>
+            <div class="flex justify-center space-x-4 mt-3">
+                <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+            </div>
+        `;
+        messageBox.classList.add('show', 'confirm');
+        messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
 
-        const newUser = {
-            email,
-            password: hashedPassword,
-            is2FAEnabled: false,
-            twoFactorSecret: null,
-            is2FAVerified: false, // Oturum bazında 2FA doğrulaması
-            isVerified: false, // E-posta doğrulaması için yeni alan, varsayılan olarak false
-            verificationToken: verificationToken,
-            verificationTokenExpires: verificationTokenExpires,
-            createdAt: new Date()
+        document.getElementById('confirmYes').onclick = () => {
+            onConfirm();
+            messageBox.classList.remove('show', 'confirm');
+            messageBox.classList.add('hidden');
+            // Orijinal mesaj kutusu içeriğini geri yükle
+            messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
         };
-        await db.collection('users').insertOne(newUser);
 
-        // Doğrulama e-postasını gönder
-        await sendVerificationEmail(email, verificationToken);
+        document.getElementById('confirmNo').onclick = () => {
+            messageBox.classList.remove('show', 'confirm');
+            messageBox.classList.add('hidden');
+            // Orijinal mesaj kutusu içeriğini geri yükle
+            messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
+        };
+    }
 
-        res.status(201).json({ message: 'Kullanıcı başarıyla kaydedildi. Lütfen e-posta adresinizi doğrulayın.' });
-    } catch (error) {
-        console.error('Kayıt hatası:', error);
-        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    // 2FA Modal Göster/Gizle
+    function showTwoFactorAuthModal() {
+        if (twoFactorAuthModal) twoFactorAuthModal.classList.remove('hidden');
+        if (recoveryCodeSection) recoveryCodeSection.classList.add('hidden'); // Kurtarma kodu bölümünü gizle
+    }
+
+    function hideTwoFactorAuthModal() {
+        if (twoFactorAuthModal) twoFactorAuthModal.classList.add('hidden');
+        if (twoFactorAuthCodeInput) twoFactorAuthCodeInput.value = ''; // Kodu temizle
+    }
+
+    // 2FA modal kapatma butonu
+    if (twoFactorAuthModal) {
+        const twoFactorAuthModalCloseBtn = twoFactorAuthModal.querySelector('.absolute.top-4.right-4');
+        if (twoFactorAuthModalCloseBtn) {
+            twoFactorAuthModalCloseBtn.addEventListener('click', hideTwoFactorAuthModal);
+        }
+    }
+    console.log("TwoFactorAuthHandler initialized."); // Konsol çıktısı
+
+    // Form Geçişleri
+    if (toggleToRegisterBtn) {
+        toggleToRegisterBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            console.log("Register form element found:", registerForm); // Konsol çıktısı
+        });
+    }
+
+    if (toggleToLoginBtn) {
+        toggleToLoginBtn.addEventListener('click', () => {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            console.log("Login form element found:", loginForm); // Konsol çıktısı
+        });
+    }
+
+    // Kayıt Formu Gönderimi
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = emailInputRegister.value;
+            const password = passwordInputRegister.value;
+            const passwordConfirm = passwordConfirmInputRegister.value;
+
+            if (password !== passwordConfirm) {
+                showMessage('Şifreler eşleşmiyor.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showMessage(result.message || 'Kayıt başarılı! Lütfen giriş yapın.', 'success');
+                    registerForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+                    emailInputLogin.value = email; // Kayıt olan e-postayı login formuna taşı
+                } else {
+                    showMessage(result.message || 'Kayıt başarısız oldu.', 'error');
+                }
+            } catch (error) {
+                console.error('Kayıt işlemi sırasında hata:', error);
+                showMessage('Kayıt işlemi sırasında bir ağ hatası oluştu.', 'error');
+            }
+        });
+    }
+
+    // Giriş Formu Gönderimi
+    if (loginForm) {
+        console.log("Login form element found:", loginForm); // Konsol çıktısı
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("Login form submitted!"); // Konsol çıktısı
+
+            const email = emailInputLogin.value;
+            const password = passwordInputLogin.value;
+
+            try {
+                console.log(`Attempting to fetch ${API_BASE_URL}/auth/login with email: ${email}`); // Konsol çıktısı (URL'yi kontrol etmek için)
+
+                const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, { // <<<< BURASI DÜZELTİLDİ: /api/login yerine /api/auth/login
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                console.log("Fetch response received:", loginResponse); // Konsol çıktısı
+                const result = await loginResponse.json();
+                console.log("Fetch result parsed:", result); // Konsol çıktısı
+
+                if (loginResponse.ok) {
+                    if (result.requires2FA) {
+                        currentUserId = result.userId; // 2FA için userId'yi sakla
+                        showMessage('2 Adımlı Doğrulama gerekli. Kodu girin.', 'info');
+                        showTwoFactorAuthModal(); // 2FA modalını göster
+                        // E-posta ile 2FA kodu gönderme isteği (opsiyonel, backend'de zaten tetikleniyorsa gerek yok)
+                        // resendTwoFactorAuthCodeBtn.click(); // Otomatik olarak kod gönderilmesini tetikle
+                    } else {
+                        // JWT'yi ve userId'yi localStorage'a kaydet
+                        localStorage.setItem('jwtToken', result.token);
+                        localStorage.setItem('userId', result.userId);
+                        localStorage.setItem('userEmail', email); // E-postayı da kaydet
+                        showMessage(result.message || 'Giriş başarılı!', 'success');
+                        window.location.href = 'index.html'; // Ana sayfaya yönlendir
+                    }
+                } else {
+                    // Hata mesajını backend'den al veya genel bir hata göster
+                    showMessage(result.message || 'Giriş başarısız oldu.', 'error');
+                }
+            } catch (error) {
+                console.error('Giriş işlemi sırasında hata:', error);
+                showMessage(`Giriş hatası: ${error.message}`, 'error');
+            }
+        });
+    }
+
+    // 2FA Kodu Doğrulama
+    if (verifyTwoFactorAuthBtn) {
+        verifyTwoFactorAuthBtn.addEventListener('click', async () => {
+            const code = twoFactorAuthCodeInput.value.trim();
+            if (!code) {
+                showMessage('Lütfen 2FA kodunu girin.', 'warning');
+                return;
+            }
+            if (!currentUserId) {
+                showMessage('Kullanıcı ID\'si bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                hideTwoFactorAuthModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/2fa/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId, code })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('jwtToken', result.token); // Yeni token'ı kaydet (2FA sonrası geçerli)
+                    localStorage.setItem('userId', currentUserId);
+                    localStorage.setItem('userEmail', emailInputLogin.value); // Login sırasındaki e-postayı al
+                    showMessage(result.message || '2FA doğrulandı. Giriş başarılı!', 'success');
+                    hideTwoFactorAuthModal();
+                    window.location.href = 'index.html';
+                } else {
+                    showMessage(result.message || '2FA kodu geçersiz.', 'error');
+                }
+            } catch (error) {
+                console.error('2FA doğrulama sırasında hata:', error);
+                showMessage(`2FA doğrulama hatası: ${error.message}`, 'error');
+            }
+        });
+    }
+
+    // 2FA Kodunu Tekrar Gönder
+    if (resendTwoFactorAuthCodeBtn) {
+        resendTwoFactorAuthCodeBtn.addEventListener('click', async () => {
+            if (!currentUserId) {
+                showMessage('Kullanıcı ID\'si bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                hideTwoFactorAuthModal();
+                return;
+            }
+            try {
+                const response = await fetch(`${API_BASE_URL}/2fa/resend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showMessage(result.message || 'Yeni kod e-postanıza gönderildi.', 'success');
+                } else {
+                    showMessage(result.message || 'Kod tekrar gönderilemedi.', 'error');
+                }
+            } catch (error) {
+                console.error('Kod tekrar gönderme sırasında hata:', error);
+                showMessage(`Kod tekrar gönderme hatası: ${error.message}`, 'error');
+            }
+        });
+    }
+
+    // Kurtarma Kodu Kullan butonu
+    if (useRecoveryCodeBtn) {
+        useRecoveryCodeBtn.addEventListener('click', () => {
+            if (recoveryCodeSection) recoveryCodeSection.classList.remove('hidden');
+            if (twoFactorAuthCodeInput) twoFactorAuthCodeInput.value = ''; // Normal 2FA kodunu temizle
+            if (twoFactorAuthCodeInput) twoFactorAuthCodeInput.focus(); // Odakla
+        });
+    }
+
+    // Kurtarma Kodu Doğrulama
+    if (verifyRecoveryCodeBtn) {
+        verifyRecoveryCodeBtn.addEventListener('click', async () => {
+            const recoveryCode = recoveryCodeInput.value.trim();
+            if (!recoveryCode) {
+                showMessage('Lütfen kurtarma kodunu girin.', 'warning');
+                return;
+            }
+            if (!currentUserId) {
+                showMessage('Kullanıcı ID\'si bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                hideTwoFactorAuthModal();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/2fa/verify-recovery`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: currentUserId, recoveryCode })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('jwtToken', result.token);
+                    localStorage.setItem('userId', currentUserId);
+                    localStorage.setItem('userEmail', emailInputLogin.value);
+                    showMessage(result.message || 'Kurtarma kodu doğrulandı. Giriş başarılı!', 'success');
+                    hideTwoFactorAuthModal();
+                    window.location.href = 'index.html';
+                } else {
+                    showMessage(result.message || 'Kurtarma kodu geçersiz.', 'error');
+                }
+            } catch (error) {
+                console.error('Kurtarma kodu doğrulama sırasında hata:', error);
+                showMessage(`Kurtarma kodu doğrulama hatası: ${error.message}`, 'error');
+            }
+        });
     }
 });
-
-// Kullanıcı Giriş Rotası
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'E-posta ve şifre gerekli.' });
-    }
-
-    try {
-        const db = getDb();
-        const user = await db.collection('users').findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Geçersiz kimlik bilgileri.' });
-        }
-
-        // DÜZELTME: E-posta doğrulaması kontrolü
-        if (!user.isVerified) {
-            return res.status(403).json({ message: 'E-posta adresiniz doğrulanmamış. Lütfen e-postanızı kontrol edin.' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Geçersiz kimlik bilgileri.' });
-        }
-
-        // JWT payload'ına 2FA durumunu ekle
-        const token = jwt.sign(
-            { userId: user._id.toString(), email: user.email, is2FAEnabled: user.is2FAEnabled, is2FAVerified: false },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' } // Token 1 saat geçerli
-        );
-
-        // Eğer 2FA etkinse, kullanıcıya 2FA yapması gerektiğini bildir
-        if (user.is2FAEnabled) {
-            // is2FAVerified: false olarak ayarla, 2FA doğrulaması bekleniyor
-            return res.status(403).json({ message: '2FA gerekli.', token, userId: user._id.toString() });
-        }
-
-        res.status(200).json({ message: 'Giriş başarılı.', token, userId: user._id.toString() });
-    } catch (error) {
-        console.error('Giriş hatası:', error);
-        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
-    }
-});
-
-// E-posta Doğrulama Rotası
-router.get('/verify-email', async (req, res) => {
-    const { token } = req.query; // URL'den token'ı alıyoruz
-
-    if (!token) {
-        return res.status(400).send('Geçersiz doğrulama linki.');
-    }
-
-    try {
-        const db = getDb();
-        const user = await db.collection('users').findOne({ verificationToken: token });
-
-        if (!user) {
-            return res.status(400).send('Geçersiz veya süresi dolmuş doğrulama tokenı.');
-        }
-
-        if (user.verificationTokenExpires < new Date()) {
-            // Token süresi dolmuşsa, yeni bir token oluşturma ve tekrar e-posta gönderme seçeneği sunabiliriz
-            return res.status(400).send('Doğrulama tokenının süresi dolmuş. Lütfen tekrar kayıt olmayı deneyin veya yeni bir doğrulama e-postası talep edin.');
-        }
-
-        // Kullanıcıyı doğrula ve token alanlarını temizle
-        await db.collection('users').updateOne(
-            { _id: user._id },
-            { $set: { isVerified: true }, $unset: { verificationToken: "", verificationTokenExpires: "" } }
-        );
-
-        res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="tr">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Fingo - E-posta Doğrulama Başarılı</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-                    body {
-                        font-family: 'Inter', sans-serif;
-                        background: linear-gradient(135deg, #e0f2f7 0%, #c1e4ee 100%);
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        min-height: 100vh;
-                        margin: 0;
-                        padding: 20px;
-                        box-sizing: border-box;
-                    }
-                    .card {
-                        background-color: white;
-                        padding: 40px;
-                        border-radius: 12px;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                        text-align: center;
-                        max-width: 500px;
-                        width: 100%;
-                        transform: translateY(0);
-                        transition: transform 0.5s ease-out;
-                    }
-                    .card.animate {
-                        animation: fadeInScale 0.6s ease-out forwards;
-                    }
-                    @keyframes fadeInScale {
-                        from { opacity: 0; transform: scale(0.9) translateY(20px); }
-                        to { opacity: 1; transform: scale(1) translateY(0); }
-                    }
-                    .icon-circle {
-                        display: inline-flex;
-                        justify-content: center;
-                        align-items: center;
-                        width: 80px;
-                        height: 80px;
-                        border-radius: 50%;
-                        background-color: #d1fae5; /* Tailwind green-100 */
-                        color: #059669; /* Tailwind green-600 */
-                        font-size: 3rem;
-                        margin-bottom: 25px;
-                    }
-                    h1 {
-                        color: #10B981; /* Tailwind green-500 */
-                        font-size: 2.25rem; /* text-4xl */
-                        font-weight: 700; /* font-bold */
-                        margin-bottom: 15px;
-                    }
-                    p {
-                        color: #4B5563; /* Tailwind gray-600 */
-                        font-size: 1.125rem; /* text-lg */
-                        margin-bottom: 30px;
-                        line-height: 1.8;
-                    }
-                    .button {
-                        background-color: #3B82F6; /* Tailwind blue-500 */
-                        color: white;
-                        padding: 14px 28px;
-                        border-radius: 8px;
-                        text-decoration: none;
-                        font-weight: 600; /* font-semibold */
-                        transition: background-color 0.3s ease, transform 0.2s ease;
-                        display: inline-block;
-                        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-                    }
-                    .button:hover {
-                        background-color: #2563EB; /* Tailwind blue-600 */
-                        transform: translateY(-2px);
-                        box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
-                    }
-                    .button:active {
-                        transform: translateY(0);
-                        box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
-                    }
-                </style>
-            </head>
-            <body>
-                <div id="successCard" class="card">
-                    <div class="icon-circle">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h1>E-posta Doğrulama Başarılı!</h1>
-                    <p>E-posta adresiniz başarıyla doğrulandı. Artık Fingo hesabınıza güvenle giriş yapabilirsiniz.</p>
-                    <a href="https://yasartahasamdanli.github.io/Fingo-WEB/auth.html" class="button">Giriş Yapmak İçin Tıklayın</a>
-                </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const successCard = document.getElementById('successCard');
-                        // Sayfa yüklendiğinde kartı animasyonla göster
-                        setTimeout(() => {
-                            successCard.classList.add('animate');
-                        }, 100); // Küçük bir gecikme ekleyelim
-                    });
-                </script>
-            </body>
-            </html>
-        `);
-    } catch (error) {
-        console.error('E-posta doğrulama hatası:', error);
-        res.status(500).send('Sunucu hatası. Lütfen tekrar deneyin.');
-    }
-});
-
-
-module.exports = router;
