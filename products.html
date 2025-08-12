@@ -251,15 +251,48 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* SIDEBAR CSS BAŞLANGICI */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Başlangıçta gizli */
+            width: 256px; /* Sidebar genişliği */
+            z-index: 50; /* Diğer her şeyden üstte */
+            /* Tailwind sınıfları zaten top-0, left-0, h-full, fixed, bg-blue-900, text-white, p-4, shadow-lg, pt-20 içeriyor */
+        }
+        #sidebar.open {
+            transform: translateX(0); /* Açıkken görünür */
+        }
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0; /* Tüm ekranı kapla */
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40; /* Sidebar'ın altında, içeriğin üstünde */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* mainContent'in sidebar açıldığında kayması için */
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out; /* margin-left için geçiş */
+            flex-grow: 1; /* Esnek kutuda alanı doldur */
+            padding-top: 16px; /* Header yüksekliği kadar padding-top (pt-16 tailwind sınıfına karşılık gelir) */
+        }
+        /* END SIDEBAR CSS */
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header -->
-    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 relative border-b-4 border-blue-700">
+    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
         <div class="flex items-center">
-            <button id="sidebarbutton" class="p-3 rounded-full hover:bg-blue-800 mr-4 transition-all duration-200 ease-in-out transform hover:scale-105">
-                <i class="fas fa-home text-white text-xl"></i>
+            <!-- Sidebar Aç/Kapa Butonu (fa-bars ikonu ile değiştirildi) -->
+            <button id="sidebarToggleBtn" class="p-3 rounded-full hover:bg-blue-800 mr-4 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bars text-white text-xl"></i>
             </button>
             <h1 class="text-3xl md:text-4xl font-extrabold text-blue-300 tracking-tight">Ürün Yönetimi</h1>
         </div>
@@ -274,168 +307,213 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 p-4 md:p-8 lg:p-10 my-8 mx-auto bg-gray-900 bg-opacity-70 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-7xl">
-        <p class="text-lg text-gray-400 text-center mb-10 font-light">Envanterinizdeki ürünleri kolayca yönetin ve takip edin.</p>
+    <!-- Ana İçerik Alanı -->
+    <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Yan Menü (Sidebar) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transition-transform duration-300 ease-in-out shadow-lg pt-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar Kapatma Butonu -->
+                <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
+                </a>
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
+                    <i class="fas fa-box"></i> <span class="text-gray-100">Ürün Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
+                </a>
+                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
+                </a>
+                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
+                </a>
+                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
+                </a>
+            </nav>
+        </aside>
 
-            <!-- Left Column (Product Add/Update Form) -->
-            <div class="lg:col-span-1">
-                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-                    <h2 id="productFormTitle" class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Ürün Ekle</h2>
-                    <form id="productForm" class="space-y-5">
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+
+        <!-- Main Content -->
+        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-10 my-8 mx-auto bg-gray-900 bg-opacity-70 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-7xl">
+            <p class="text-lg text-gray-400 text-center mb-10 font-light">Envanterinizdeki ürünleri kolayca yönetin ve takip edin.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Left Column (Product Add/Update Form) -->
+                <div class="lg:col-span-1">
+                    <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
+                        <h2 id="productFormTitle" class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Ürün Ekle</h2>
+                        <form id="productForm" class="space-y-5">
+                            <div class="grid grid-cols-1 gap-4 mb-4">
+                                <div>
+                                    <label for="productName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı:</label>
+                                    <input type="text" id="productName" placeholder="Örn: Defter, Kalem" class="form-input w-full p-3 text-base shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="productQuantity" class="block text-gray-300 text-sm font-semibold mb-2">Miktar (Stok):</label>
+                                    <input type="number" id="productQuantity" placeholder="Örn: 100" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                </div>
+
+                                <!-- Price Calculation Section -->
+                                <div class="border-t-2 border-b-2 border-blue-700 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
+                                    <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Fiyat Hesaplama</h3>
+                                    <div>
+                                        <label for="costPriceInput" class="block text-gray-300 text-sm font-semibold mb-2">Maliyet Fiyatı (Toptancı) (₺):</label>
+                                        <input type="number" id="costPriceInput" placeholder="Örn: 10.00" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                        <p class="text-xs text-gray-400 mt-1">Ürünü toptancıdan aldığınız fiyat.</p>
+                                    </div>
+                                    <div class="mt-4">
+                                        <label for="firstMarkupInput" class="block text-gray-300 text-sm font-semibold mb-2">İlk Zam Oranı (%) (Opsiyonel):</label>
+                                        <input type="number" id="firstMarkupInput" placeholder="Örn: 10 (yani %10 zam)" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                        <p class="text-xs text-gray-400 mt-1">Nakliye, depolama gibi ek maliyetleri karşılamak için.</p>
+                                    </div>
+                                    <div class="mt-4">
+                                        <label for="profitMarginInput" class="block text-gray-300 text-sm font-semibold mb-2">Kendi Kar Marjınız (%) (Opsiyonel):</label>
+                                        <input type="number" id="profitMarginInput" placeholder="Örn: 25 (yani %25 kar)" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                        <p class="text-xs text-gray-400 mt-1">Hedeflediğiniz brüt kar oranı.</p>
+                                    </div>
+                                    <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
+                                </div>
+                                <!-- End Price Calculation Section -->
+
+                                <div>
+                                    <label for="productPrice" class="block text-gray-300 text-sm font-semibold mb-2">Birim Satış Fiyatı (₺):</label>
+                                    <input type="number" id="productPrice" placeholder="Örn: 15.50" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                    <p class="text-xs text-gray-400 mt-1">Bu alan otomatik doldurulabilir veya manuel girilebilir.</p>
+                                </div>
+
+                                <!-- Barcode Section -->
+                                <div class="border-t-2 border-blue-700 pt-5 mt-5 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
+                                    <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Barkod Bilgisi</h3>
+                                    <div>
+                                        <label for="productBarcodeInput" class="block text-gray-300 text-sm font-semibold mb-2">Barkod Numarası (Opsiyonel):</label>
+                                        <input type="text" id="productBarcodeInput" placeholder="Barkod numarası" class="form-input w-full p-3 text-base shadow-sm">
+                                        <p class="text-xs text-gray-400 mt-1">Bu ürün için barkodu manuel girin veya tara butonunu kullanın.</p>
+                                    </div>
+                                    <button type="button" id="scanBarcodeBtn" class="mt-6 w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">
+                                        <i class="fas fa-barcode mr-2"></i> Barkod Tara
+                                    </button>
+                                </div>
+                                <!-- End Barcode Section -->
+
+                                <div>
+                                    <label for="productUnit" class="block text-gray-300 text-sm font-semibold mb-2">Birim Tipi:</label>
+                                    <select id="productUnit" class="form-select w-full p-3 text-base shadow-sm">
+                                        <option value="adet">Adet</option>
+                                        <option value="kg">Kilogram</option>
+                                        <option value="litre">Litre</option>
+                                    </select>
+                                </div>
+                                <div id="weightOrVolumePerUnitDiv">
+                                    <label for="productWeightOrVolumePerUnit" class="block text-gray-300 text-sm font-semibold mb-2">Birim Başına Ağırlık/Hacim (kg/litre):</label>
+                                    <input type="number" id="productWeightOrVolumePerUnit" placeholder="Örn: 0.25 (250gr için)" step="0.001" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                    <p class="text-xs text-gray-400 mt-1">Sadece 'adet' ürünler için girin. (Örn: 1 adet ürün kaç kg/litre?)</p>
+                                </div>
+                                <div>
+                                    <label for="productDescription" class="block text-gray-300 text-sm font-semibold mb-2">Açıklama (Opsiyonel):</label>
+                                    <input type="text" id="productDescription" placeholder="Örn: Çizgili defter, Siyah tükenmez kalem" class="form-input w-full p-3 text-base shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="productCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori (Opsiyonel):</label>
+                                    <select id="productCategory" class="form-select w-full p-3 text-base shadow-sm">
+                                        <option value="">Kategori Seçin</option>
+                                        <!-- Kategoriler JS ile yüklenecek -->
+                                    </select>
+                                </div>
+                                <!-- Minimum Stok Seviyesi -->
+                                <div>
+                                    <label for="minStockLevel" class="block text-gray-300 text-sm font-semibold mb-2">Minimum Stok Seviyesi:</label>
+                                    <input type="number" id="minStockLevel" placeholder="Örn: 10" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
+                                    <p class="text-xs text-gray-400 mt-1">Bu seviyenin altına düştüğünde uyarı alacaksınız.</p>
+                                </div>
+                                <!-- Resim Yükleme Alanı -->
+                                <div>
+                                    <label for="imageUpload" class="block text-gray-300 text-sm font-semibold mb-2">Resim Yükle (Opsiyonel):</label>
+                                    <input type="file" id="imageUpload" accept="image/*" class="form-input w-full p-3 text-base shadow-sm">
+                                    <p class="text-xs text-gray-400 mt-1">Bilgisayarınızdan bir resim dosyası seçin.</p>
+                                    <input type="hidden" id="imageUrlHidden"> <!-- This will store the base64 string -->
+                                    <div id="imagePreviewContainer" class="mt-4 hidden">
+                                        <p class="text-sm text-gray-400 mb-2">Seçilen Resim Önizlemesi:</p>
+                                        <img id="imagePreview" src="#" alt="Resim Önizlemesi" class="w-32 h-32 object-cover rounded-md border border-gray-700">
+                                        <button type="button" id="clearImageBtn" class="mt-2 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-xs">Resmi Temizle</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3 mt-6">
+                                <button type="submit" id="submitProductBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Ürün Ekle</button>
+                                <button type="button" id="cancelProductEditBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md hidden font-semibold text-lg">İptal</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column (Filters and Product List) -->
+                <div class="lg:col-span-1 space-y-8">
+
+                    <!-- Filter Form -->
+                    <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                        <h2 class="text-2xl font-bold text-purple-300 mb-6 text-center">Ürünleri Filtrele</h2>
                         <div class="grid grid-cols-1 gap-4 mb-4">
                             <div>
-                                <label for="productName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı:</label>
-                                <input type="text" id="productName" placeholder="Örn: Defter, Kalem" class="form-input w-full p-3 text-base shadow-sm">
+                                <label for="filterProductName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
+                                <input type="text" id="filterProductName" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
                             </div>
                             <div>
-                                <label for="productQuantity" class="block text-gray-300 text-sm font-semibold mb-2">Miktar (Stok):</label>
-                                <input type="number" id="productQuantity" placeholder="Örn: 100" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                            </div>
-
-                            <!-- Price Calculation Section -->
-                            <div class="border-t-2 border-b-2 border-blue-700 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Fiyat Hesaplama</h3>
-                                <div>
-                                    <label for="costPriceInput" class="block text-gray-300 text-sm font-semibold mb-2">Maliyet Fiyatı (Toptancı) (₺):</label>
-                                    <input type="number" id="costPriceInput" placeholder="Örn: 10.00" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                    <p class="text-xs text-gray-400 mt-1">Ürünü toptancıdan aldığınız fiyat.</p>
-                                </div>
-                                <div class="mt-4">
-                                    <label for="firstMarkupInput" class="block text-gray-300 text-sm font-semibold mb-2">İlk Zam Oranı (%) (Opsiyonel):</label>
-                                    <input type="number" id="firstMarkupInput" placeholder="Örn: 10 (yani %10 zam)" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                    <p class="text-xs text-gray-400 mt-1">Nakliye, depolama gibi ek maliyetleri karşılamak için.</p>
-                                </div>
-                                <div class="mt-4">
-                                    <label for="profitMarginInput" class="block text-gray-300 text-sm font-semibold mb-2">Kendi Kar Marjınız (%) (Opsiyonel):</label>
-                                    <input type="number" id="profitMarginInput" placeholder="Örn: 25 (yani %25 kar)" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                    <p class="text-xs text-gray-400 mt-1">Hedeflediğiniz brüt kar oranı.</p>
-                                </div>
-                                <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
-                            </div>
-                            <!-- End Price Calculation Section -->
-
-                            <div>
-                                <label for="productPrice" class="block text-gray-300 text-sm font-semibold mb-2">Birim Satış Fiyatı (₺):</label>
-                                <input type="number" id="productPrice" placeholder="Örn: 15.50" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                <p class="text-xs text-gray-400 mt-1">Bu alan otomatik doldurulabilir veya manuel girilebilir.</p>
-                            </div>
-
-                            <!-- Barcode Section -->
-                            <div class="border-t-2 border-blue-700 pt-5 mt-5 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
-                                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Barkod Bilgisi</h3>
-                                <div>
-                                    <label for="productBarcodeInput" class="block text-gray-300 text-sm font-semibold mb-2">Barkod Numarası (Opsiyonel):</label>
-                                    <input type="text" id="productBarcodeInput" placeholder="Barkod numarası" class="form-input w-full p-3 text-base shadow-sm">
-                                    <p class="text-xs text-gray-400 mt-1">Bu ürün için barkodu manuel girin veya tara butonunu kullanın.</p>
-                                </div>
-                                <button type="button" id="scanBarcodeBtn" class="mt-6 w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">
-                                    <i class="fas fa-barcode mr-2"></i> Barkod Tara
-                                </button>
-                            </div>
-                            <!-- End Barcode Section -->
-
-                            <div>
-                                <label for="productUnit" class="block text-gray-300 text-sm font-semibold mb-2">Birim Tipi:</label>
-                                <select id="productUnit" class="form-select w-full p-3 text-base shadow-sm">
-                                    <option value="adet">Adet</option>
-                                    <option value="kg">Kilogram</option>
-                                    <option value="litre">Litre</option>
-                                </select>
-                            </div>
-                            <div id="weightOrVolumePerUnitDiv">
-                                <label for="productWeightOrVolumePerUnit" class="block text-gray-300 text-sm font-semibold mb-2">Birim Başına Ağırlık/Hacim (kg/litre):</label>
-                                <input type="number" id="productWeightOrVolumePerUnit" placeholder="Örn: 0.25 (250gr için)" step="0.001" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                <p class="text-xs text-gray-400 mt-1">Sadece 'adet' ürünler için girin. (Örn: 1 adet ürün kaç kg/litre?)</p>
-                            </div>
-                            <div>
-                                <label for="productDescription" class="block text-gray-300 text-sm font-semibold mb-2">Açıklama (Opsiyonel):</label>
-                                <input type="text" id="productDescription" placeholder="Örn: Çizgili defter, Siyah tükenmez kalem" class="form-input w-full p-3 text-base shadow-sm">
-                            </div>
-                            <div>
-                                <label for="productCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori (Opsiyonel):</label>
-                                <select id="productCategory" class="form-select w-full p-3 text-base shadow-sm">
-                                    <option value="">Kategori Seçin</option>
+                                <label for="filterProductCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
+                                <select id="filterProductCategory" class="form-select w-full p-3 text-base shadow-sm">
+                                    <option value="">Tüm Kategoriler</option>
                                     <!-- Kategoriler JS ile yüklenecek -->
                                 </select>
                             </div>
-                            <!-- Minimum Stok Seviyesi -->
-                            <div>
-                                <label for="minStockLevel" class="block text-gray-300 text-sm font-semibold mb-2">Minimum Stok Seviyesi:</label>
-                                <input type="number" id="minStockLevel" placeholder="Örn: 10" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
-                                <p class="text-xs text-gray-400 mt-1">Bu seviyenin altına düştüğünde uyarı alacaksınız.</p>
-                            </div>
-                            <!-- Resim Yükleme Alanı -->
-                            <div>
-                                <label for="imageUpload" class="block text-gray-300 text-sm font-semibold mb-2">Resim Yükle (Opsiyonel):</label>
-                                <input type="file" id="imageUpload" accept="image/*" class="form-input w-full p-3 text-base shadow-sm">
-                                <p class="text-xs text-gray-400 mt-1">Bilgisayarınızdan bir resim dosyası seçin.</p>
-                                <input type="hidden" id="imageUrlHidden"> <!-- This will store the base64 string -->
-                                <div id="imagePreviewContainer" class="mt-4 hidden">
-                                    <p class="text-sm text-gray-400 mb-2">Seçilen Resim Önizlemesi:</p>
-                                    <img id="imagePreview" src="#" alt="Resim Önizlemesi" class="w-32 h-32 object-cover rounded-md border border-gray-700">
-                                    <button type="button" id="clearImageBtn" class="mt-2 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-xs">Resmi Temizle</button>
-                                </div>
-                            </div>
                         </div>
                         <div class="flex space-x-3 mt-6">
-                            <button type="submit" id="submitProductBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Ürün Ekle</button>
-                            <button type="button" id="cancelProductEditBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md hidden font-semibold text-lg">İptal</button>
+                            <button id="applyProductFilterBtn" class="flex-1 bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtrele</button>
+                            <button id="clearProductFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtreleri Temizle</button>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- Product List -->
+                    <div id="productsListContainer" class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
+                        <h2 class="text-2xl font-bold text-gray-200 mb-6 text-center">Mevcut Ürünler</h2>
+                        <div id="productsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                            <!-- Products will be loaded here by JS -->
+                        </div>
+                        <!-- Loading Overlay -->
+                        <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                            <p class="text-center text-gray-300 text-lg">
+                                <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                                Yükleniyor...
+                            </p>
+                        </div>
+                        <p class="text-right text-xl font-bold text-gray-200 mt-6 pt-4 border-t border-gray-700">Toplam Envanter Değeri: <span id="totalInventoryValue" class="text-blue-400">0.00 TL</span></p>
+                        <div class="mt-8 text-center flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                            <button id="generateShelfCardsBtn" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Reyon Kartları Oluştur</button>
+                            <button id="goToStockManagementBtn" class="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Stok Yönetimi Sayfasına Git</button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- Right Column (Filters and Product List) -->
-            <div class="lg:col-span-1 space-y-8">
-
-                <!-- Filter Form -->
-                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-                    <h2 class="text-2xl font-bold text-purple-300 mb-6 text-center">Ürünleri Filtrele</h2>
-                    <div class="grid grid-cols-1 gap-4 mb-4">
-                        <div>
-                            <label for="filterProductName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
-                            <input type="text" id="filterProductName" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
-                        </div>
-                        <div>
-                            <label for="filterProductCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
-                            <select id="filterProductCategory" class="form-select w-full p-3 text-base shadow-sm">
-                                <option value="">Tüm Kategoriler</option>
-                                <!-- Kategoriler JS ile yüklenecek -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-6">
-                        <button id="applyProductFilterBtn" class="flex-1 bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtrele</button>
-                        <button id="clearProductFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtreleri Temizle</button>
-                    </div>
-                </div>
-
-                <!-- Product List -->
-                <div id="productsListContainer" class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
-                    <h2 class="text-2xl font-bold text-gray-200 mb-6 text-center">Mevcut Ürünler</h2>
-                    <div id="productsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                        <!-- Products will be loaded here by JS -->
-                    </div>
-                    <!-- Loading Overlay -->
-                    <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
-                        <p class="text-center text-gray-300 text-lg">
-                            <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
-                            Yükleniyor...
-                        </p>
-                    </div>
-                    <p class="text-right text-xl font-bold text-gray-200 mt-6 pt-4 border-t border-gray-700">Toplam Envanter Değeri: <span id="totalInventoryValue" class="text-blue-400">0.00 TL</span></p>
-                    <div class="mt-8 text-center flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
-                        <button id="generateShelfCardsBtn" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Reyon Kartları Oluştur</button>
-                        <button id="goToStockManagementBtn" class="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Stok Yönetimi Sayfasına Git</button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- Barcode Scanner Modal -->
     <div id="barcodeScannerModal" class="barcode-scanner-modal">
@@ -508,6 +586,14 @@
 
             const getToken = () => localStorage.getItem('jwtToken');
             const getUserId = () => localStorage.getItem('userId');
+
+            // Sidebar ve Overlay DOM Elementleri
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent'); // Main content'in kayması için
+
 
             const goToDashboardBtn = document.getElementById('goToDashboardBtn');
             const logoutBtn = document.getElementById('logoutBtn');
@@ -605,6 +691,21 @@
                         messageBox.classList.add('hidden');
                     }, 300);
                 }, 3000);
+            }
+
+            function showConfirmBox(message, onConfirm) {
+                if (!messageBox || !messageText) return;
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
+                messageBox.classList.add('show', 'confirm');
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
+                document.getElementById('confirmYes').onclick = () => { onConfirm(); messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
+                document.getElementById('confirmNo').onclick = () => { messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
             }
 
             function renderNotifications() {
@@ -1252,11 +1353,66 @@
                 });
             }
 
-            if (goToDashboardBtn) {
-                goToDashboardBtn.addEventListener('click', () => {
-                    window.location.href = 'index.html';
+            // Sidebar Fonksiyonları (products.html için eklendi)
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.remove('open');
+                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                // Masaüstünde sidebar kapandığında mainContent'in sol marjını kaldır
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.remove('lg:ml-64');
+                }
+            };
+
+            const openSidebar = () => {
+                if (sidebar) sidebar.classList.add('open');
+                if (sidebar) sidebar.classList.remove('-translate-x-full');
+                // Eğer ekran genişliği large (lg) ve daha büyükse, mainContent'e sol marj ekle
+                if (window.innerWidth >= 1024 && mainContent) {
+                    mainContent.classList.add('lg:ml-64');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Masaüstünde overlay gösterme
+                } else {
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active'); // Mobil'de overlay göster
+                }
+            };
+
+            const initializeSidebarState = () => {
+                if (window.innerWidth >= 1024) {
+                    openSidebar(); // Masaüstünde açık kalsın
+                } else {
+                    closeSidebar(); // Mobil'de kapalı başlasın
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Sayfa Yönlendirme Butonları (a tag'leri ile yönlendirme)
+            // Bu kısım sidebar içindeki linkler için olduğu için yeni `products.html`'deki sidebar içinde olacak
+            // Mevcut `goToDashboardBtn` HTML'den kaldırılıp yerine sidebarToggleBtn geldiği için bu event listener'a gerek kalmıyor
+            // Eğer sidebar içinde ayrı bir "Ana Sayfa" butonu olacaksa, o buton için event listener burada kalmalı.
+            // Bu HTML'de sidebar'ı eklediğimiz için bu butonlar sidebar içinde tanımlandı.
 
             if (loggedInUserSpan && decodedToken && decodedToken.email) {
                 loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
@@ -1272,6 +1428,7 @@
                 });
             }
 
+            // handleAuthError fonksiyonu (token süresi dolduğunda veya yetkilendirme hatasında yönlendirme)
             function handleAuthError() {
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
@@ -1282,10 +1439,12 @@
             }
 
 
+            // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
             populateCategoryDropdowns();
             fetchProducts();
             loadNotifications();
             toggleWeightOrVolumePerUnitField();
+            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla (sona eklendi)
         });
     </script>
 </body>
