@@ -323,6 +323,7 @@
         #mainContent {
             transition: margin-left 0.3s ease-in-out;
             flex-grow: 1;
+            padding-top: 16px; /* Header yüksekliği kadar padding-top (pt-16 tailwind sınıfına karşılık gelir) */
         }
     </style>
 </head>
@@ -361,8 +362,8 @@
                 </button>
             </div>
             <nav class="space-y-3">
-                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
-                    <i class="fas fa-home"></i> <span class="text-gray-100">Ana Sayfa</span>
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
                 </a>
                 <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
                     <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
@@ -370,8 +371,8 @@
                 <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
-                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
+                    <i class="fas fa-shopping-cart"></i><span class="text-gray-100">Satış Yönetimi</span>
                 </a>
                 <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
                     <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
@@ -409,7 +410,10 @@
                             </div>
                             <div>
                                 <label for="customerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı (Opsiyonel):</label>
-                                <input type="text" id="customerName" placeholder="Örn: Ayşe Yılmaz" class="form-input w-full p-3 text-base shadow-sm">
+                                <input type="text" id="customerName" list="customerNames" placeholder="Müşteri adı yazmaya başlayın veya seçin" class="form-input w-full p-3 text-base shadow-sm">
+                                <datalist id="customerNames">
+                                    <!-- Müşteri isimleri JS ile doldurulacak -->
+                                </datalist>
                             </div>
 
                             <!-- Product Selection for Sale -->
@@ -587,6 +591,7 @@
             const newSaleForm = document.getElementById('newSaleForm');
             const saleDateInput = document.getElementById('saleDate');
             const customerNameInput = document.getElementById('customerName');
+            const customerDatalist = document.getElementById('customerNames'); // Yeni: Datalist elementi
             // Ürün arama ve öneri elemanları
             const productSearchInput = document.getElementById('productSearchInput');
             const productSuggestions = document.getElementById('productSuggestions');
@@ -629,7 +634,7 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
             const mainContent = document.getElementById('mainContent');
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const manageCustomersBtn = document.getElementById('manageCustomersBtn'); // Müşteri Yönetimi butonu
             const manageProductsBtn = document.getElementById('manageProductsBtn');
             const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
             const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
@@ -643,6 +648,7 @@
             let allProducts = []; // Tüm ürünleri saklayacak dizi
             let selectedProductForSale = null; // Arama ile seçilen ürünü tutacak
             let scannerRunning = false; // Tarayıcının çalışıp çalışmadığını takip et
+            let allCustomers = []; // Tüm müşterileri saklayacak dizi
 
             // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
             function loadNotifications() {
@@ -682,6 +688,35 @@
                         messageBox.classList.add('hidden');
                     }, 300);
                 }, 3000);
+            }
+
+            // Confirm Box fonksiyonu (yeniden kullanıldı)
+            function showConfirmBox(message, onConfirm) {
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found! Cannot display confirm box.");
+                    return;
+                }
+
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
+                messageBox.classList.add('show', 'confirm');
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
+
+                document.getElementById('confirmYes').onclick = () => {
+                    onConfirm();
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
+
+                document.getElementById('confirmNo').onclick = () => {
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
             }
 
             // Bildirimleri render etme (HTML'e basma)
@@ -803,6 +838,35 @@
                 }
             }
 
+            // Tüm müşterileri API'den çekme ve datalist'i doldurma
+            async function fetchAllCustomers() {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/customers?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    allCustomers = await response.json();
+                    console.log("Tüm müşteriler yüklendi:", allCustomers); // Debug
+
+                    if (customerDatalist) {
+                        customerDatalist.innerHTML = ''; // Mevcut seçenekleri temizle
+                        allCustomers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.name; // Müşterinin adını öneri olarak göster
+                            option.dataset.customerId = customer._id; // Müşteri ID'sini sakla (isteğe bağlı)
+                            customerDatalist.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Müşteriler çekilirken hata:', error);
+                    addNotification('Müşteri listesi yüklenemedi.', 'error');
+                }
+            }
+
+
             // Ürün arama inputuna yazıldığında önerileri göster
             if (productSearchInput) {
                 productSearchInput.addEventListener('input', () => {
@@ -858,8 +922,8 @@
                             if (searchTerm) {
                                 const foundProduct = allProducts.find(p => p.barcode === searchTerm || p.name.toLowerCase() === searchTerm.toLowerCase());
                                 if (foundProduct) {
-                                    selectedProductForSale = foundProduct;
                                     productSearchInput.value = foundProduct.name; // Inputu ürün adıyla doldur
+                                    selectedProductForSale = foundProduct;
                                     addProductToSaleBtn.click(); // Sepete ekle
                                     addNotification(`"${foundProduct.name}" otomatik olarak sepete eklendi.`, 'success');
                                 } else {
@@ -1131,7 +1195,7 @@
                                     unitPrice: item.unitPrice,     // Backend'e unitPrice'ı da gönder
                                     totalPrice: item.totalPrice    // Backend'e totalPrice'ı da gönder
                                 })),
-                                customerName: customerName || null,
+                                customerName: customerName || 'Anonim',
                                 saleDate: saleDate // ISO formatında gönderilecek
                             })
                         });
@@ -1348,6 +1412,13 @@
                     closeSidebar();
                 });
             }
+            if (manageCustomersBtn) {
+                manageCustomersBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/customers.html';
+                    closeSidebar();
+                });
+            }
             if (manageProductsBtn) {
                 manageProductsBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1415,6 +1486,7 @@
 
             // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
             fetchAllProducts(); // Tüm ürünleri başta bir kere çek
+            fetchAllCustomers(); // Yeni: Tüm müşterileri çek
             fetchPastSales(); // Geçmiş satışları yükle
             loadNotifications(); // Bildirimleri yükle
             if (saleDateInput) saleDateInput.valueAsDate = new Date(); // Satış tarihini bugüne ayarla
