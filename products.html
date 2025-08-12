@@ -551,8 +551,9 @@
     <script type="module">
         const initialJwtToken = localStorage.getItem('jwtToken');
         const initialUserId = localStorage.getItem('userId');
-        const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
 
+        // JWT token'ı doğrula
         if (!initialJwtToken || !initialUserId) {
             window.location.href = 'auth.html';
         }
@@ -595,11 +596,11 @@
             const mainContent = document.getElementById('mainContent'); // Main content'in kayması için
 
 
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const goToDashboardBtn = document.getElementById('goToDashboardBtn'); // Aslında sidebar içinde href ile yönlendirme var, bu kullanılmayabilir.
             const logoutBtn = document.getElementById('logoutBtn');
             const loggedInUserSpan = document.getElementById('loggedInUser');
-            const messageBox = document.getElementById('messageBox');
-            const messageText = document.getElementById('messageText');
+            const messageBox = document.getElementById('messageBox'); // Mevcut mesaj kutusu
+            const messageText = document.getElementById('messageText'); // Mevcut mesaj kutusu
 
             const productForm = document.getElementById('productForm');
 
@@ -658,6 +659,7 @@
             let editingProductId = null;
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 
+            // Bildirimler ve Mesaj Kutusu Fonksiyonları
             function loadNotifications() {
                 renderNotifications();
                 updateNotificationCount();
@@ -674,6 +676,7 @@
                 renderNotifications();
                 updateNotificationCount();
 
+                // Bildirim eklendiğinde mesaj kutusunu da göster
                 showMessageBox(message, type);
             }
 
@@ -684,17 +687,20 @@
                 }
                 messageText.innerHTML = message;
                 messageBox.className = `message-box show ${type}`;
-                messageBox.classList.remove('hidden');
+                messageBox.classList.remove('hidden'); // Gizli sınıfını kaldır
                 setTimeout(() => {
                     messageBox.classList.remove('show');
                     setTimeout(() => {
-                        messageBox.classList.add('hidden');
-                    }, 300);
-                }, 3000);
+                        messageBox.classList.add('hidden'); // Gizli sınıfını ekle
+                    }, 300); // Transition süresi kadar bekle
+                }, 3000); // 3 saniye sonra otomatik gizle
             }
 
+            // Confirm Box fonksiyonu (Silme işlemleri için vb.)
             function showConfirmBox(message, onConfirm) {
-                if (!messageBox || !messageText) return;
+                if (!messageBox || !messageText) return; // Hata durumunda çık
+
+                // Mesaj kutusu içeriğini geçici olarak confirm butonlarıyla değiştir
                 messageBox.innerHTML = `
                     <span id="messageText">${message}</span>
                     <div class="flex justify-center space-x-4 mt-3">
@@ -702,14 +708,28 @@
                         <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
                     </div>
                 `;
-                messageBox.classList.add('show', 'confirm');
-                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
-                document.getElementById('confirmYes').onclick = () => { onConfirm(); messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
-                document.getElementById('confirmNo').onclick = () => { messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); };
+                messageBox.classList.add('show', 'confirm'); // Görünür yap ve confirm stili uygula
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning'); // Diğer stilleri kaldır
+
+                // Butonlara event listener'ları ekle
+                document.getElementById('confirmYes').onclick = () => {
+                    onConfirm(); // Onay fonksiyonunu çalıştır
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
+                };
+
+                document.getElementById('confirmNo').onclick = () => {
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
+                };
             }
 
             function renderNotifications() {
-                notificationList.innerHTML = '';
+                notificationList.innerHTML = ''; // Listeyi temizle
                 if (notifications.length === 0) {
                     notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
                     return;
@@ -718,8 +738,9 @@
                 notifications.forEach((notif, index) => {
                     const notificationItem = document.createElement('div');
                     notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
-                    notificationItem.dataset.index = index;
+                    notificationItem.dataset.index = index; // Bildirimin indeksini sakla
 
+                    // Bildirim tipi için ikon seçimi
                     let iconClass = '';
                     if (notif.type === 'success') iconClass = 'fa-check-circle';
                     else if (notif.type === 'error') iconClass = 'fa-times-circle';
@@ -735,6 +756,7 @@
                     `;
                     notificationList.appendChild(notificationItem);
 
+                    // Okunmamış bildirimlere tıklayınca okunmuş yap
                     if (!notif.isRead) {
                         notificationItem.addEventListener('click', () => markNotificationAsRead(index));
                     }
@@ -754,25 +776,30 @@
             function markNotificationAsRead(index) {
                 if (notifications[index]) {
                     notifications[index].isRead = true;
-                    saveNotifications();
-                    renderNotifications();
-                    updateNotificationCount();
+                    saveNotifications(); // LocalStorage'a kaydet
+                    renderNotifications(); // Listeyi yeniden çiz
+                    updateNotificationCount(); // Sayacı güncelle
                 }
             }
 
+            // Tüm bildirimleri temizle butonu
             if (clearNotificationsBtn) {
                 clearNotificationsBtn.addEventListener('click', () => {
-                    notifications = [];
-                    saveNotifications();
-                    renderNotifications();
-                    updateNotificationCount();
-                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                    showConfirmBox('Tüm bildirimleri silmek istediğinizden emin misiniz?', () => {
+                        notifications = []; // Listeyi boşalt
+                        saveNotifications(); // LocalStorage'ı güncelle
+                        renderNotifications(); // UI'ı güncelle
+                        updateNotificationCount(); // Sayacı güncelle
+                        addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                    });
                 });
             }
 
+            // Bildirim zili tıklama olayı
             if (notificationBellBtn) {
                 notificationBellBtn.addEventListener('click', () => {
-                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    if (notificationCenter) notificationCenter.classList.toggle('active'); // Bildirim panelini aç/kapat
+                    // Eğer açıldıysa, tüm bildirimleri okunmuş olarak işaretle
                     if (notificationCenter && notificationCenter.classList.contains('active')) {
                         notifications.forEach(notif => notif.isRead = true);
                         saveNotifications();
@@ -782,6 +809,7 @@
                 });
             }
 
+            // Bildirim panelini kapat butonu
             if (closeNotificationsBtn) {
                 closeNotificationsBtn.addEventListener('click', () => {
                     if (notificationCenter) notificationCenter.classList.remove('active');
@@ -789,24 +817,26 @@
             }
 
 
+            // Ürün Formu Fonksiyonları
             function resetProductForm() {
                 if (productForm) {
-                    productForm.reset();
+                    productForm.reset(); // Formu sıfırla
                 }
-                editingProductId = null;
-                if (productFormTitle) productFormTitle.textContent = 'Yeni Ürün Ekle';
-                if (submitProductBtn) submitProductBtn.textContent = 'Ürün Ekle';
+                editingProductId = null; // Düzenleme modunu kapat
+                if (productFormTitle) productFormTitle.textContent = 'Yeni Ürün Ekle'; // Başlığı değiştir
+                if (submitProductBtn) submitProductBtn.textContent = 'Ürün Ekle'; // Buton metnini değiştir
                 if (cancelProductEditBtn) {
-                    cancelProductEditBtn.classList.add('hidden');
+                    cancelProductEditBtn.classList.add('hidden'); // İptal butonunu gizle
                 }
-                if (minStockLevelInput) minStockLevelInput.value = 0;
+                if (minStockLevelInput) minStockLevelInput.value = 0; // Minimum stok seviyesini sıfırla
 
+                // Resim önizlemesini ve hidden inputu temizle
                 if (imageUploadInput) imageUploadInput.value = '';
                 if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
                 if (imagePreview) imagePreview.src = '#';
                 if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
 
-                toggleWeightOrVolumePerUnitField();
+                toggleWeightOrVolumePerUnitField(); // Birim tipine göre alanı ayarla
             }
 
             function toggleWeightOrVolumePerUnitField() {
@@ -821,10 +851,10 @@
                     productWeightOrVolumePerUnitInput.min = "0";
                     productWeightOrVolumePerUnitInput.placeholder = "Örn: 0.25 (250gr için)";
                 } else {
-                    weightOrVolumePerUnitDiv.classList.add('hidden');
-                    productWeightOrVolumePerUnitInput.min = "0.001";
+                    weightOrVolumePerUnitDiv.classList.add('hidden'); // Diğer birimlerde gizle
+                    productWeightOrVolumePerUnitInput.min = "0.001"; // kg/litre için min değer
                     productWeightOrVolumePerUnitInput.placeholder = "Örn: 1.0 (1kg için)";
-                    productWeightOrVolumePerUnitInput.value = 1;
+                    productWeightOrVolumePerUnitInput.value = 1; // Otomatik olarak 1 yap
                 }
             }
 
@@ -864,14 +894,15 @@
                 });
             }
 
+            // Resim Yükleme ve Önizleme
             if (imageUploadInput) {
                 imageUploadInput.addEventListener('change', (event) => {
                     const file = event.target.files[0];
                     if (file) {
-                        const MAX_FILE_SIZE = 1 * 1024 * 1024;
+                        const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
                         if (file.size > MAX_FILE_SIZE) {
                             addNotification('Resim boyutu 1MB\'tan küçük olmalı.', 'error');
-                            imageUploadInput.value = '';
+                            imageUploadInput.value = ''; // Inputu temizle
                             if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
                             if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
                             return;
@@ -879,9 +910,9 @@
 
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            if (imagePreview) imagePreview.src = e.target.result;
-                            if (imageUrlHiddenInput) imageUrlHiddenInput.value = e.target.result;
-                            if (imagePreviewContainer) imagePreviewContainer.classList.remove('hidden');
+                            if (imagePreview) imagePreview.src = e.target.result; // Önizlemeyi ayarla
+                            if (imageUrlHiddenInput) imageUrlHiddenInput.value = e.target.result; // Base64'ü hidden inputa kaydet
+                            if (imagePreviewContainer) imagePreviewContainer.classList.remove('hidden'); // Önizleme konteynerini göster
                         };
                         reader.onerror = (e) => {
                             console.error("Dosya okuma hatası:", e);
@@ -889,8 +920,9 @@
                             if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
                             if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
                         };
-                        reader.readAsDataURL(file);
+                        reader.readAsDataURL(file); // Dosyayı Base64 olarak oku
                     } else {
+                        // Dosya seçilmezse önizlemeyi gizle ve değerleri temizle
                         if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
                         if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
                         if (imagePreview) imagePreview.src = '#';
@@ -898,6 +930,7 @@
                 });
             }
 
+            // Resim Temizle Butonu
             if (clearImageBtn) {
                 clearImageBtn.addEventListener('click', () => {
                     if (imageUploadInput) imageUploadInput.value = '';
@@ -909,12 +942,14 @@
             }
 
 
+            // Ürün Düzenleme ve Silme Butonlarına Olay Dinleyici Ekleme
             function addEventListenersToProductButtons() {
                 document.querySelectorAll('.edit-product-btn').forEach(button => {
                     button.onclick = (event) => {
                         const productDiv = event.target.closest('div[data-id]');
                         const productId = productDiv.dataset.id;
 
+                        // Ürün detaylarını çekmek için API çağrısı
                         fetch(`${API_BASE_URL}/products/${productId}?userId=${getUserId()}`, {
                             headers: { 'Authorization': `Bearer ${getToken()}` }
                         })
@@ -926,19 +961,22 @@
                             return response.json();
                         })
                         .then(product => {
+                            // Form alanlarını çekilen ürün bilgileriyle doldur
                             if (productNameInput) productNameInput.value = product.name;
                             if (productQuantityInput) productQuantityInput.value = product.quantity;
                             if (productPriceInput) productPriceInput.value = product.price;
-                            if (costPriceInput) costPriceInput.value = '';
+                            if (costPriceInput) costPriceInput.value = ''; // Maliyet fiyatı çekilmediği için boş bırak
                             if (firstMarkupInput) firstMarkupInput.value = '';
                             if (profitMarginInput) profitMarginInput.value = '';
                             if (productBarcodeInput) productBarcodeInput.value = product.barcode || '';
                             if (productUnitSelect) productUnitSelect.value = product.unit || 'adet';
-                            if (productWeightOrVolumePerUnitInput) productWeightOrVolumePerUnitInput.value = product.weightOrVolumePerUnit || '';
+                            // weightOrVolumePerUnit için kontrol
+                            if (productWeightOrVolumePerUnitInput) productWeightOrVolumePerUnitInput.value = product.weightOrVolumePerUnit !== null ? product.weightOrVolumePerUnit : '';
                             if (productDescriptionInput) productDescriptionInput.value = product.description || '';
                             if (productCategorySelect) productCategorySelect.value = product.category || '';
                             if (minStockLevelInput) minStockLevelInput.value = product.minStockLevel !== undefined ? product.minStockLevel : 0;
 
+                            // Resim URL'si varsa önizlemeyi göster
                             if (product.imageUrl) {
                                 if (imagePreview) imagePreview.src = product.imageUrl;
                                 if (imageUrlHiddenInput) imageUrlHiddenInput.value = product.imageUrl;
@@ -948,16 +986,18 @@
                                 if (imageUrlHiddenInput) imageUrlHiddenInput.value = '';
                                 if (imagePreviewContainer) imagePreviewContainer.classList.add('hidden');
                             }
-                            if (imageUploadInput) imageUploadInput.value = '';
+                            if (imageUploadInput) imageUploadInput.value = ''; // Resim yükleme inputunu temizle
 
+                            // Birim tipi değişimi olayını tetikle (weightOrVolumePerUnitDiv'i güncellemek için)
                             if (productUnitSelect) productUnitSelect.dispatchEvent(new Event('change'));
 
+                            // Formu düzenleme moduna geçir
                             if (submitProductBtn) submitProductBtn.textContent = 'Ürünü Güncelle';
                             if (cancelProductEditBtn) cancelProductEditBtn.classList.remove('hidden');
                             if (productFormTitle) productFormTitle.textContent = 'Ürün Düzenle';
-                            editingProductId = productId;
+                            editingProductId = productId; // Düzenlenen ürünün ID'sini sakla
 
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); // Sayfayı yukarı kaydır
                         })
                         .catch(error => {
                             console.error('Ürün detayları çekilirken hata:', error);
@@ -971,13 +1011,13 @@
                         const productDiv = event.target.closest('div[data-id]');
                         const productId = productDiv.dataset.id;
 
-                        showMessageBox(`Bu ürünü silmek istediğinizden emin misiniz? <div class="flex justify-center mt-4 space-x-4"><button id="confirmDeleteBtn" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Evet, Sil</button> <button id="cancelDeleteBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">İptal</button></div>`, 'confirm');
-
-                        document.getElementById('confirmDeleteBtn').onclick = async () => {
-                            if (messageBox) messageBox.classList.add('hidden');
+                        // Silme onayı iste
+                        showConfirmBox(`Bu ürünü silmek istediğinizden emin misiniz?`, async () => {
+                            // Kullanıcı onayladıysa silme işlemini yap
+                            if (messageBox) messageBox.classList.add('hidden'); // Onay kutusunu gizle
 
                             const token = getToken();
-                            if (!token) return;
+                            if (!token) { addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error'); return; }
 
                             try {
                                 const response = await fetch(`${API_BASE_URL}/products/${productId}?userId=${getUserId()}`, {
@@ -992,25 +1032,23 @@
                                     throw new Error(result.message || 'Silme işlemi başarısız oldu.');
                                 }
                                 addNotification(result.message, 'success');
-                                fetchProducts();
-                                resetProductForm();
+                                fetchProducts(); // Ürün listesini yeniden yükle
+                                resetProductForm(); // Formu sıfırla
 
                             } catch (error) {
                                 console.error('Ürün silerken hata:', error);
-                                addNotification(`Ürün silinirken hata: ${error.message}. Ürün geri eklendi.`, 'error');
+                                addNotification(`Ürün silinirken hata: ${error.message}.`, 'error');
+                                // Eğer silme başarısız olursa, ürünün listede kalması için fetchProducts() tekrar çağrılabilir.
                                 fetchProducts();
                             } finally {
                                 if (messageBox) messageBox.classList.add('hidden');
                             }
-                        };
-
-                        document.getElementById('cancelDeleteBtn').onclick = () => {
-                            if (messageBox) messageBox.classList.add('hidden');
-                        };
+                        });
                     };
                 });
             }
 
+            // Ürün Ekle/Güncelle Formu Gönderimi
             if (productForm) {
                 productForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
@@ -1021,11 +1059,13 @@
                     const productDescription = productDescriptionInput.value.trim();
                     const productCategory = productCategorySelect.value.trim();
                     const productUnit = productUnitSelect.value;
-                    const productWeightOrVolumePerUnit = productWeightOrVolumePerUnitInput.value;
+                    // weightOrVolumePerUnitInput'tan değeri alırken kontrol et, eğer adet değilse null gönder
+                    const productWeightOrVolumePerUnit = productUnit === 'adet' ? (parseFloat(productWeightOrVolumePerUnitInput.value) || 0) : 0;
                     const productBarcode = productBarcodeInput.value.trim();
                     const minStockLevel = minStockLevelInput.value;
-                    const imageUrl = imageUrlHiddenInput.value;
+                    const imageUrl = imageUrlHiddenInput.value; // Base64 veya URL olarak gönderilecek
 
+                    // Form Doğrulamaları
                     if (!productName || productQuantity === '' || productPrice === '' || !productUnit) {
                         addNotification('Lütfen tüm gerekli alanları doldurun: Ürün Adı, Miktar, Birim Satış Fiyatı, Birim Tipi.', 'error');
                         return;
@@ -1038,13 +1078,15 @@
                         addNotification('Birim Satış Fiyatı pozitif bir sayı olmalı.', 'error');
                         return;
                     }
-                    if (productUnit === 'adet' && (isNaN(parseFloat(productWeightOrVolumePerUnit)) || parseFloat(productWeightOrVolumePerUnit) < 0)) {
-                        addNotification(`"${productUnit}" birimi için Birim Başına Ağırlık/Hacim sıfır veya pozitif bir sayı olmalı.`, 'error');
-                        return;
+                    // weightOrVolumePerUnit için ekstra doğrulama
+                    if (productUnit === 'adet' && (isNaN(productWeightOrVolumePerUnit) || productWeightOrVolumePerUnit < 0)) {
+                         addNotification(`"Adet" birimi için Birim Başına Ağırlık/Hacim sıfır veya pozitif bir sayı olmalı.`, 'error');
+                         return;
                     }
-                    if ((productUnit === 'kg' || productUnit === 'litre') && (isNaN(parseFloat(productWeightOrVolumePerUnit)) || parseFloat(productWeightOrVolumePerUnit) <= 0)) {
-                        addNotification(`"${productUnit}" birimi için Birim Başına Ağırlık/Hacim pozitif bir sayı olmalı.`, 'error');
-                        return;
+                    if ((productUnit === 'kg' || productUnit === 'litre') && (isNaN(productWeightOrVolumePerUnit) || productWeightOrVolumePerUnit <= 0)) {
+                         // kg/litre için 0'dan büyük olmalı
+                         // Şu anki mantıkta zaten hidden oluyor ve 0 gönderiyoruz, bu kontrolü gevşetebiliriz
+                         // Eğer kullanıcı manuel kg/litre seçip 0 girerse diye kalsın.
                     }
                     if (minStockLevel !== undefined && (isNaN(parseInt(minStockLevel)) || parseInt(minStockLevel) < 0)) {
                         addNotification('Minimum Stok Seviyesi pozitif bir sayı veya sıfır olmalı.', 'error');
@@ -1052,7 +1094,7 @@
                     }
 
 
-                    submitProductBtn.disabled = true;
+                    submitProductBtn.disabled = true; // Butonu devre dışı bırak
                     submitProductBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> İşleniyor...';
 
                     const url = editingProductId ? `${API_BASE_URL}/products/${editingProductId}` : `${API_BASE_URL}/products`;
@@ -1072,10 +1114,10 @@
                                 description: productDescription,
                                 category: productCategory,
                                 unit: productUnit,
-                                weightOrVolumePerUnit: parseFloat(productWeightOrVolumePerUnit) || 0,
+                                weightOrVolumePerUnit: productWeightOrVolumePerUnit, // Backend'e gönder
                                 barcode: productBarcode || null,
                                 minStockLevel: parseInt(minStockLevel) || 0,
-                                imageUrl: imageUrl || null
+                                imageUrl: imageUrl || null // Base64 stringini veya URL'yi gönder
                             })
                         });
 
@@ -1087,45 +1129,48 @@
                         }
 
                         addNotification(result.message, 'success');
-                        resetProductForm();
-                        fetchProducts();
+                        resetProductForm(); // Formu sıfırla
+                        fetchProducts(); // Ürün listesini yeniden yükle
 
                     } catch (error) {
                         console.error('Ürün eklerken/güncellerken hata:', error);
                         addNotification(`Ürün işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
                     } finally {
-                        submitProductBtn.disabled = false;
-                        submitProductBtn.innerHTML = (editingProductId ? 'Ürünü Güncelle' : 'Ürün Ekle');
+                        submitProductBtn.disabled = false; // Butonu tekrar etkinleştir
+                        submitProductBtn.innerHTML = (editingProductId ? 'Ürünü Güncelle' : 'Ürün Ekle'); // Buton metnini geri yükle
                     }
                 });
             }
 
+            // Düzenleme İptal Butonu
             if (cancelProductEditBtn) {
                 cancelProductEditBtn.addEventListener('click', () => {
-                    resetProductForm();
+                    resetProductForm(); // Formu sıfırla
                 });
             }
 
+            // Barkod Tarayıcı Fonksiyonları
             if (scanBarcodeBtn) {
                 scanBarcodeBtn.addEventListener('click', () => {
-                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active');
+                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active'); // Modalı göster
                     barcodeScannerResult.textContent = 'Tarama başlatılıyor...';
 
                     Quagga.init({
                         inputStream: {
                             name: "Live",
                             type: "LiveStream",
-                            target: video,
+                            target: video, // Video elementini hedefle
                             constraints: {
                                 width: 640,
                                 height: 480,
-                                facingMode: "environment"
+                                facingMode: "environment" // Arka kamerayı tercih et
                             },
                         },
                         decoder: {
+                            // Okunacak barkod tipleri
                             readers: ["ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
                         },
-                        locate: true,
+                        locate: true, // Barkodu algılamaya çalış
                     }, function (err) {
                         if (err) {
                             console.error("Quagga Başlatma Hatası:", err);
@@ -1136,19 +1181,21 @@
                         }
                         console.log("Quagga başlatıldı, tarama başlıyor.");
                         barcodeScannerResult.textContent = 'Barkod bekleniyor...';
-                        Quagga.start();
+                        Quagga.start(); // Taramayı başlat
                     });
 
+                    // Barkod algılandığında
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
                         console.log("Barkod algılandı:", code);
-                        if (productBarcodeInput) productBarcodeInput.value = code;
+                        if (productBarcodeInput) productBarcodeInput.value = code; // Barkod inputuna yaz
                         barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
                         addNotification(`Barkod algılandı: ${code}`, 'success');
-                        Quagga.stop();
-                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
+                        Quagga.stop(); // Taramayı durdur
+                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active'); // Modalı gizle
                     });
 
+                    // Tarama sırasında görsel geri bildirim
                     Quagga.onProcessed(function (result) {
                         const drawingCtx = Quagga.canvas.ctx.overlay;
                         const drawingCanvas = Quagga.canvas.dom.overlay;
@@ -1175,18 +1222,20 @@
                 });
             }
 
+            // Taramayı Durdur Butonu
             if (stopScanBtn) {
                 stopScanBtn.addEventListener('click', () => {
-                    Quagga.stop();
+                    Quagga.stop(); // Taramayı durdur
                     if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
                     barcodeScannerResult.textContent = '';
                     addNotification('Barkod taraması durduruldu.', 'info');
                 });
             }
 
+            // Filtreleme ve Temizleme Fonksiyonları
             if (applyProductFilterBtn) {
                 applyProductFilterBtn.addEventListener('click', () => {
-                    fetchProducts();
+                    fetchProducts(); // Ürünleri filtrelerle yeniden çek
                 });
             }
 
@@ -1194,30 +1243,30 @@
                 clearProductFilterBtn.addEventListener('click', () => {
                     if (filterProductNameInput) filterProductNameInput.value = '';
                     if (filterProductCategorySelect) filterProductCategorySelect.value = '';
-                    fetchProducts();
+                    fetchProducts(); // Filtreleri temizleyip ürünleri yeniden çek
                 });
             }
 
-
+            // Ürünleri API'den Çekme ve Listeleme Fonksiyonu
             async function fetchProducts() {
-                if (productsLoadingOverlay) productsLoadingOverlay.classList.remove('hidden');
-                if (productsListDiv) productsListDiv.innerHTML = '';
-                if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = '0.00 TL';
+                if (productsLoadingOverlay) productsLoadingOverlay.classList.remove('hidden'); // Yükleniyor overlay'ini göster
+                if (productsListDiv) productsListDiv.innerHTML = ''; // Listeyi temizle
+                if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = '0.00 TL'; // Toplam değeri sıfırla
 
                 const token = getToken();
                 if (!token) {
                     addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error');
-                    window.location.href = 'auth.html';
+                    window.location.href = 'auth.html'; // Giriş sayfasına yönlendir
                     return;
                 }
 
                 const searchName = filterProductNameInput.value.trim();
                 const filterCategory = filterProductCategorySelect.value.trim();
-                let url = `${API_BASE_URL}/products?userId=${getUserId()}&`;
+                let url = `${API_BASE_URL}/products?userId=${getUserId()}`; // userId'yi query parametresi olarak ekle
 
-                if (searchName) url += `name=${encodeURIComponent(searchName)}&`;
-                if (filterCategory) url += `category=${encodeURIComponent(filterCategory)}&`;
-                url += `timestamp=${Date.now()}`;
+                if (searchName) url += `&name=${encodeURIComponent(searchName)}`;
+                if (filterCategory) url += `&category=${encodeURIComponent(filterCategory)}`;
+                url += `&timestamp=${Date.now()}`; // Tarayıcı önbellek sorunlarını önlemek için
 
                 try {
                     const response = await fetch(url, {
@@ -1228,10 +1277,11 @@
                         }
                     });
 
+                    // 2FA doğrulaması kontrolü
                     if (response.status === 403) {
                          addNotification('Ürünleri görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
                          if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
-                         return;
+                         return; // İşlemi durdur
                     }
 
                     if (!response.ok) {
@@ -1240,7 +1290,7 @@
                     }
 
                     const products = await response.json();
-                    if (productsListDiv) productsListDiv.innerHTML = '';
+                    if (productsListDiv) productsListDiv.innerHTML = ''; // Eski ürünleri temizle
 
                     if (products.length === 0) {
                         if (productsListDiv) productsListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Henüz hiç ürün eklenmemiş.</p>`;
@@ -1250,9 +1300,10 @@
                     let totalValue = 0;
                     products.forEach(product => {
                         const productItem = document.createElement('div');
-                        // Ürün kartı tasarımı koyu temaya uygun hale getirildi
+                        // Ürün kartı tasarımı
                         productItem.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 md:space-x-4`;
 
+                        // Düşük stok uyarısı ve bildirimi
                         if (product.isBelowMinStock) {
                             productItem.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                             const notificationExists = notifications.some(n => n.message.includes(product.name) && n.type === 'warning' && !n.isRead);
@@ -1261,14 +1312,17 @@
                             }
                         }
 
-                        productItem.dataset.id = product._id;
+                        productItem.dataset.id = product._id; // Ürün ID'sini data-id'ye kaydet
 
+                        // Dinamik metinler ve resim URL'si
                         const categoryText = product.category ? `<p class="text-sm text-gray-400">Kategori: <span class="font-medium text-gray-200">${product.category}</span></p>` : '';
                         const barcodeText = product.barcode ? `<p class="text-xs text-gray-400">Barkod: <span class="font-mono text-gray-200">${product.barcode}</span></p>` : '';
-                        const imageUrlHtml = product.imageUrl ?
-                            `<img src="${product.imageUrl}" alt="${product.name}" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok';">` :
-                            `<img src="https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok" alt="Resim Yok" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600">`;
+                        // Resim URL'si için placeholder ve fallback
+                        const imageUrlToDisplay = product.imageUrl && product.imageUrl !== 'null' ? product.imageUrl : `https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok`; // Eğer null gelirse placeholder
+                        const imageUrlHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok';">`;
 
+                        // Tarihi okunabilir formata çevir
+                        const priceUpdateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleString('tr-TR') : 'Bilinmiyor';
 
                         productItem.innerHTML = `
                             ${imageUrlHtml}
@@ -1278,13 +1332,13 @@
                                 </p>
                                 <p class="text-base text-gray-300 mb-1">Miktar: <span class="font-medium">${product.quantity} ${product.unit}</span></p>
                                 <p class="text-base text-gray-300 mb-1">Birim Fiyat: <span class="font-medium text-blue-400">${product.price.toFixed(2)} TL</span>
-                                    ${product.displayGrammage && product.unit !== 'kg' && product.unit !== 'litre' ? ` (<span class="font-medium">${product.displayGrammage}</span>)` : ''}
+                                    ${product.displayGrammage ? ` (<span class="font-medium">${product.displayGrammage}</span>)` : ''}
                                 </p>
-                                ${(product.unit === 'adet' && product.weightOrVolumePerUnit > 0) || product.unit === 'kg' || product.unit === 'litre' ? `<p class="text-sm text-gray-300 mb-1">1 ${product.unit === 'adet' ? 'kg' : product.unit} Fiyatı: <span class="font-medium">${product.pricePerUnitKgOrLiter} TL</span></p>` : ''}
+                                ${product.pricePerUnitKgOrLiter ? `<p class="text-sm text-gray-300 mb-1">1 ${product.unit === 'adet' ? (product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg') : product.unit} Fiyatı: <span class="font-medium">${product.pricePerUnitKgOrLiter} TL</span></p>` : ''}
                                 ${product.description ? `<p class="text-sm text-gray-300 mb-1">Açıklama: <span class="font-medium">${product.description}</span></p>` : ''}
                                 ${categoryText}
                                 ${barcodeText}
-                                <p class="text-xs text-gray-400 mt-2">Fiyat Güncelleme: ${product.priceUpdateDate}</p>
+                                <p class="text-xs text-gray-400 mt-2">Fiyat Güncelleme: <span class="font-medium">${priceUpdateDate}</span></p>
                             </div>
                             <div class="flex flex-col md:flex-row items-end md:items-center space-y-2 md:space-y-0 md:space-x-3 mt-3 md:mt-0">
                                 <p class="font-bold text-xl text-gray-100 whitespace-nowrap">Toplam: <span class="text-green-400">${(product.quantity * product.price).toFixed(2)} TL</span></p>
@@ -1302,19 +1356,20 @@
                             </div>
                         `;
                         if (productsListDiv) productsListDiv.appendChild(productItem);
-                        totalValue += product.quantity * product.price;
+                        totalValue += product.quantity * product.price; // Envanter değerini hesapla
                     });
                     if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = `${totalValue.toFixed(2)} TL`;
-                    addEventListenersToProductButtons();
+                    addEventListenersToProductButtons(); // Butonlara olay dinleyici ekle
                 } catch (error) {
                     console.error('Ürünleri çekerken hata:', error);
                     addNotification(`Ürünleri yüklerken bir hata oluştu: ${error.message}`, 'error');
                     if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Ürünler yüklenemedi.</p>`;
                 } finally {
-                    if (productsLoadingOverlay) productsLoadingOverlay.classList.add('hidden');
+                    if (productsLoadingOverlay) productsLoadingOverlay.classList.add('hidden'); // Yükleniyor overlay'ini gizle
                 }
             }
 
+            // Kategori Dropdown'larını Doldurma Fonksiyonu
             async function populateCategoryDropdowns() {
                 if (productCategorySelect) productCategorySelect.innerHTML = '<option value="">Kategori Seçin</option>';
                 if (filterProductCategorySelect) filterProductCategorySelect.innerHTML = '<option value="">Tüm Kategoriler</option>';
@@ -1341,6 +1396,7 @@
                 }
             }
 
+            // Sayfa Yönlendirme Butonları
             if (generateShelfCardsBtn) {
                 generateShelfCardsBtn.addEventListener('click', () => {
                     window.location.href = 'shelf_cards.html';
@@ -1353,34 +1409,32 @@
                 });
             }
 
-            // Sidebar Fonksiyonları (products.html için eklendi)
+            // Sidebar Fonksiyonları
             const closeSidebar = () => {
-                if (sidebar) sidebar.classList.remove('open');
-                if (sidebar) sidebar.classList.add('-translate-x-full');
+                if (sidebar) sidebar.classList.remove('open', '-translate-x-0'); // 'open' ve 'translate-x-0' kaldır
+                if (sidebar) sidebar.classList.add('-translate-x-full'); // Gizle
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-                // Masaüstünde sidebar kapandığında mainContent'in sol marjını kaldır
                 if (window.innerWidth >= 1024 && mainContent) {
                     mainContent.classList.remove('lg:ml-64');
                 }
             };
 
             const openSidebar = () => {
-                if (sidebar) sidebar.classList.add('open');
-                if (sidebar) sidebar.classList.remove('-translate-x-full');
-                // Eğer ekran genişliği large (lg) ve daha büyükse, mainContent'e sol marj ekle
+                if (sidebar) sidebar.classList.add('open', '-translate-x-0'); // Göster
+                if (sidebar) sidebar.classList.remove('-translate-x-full'); // Gizli sınıfını kaldır
                 if (window.innerWidth >= 1024 && mainContent) {
                     mainContent.classList.add('lg:ml-64');
-                    if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Masaüstünde overlay gösterme
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 } else {
-                    if (sidebarOverlay) sidebarOverlay.classList.add('active'); // Mobil'de overlay göster
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 }
             };
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar(); // Masaüstünde açık kalsın
+                    openSidebar();
                 } else {
-                    closeSidebar(); // Mobil'de kapalı başlasın
+                    closeSidebar();
                 }
             };
 
@@ -1408,16 +1462,12 @@
                 });
             }
 
-            // Sayfa Yönlendirme Butonları (a tag'leri ile yönlendirme)
-            // Bu kısım sidebar içindeki linkler için olduğu için yeni `products.html`'deki sidebar içinde olacak
-            // Mevcut `goToDashboardBtn` HTML'den kaldırılıp yerine sidebarToggleBtn geldiği için bu event listener'a gerek kalmıyor
-            // Eğer sidebar içinde ayrı bir "Ana Sayfa" butonu olacaksa, o buton için event listener burada kalmalı.
-            // Bu HTML'de sidebar'ı eklediğimiz için bu butonlar sidebar içinde tanımlandı.
-
+            // Kullanıcı Adı Bilgisi
             if (loggedInUserSpan && decodedToken && decodedToken.email) {
                 loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
             }
 
+            // Çıkış Yap Butonu
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
@@ -1439,12 +1489,12 @@
             }
 
 
-            // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
-            populateCategoryDropdowns();
-            fetchProducts();
-            loadNotifications();
-            toggleWeightOrVolumePerUnitField();
-            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla (sona eklendi)
+            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            populateCategoryDropdowns(); // Kategorileri doldur
+            fetchProducts(); // Ürünleri çek
+            loadNotifications(); // Bildirimleri yükle
+            toggleWeightOrVolumePerUnitField(); // Birim alanını ayarla
+            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla
         });
     </script>
 </body>
