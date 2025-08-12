@@ -2,10 +2,8 @@
 require('dotenv').config(); // .env dosyasını yükler
 const express = require('express');
 const cors = require('cors');
-
-// Yeni oluşturduğumuz modülleri içe aktarıyoruz
+const dotenv = require('dotenv'); // .env dosyasını kullanmak için
 const { connectDB } = require('./db'); // db.js dosyasından connectDB fonksiyonunu al
-// const { sendVerificationEmail } = require('./utils/emailSender'); // emailSender'ı dahil ettik (app.js'de doğrudan kullanılmadığı için burada yorum satırı kalsın)
 
 // Rota modüllerini içe aktarıyoruz
 const authRoutes = require('./routes/auth');
@@ -21,6 +19,8 @@ const categoryRoutes = require('./routes/categories');
 const reportsRoutes = require('./routes/reports');
 const customerRoutes = require('./routes/customerRoutes');
 
+
+dotenv.config(); // .env dosyasını yükle
 
 const app = express();
 
@@ -66,17 +66,18 @@ connectDB(process.env.MONGODB_URI)
         console.log('MongoDB bağlantısı başarılı.');
 
         // Rotaları tanımla
-        app.use('/api', authRoutes);
+        // Auth rotasını doğru prefix ile bağladık!
+        app.use('/api/auth', authRoutes); // <<<< BURASI DEĞİŞTİ! /api/auth/login yolu için
         app.use('/api', productRoutes);
         app.use('/api', salesRoutes);
         app.use('/api', financialSummaryRoutes);
         app.use('/api', supplierRoutes);
         app.use('/api', purchaseOrderRoutes);
         app.use('/api', twoFARoutes);
-        app.use('/api', userRoutes);
+        app.use('/api', userRoutes); // Örneğin, /api/users
         app.use('/api', transactionRoutes);
         app.use('/api', categoryRoutes);
-        app.use('/api/reports', reportsRoutes);
+        app.use('/api/reports', reportsRoutes); // Örneğin, /api/reports/...
         app.use('/api', customerRoutes);
         console.log('Tüm API rotaları /api altında kaydedildi.');
 
