@@ -1,39 +1,37 @@
 // routes/products.js
 const express = require('express');
-const { ObjectId } = require('mongodb');
-const { getDb } = require('../db'); // db.js'den getDb fonksiyonunu al
-const { authenticateToken, verify2FA } = require('../middleware/authMiddleware'); // Middleware'leri al
+const { ObjectId } = require('mongodb'); // ObjectId'yi hala kullanıyoruz (_id alanları için)
+const { getDb } = require('../db');
+const { authenticateToken, verify2FA } = require('../middleware/authMiddleware');
 
-const router = express.Router(); // Yeni bir router objesi oluştur
+const router = express.Router();
 
 // Yeni Ürün Ekleme Rotası
 router.post('/products', authenticateToken, async (req, res) => {
-    // imageUrl'ü de payload'a ekleyelim, ancak şu anlık sadece kaydedeceğiz.
-    // Gerçek bir senaryoda bu bir bulut depolama URL'si olmalı.
     const { name, category, price, quantity, unit, barcode, weightOrVolumePerUnit, minStockLevel, imageUrl, description } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user.userId; // JWT'den gelen userId string formatında
 
-    if (!name || price === undefined || quantity === undefined || !unit) { // Kategori artık opsiyonel olabilir
+    if (!name || price === undefined || quantity === undefined || !unit) {
         return res.status(400).json({ message: 'Ürün adı, fiyat, miktar ve birim gereklidir.' });
     }
 
     try {
-        const db = getDb(); // Veritabanı bağlantısını al
+        const db = getDb();
         const newProduct = {
-            userId: new ObjectId(userId), // userId'yi ObjectId olarak kaydet
+            userId: userId, // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kaydet
             name,
-            category: category || null, // Kategori opsiyonel
+            category: category || null,
             price: parseFloat(price),
             quantity: parseInt(quantity),
             unit,
             barcode: barcode || null,
-            weightOrVolumePerUnit: weightOrVolumePerUnit ? parseFloat(weightOrVolumePerUnit) : null,
-            minStockLevel: parseInt(minStockLevel) || 0, // minStockLevel varsayılan 0
+            weightOrVolumePerUnit: (weightOrVolumePerUnit !== null && weightOrVolumePerUnit !== '') ? parseFloat(weightOrVolumePerUnit) : null, // Boş string gelme ihtimaline karşı kontrol
+            minStockLevel: parseInt(minStockLevel) || 0, // Varsayılan 0
             imageUrl: imageUrl || null, // Base64 veya URL olarak kaydediyoruz (şimdilik)
-            description: description || null, // Açıklama opsiyonel
+            description: description || null,
             createdAt: new Date(),
-            updatedAt: new Date(), // Oluşturma ve güncelleme tarihleri
-            priceUpdateDate: new Date() // Fiyatın son güncellendiği tarih (şimdilik createdAt ile aynı)
+            updatedAt: new Date(),
+            priceUpdateDate: new Date()
         };
         const result = await db.collection('products').insertOne(newProduct);
         res.status(201).json({ message: 'Ürün başarıyla eklendi!', product: newProduct });
@@ -46,29 +44,27 @@ router.post('/products', authenticateToken, async (req, res) => {
 // Tüm Ürünleri Getirme Rotası (Frontend için hesaplanmış değerlerle)
 router.get('/products', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    const { name, category } = req.query; // Filtreleme parametreleri
+    const { name, category } = req.query;
 
-    let query = { userId: new ObjectId(userId) }; // userId'yi ObjectId olarak filtrele
+    let query = { userId: userId }; // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
 
     if (name) {
-        query.name = { $regex: name, $options: 'i' }; // İsim ile case-insensitive arama
+        query.name = { $regex: name, $options: 'i' };
     }
     if (category) {
-        query.category = category; // Kategoriye göre filtrele
+        query.category = category;
     }
 
     try {
-        const db = getDb(); // Veritabanı bağlantısını al
-        let products = await db.collection('products').find(query).sort({ createdAt: -1 }).toArray(); // En yeni ürünler üstte
+        const db = getDb();
+        let products = await db.collection('products').find(query).sort({ createdAt: -1 }).toArray();
 
-        // Her ürün için ek alanlar hesapla ve ekle
         products = products.map(product => {
             let displayGrammage = '';
             let pricePerUnitKgOrLiter = null;
-            let isBelowMinStock = product.quantity < product.minStockLevel; // Minimum stok seviyesi kontrolü
+            let isBelowMinStock = product.quantity < product.minStockLevel;
 
-            // displayGrammage ve pricePerUnitKgOrLiter hesaplamaları
-            if (product.unit === 'adet' && product.weightOrVolumePerUnit > 0) {
+            if (product.unit === 'adet' && product.weightOrVolumePerUnit !== null && product.weightOrVolumePerUnit > 0) { // <<<< DÜZELTME: null kontrolü eklendi
                 if (product.weightOrVolumePerUnit < 1) { // Örneğin 0.25 kg = 250 gr
                     displayGrammage = `${(product.weightOrVolumePerUnit * 1000).toFixed(0)}gr`;
                 } else {
@@ -76,15 +72,15 @@ router.get('/products', authenticateToken, async (req, res) => {
                 }
                 pricePerUnitKgOrLiter = product.price / product.weightOrVolumePerUnit;
             } else if (product.unit === 'kg') {
-                pricePerUnitKgOrLiter = product.price; // Zaten kg/L başına fiyat
+                pricePerUnitKgOrLiter = product.price;
             } else if (product.unit === 'litre') {
-                pricePerUnitKgOrLiter = product.price; // Zaten kg/L başına fiyat
+                pricePerUnitKgOrLiter = product.price;
             }
 
             return {
                 ...product,
                 displayGrammage: displayGrammage || null,
-                pricePerUnitKgOrLiter: pricePerUnitKgOrLiter ? pricePerUnitKgOrLiter.toFixed(2) : null, // 2 ondalık basamak
+                pricePerUnitKgOrLiter: pricePerUnitKgOrLiter ? pricePerUnitKgOrLiter.toFixed(2) : null,
                 isBelowMinStock: isBelowMinStock
             };
         });
@@ -103,18 +99,17 @@ router.get('/products/:id', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
-        const product = await db.collection('products').findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) });
+        const product = await db.collection('products').findOne({ _id: new ObjectId(id), userId: userId }); // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
 
         if (!product) {
             return res.status(404).json({ message: 'Ürün bulunamadı veya bu kullanıcıya ait değil.' });
         }
 
-        // Tek ürün için de hesaplanmış alanları ekleyelim
         let displayGrammage = '';
         let pricePerUnitKgOrLiter = null;
         let isBelowMinStock = product.quantity < product.minStockLevel;
 
-        if (product.unit === 'adet' && product.weightOrVolumePerUnit > 0) {
+        if (product.unit === 'adet' && product.weightOrVolumePerUnit !== null && product.weightOrVolumePerUnit > 0) { // <<<< DÜZELTME: null kontrolü eklendi
             if (product.weightOrVolumePerUnit < 1) {
                 displayGrammage = `${(product.weightOrVolumePerUnit * 1000).toFixed(0)}gr`;
             } else {
@@ -146,12 +141,12 @@ router.put('/products/:id', authenticateToken, async (req, res) => {
     const { name, category, price, quantity, unit, barcode, weightOrVolumePerUnit, minStockLevel, imageUrl, description } = req.body;
     const userId = req.user.userId;
 
-    if (!name || price === undefined || quantity === undefined || !unit) { // Kategori artık opsiyonel olabilir
+    if (!name || price === undefined || quantity === undefined || !unit) {
         return res.status(400).json({ message: 'Ürün adı, fiyat, miktar ve birim gerekli.' });
     }
 
     try {
-        const db = getDb(); // Veritabanı bağlantısını al
+        const db = getDb();
         const updateDoc = {
             $set: {
                 name,
@@ -160,17 +155,17 @@ router.put('/products/:id', authenticateToken, async (req, res) => {
                 quantity: parseInt(quantity),
                 unit,
                 barcode: barcode || null,
-                weightOrVolumePerUnit: weightOrVolumePerUnit ? parseFloat(weightOrVolumePerUnit) : null,
+                weightOrVolumePerUnit: (weightOrVolumePerUnit !== null && weightOrVolumePerUnit !== '') ? parseFloat(weightOrVolumePerUnit) : null, // Boş string gelme ihtimaline karşı kontrol
                 minStockLevel: parseInt(minStockLevel) || 0,
                 imageUrl: imageUrl || null,
                 description: description || null,
-                updatedAt: new Date(), // Güncelleme tarihi
-                priceUpdateDate: new Date() // Fiyat güncellendiğinde bu da güncellensin
+                updatedAt: new Date(),
+                priceUpdateDate: new Date()
             }
         };
 
         const result = await db.collection('products').updateOne(
-            { _id: new ObjectId(id), userId: new ObjectId(userId) }, // userId'yi de ObjectId olarak filtrele
+            { _id: new ObjectId(id), userId: userId }, // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
             updateDoc
         );
 
@@ -195,9 +190,9 @@ router.put('/products/stock/:id', authenticateToken, async (req, res) => {
     }
 
     try {
-        const db = getDb(); // Veritabanı bağlantısını al
+        const db = getDb();
         const result = await db.collection('products').updateOne(
-            { _id: new ObjectId(id), userId: new ObjectId(userId) }, // userId'yi ObjectId olarak filtrele
+            { _id: new ObjectId(id), userId: userId }, // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
             { $set: { quantity: parseInt(newQuantity), updatedAt: new Date() } }
         );
 
@@ -218,8 +213,8 @@ router.delete('/products/:id', authenticateToken, verify2FA, async (req, res) =>
     const userId = req.user.userId;
 
     try {
-        const db = getDb(); // Veritabanı bağlantısını al
-        const result = await db.collection('products').deleteOne({ _id: new ObjectId(id), userId: new ObjectId(userId) }); // userId'yi ObjectId olarak filtrele
+        const db = getDb();
+        const result = await db.collection('products').deleteOne({ _id: new ObjectId(id), userId: userId }); // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
 
         if (result.deletedCount === 0) {
             return res.status(404).json({ message: 'Ürün bulunamadı veya bu kullanıcıya ait değil.' });
@@ -231,4 +226,4 @@ router.delete('/products/:id', authenticateToken, verify2FA, async (req, res) =>
     }
 });
 
-module.exports = router; // Router objesini dışa aktar
+module.exports = router;
