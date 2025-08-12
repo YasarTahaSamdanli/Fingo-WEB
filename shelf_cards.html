@@ -1,4 +1,4 @@
-,<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -143,7 +143,7 @@
                 padding: 0;
             }
 
-            /* Dikey Kart Stilleri */
+            /* Dikey Kart Stilleri (Mevcut hali) */
             .vertical-shelf-card-wrapper {
                 width: 33.33% !important; /* A4 kağıdında yan yana 3 kart */
                 flex: 0 0 33.33% !important;
@@ -170,12 +170,39 @@
                 border-radius: 0;
             }
 
-            /* Yatay Kart Stilleri */
+            .vertical-shelf-card h3 {
+                font-size: 16pt;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 5mm;
+                color: #000;
+            }
+            .vertical-shelf-card .price {
+                font-size: 28pt;
+                font-weight: bold;
+                color: #000;
+                text-align: center;
+                margin-bottom: 5mm;
+            }
+            .vertical-shelf-card .unit-price,
+            .vertical-shelf-card .grammage {
+                font-size: 10pt;
+                text-align: center;
+                color: #555;
+            }
+            .vertical-shelf-card .update-date {
+                font-size: 8pt;
+                text-align: right;
+                color: #777;
+                margin-top: auto;
+            }
+
+            /* YATAY KART STİLLERİ - YENİ DÜZEN */
             .horizontal-shelf-card-wrapper {
-                width: 50% !important; /* A4 kağıdında yan yana 2 kart */
+                width: 50% !important; /* A4 kağıdında yan yana 2 kart için (105mm genişlik) */
                 flex: 0 0 50% !important;
                 box-sizing: border-box;
-                padding: 5mm;
+                padding: 3mm; /* Daha az boşluk */
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -183,57 +210,100 @@
             }
             .horizontal-shelf-card {
                 border: 1px dashed #ccc;
-                padding: 8mm; /* Yatay için biraz daha az padding */
-                width: 120mm; /* Yatay kart genişliği */
-                height: 80mm; /* Yatay kart yüksekliği */
+                padding: 5mm; /* İç boşluk */
+                width: 120mm; /* Yatay kart genişliği (örnek etiket genişliği) */
+                height: 70mm; /* Yatay kart yüksekliği (örnek etiket yüksekliği) */
                 font-family: 'Arial', sans-serif;
-                font-size: 9pt; /* Yatay için daha küçük font */
                 color: #000;
                 background-color: #fff;
                 display: flex;
-                flex-direction: row; /* İçeriği yatay sırala */
-                justify-content: center; /* Merkeze hizala */
-                align-items: center;
+                flex-direction: column; /* Ana içeriği dikeyde sırala (üst ve alt bölümler) */
                 box-shadow: none;
                 border-radius: 0;
             }
 
-            .horizontal-shelf-card .product-info { /* Yatay kartta ürün bilgisi konteyneri */
+            .horizontal-shelf-card .card-top-row {
                 display: flex;
-                flex-direction: column;
+                flex-direction: row; /* Ürün adı ve fiyatı yatayda */
+                justify-content: space-between;
+                align-items: flex-start; /* Üstte hizala */
                 flex-grow: 1; /* Mevcut alanı doldur */
-                margin-left: 5mm; /* Resimden sonra boşluk */
-                justify-content: center;
-                align-items: flex-start; /* Yazıları sola hizala */
+                margin-bottom: 2mm; /* Alt bölüme boşluk */
             }
 
-            .horizontal-shelf-card h3 {
-                font-size: 14pt; /* Yatay için daha küçük başlık */
-                font-weight: bold;
-                text-align: left; /* Sola hizala */
-                margin-bottom: 2mm;
-                color: #000;
+            .horizontal-shelf-card .product-name-section {
+                flex-basis: 60%; /* Ürün adı için daha fazla yer */
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: flex-start;
             }
-            .horizontal-shelf-card .price {
-                font-size: 22pt; /* Yatay için daha küçük fiyat */
+            .horizontal-shelf-card .product-name {
+                font-size: 12pt; /* Daha küçük ürün adı */
                 font-weight: bold;
-                color: #000;
-                text-align: left; /* Sola hizala */
-                margin-bottom: 2mm;
+                text-align: left;
+                margin-bottom: 1mm;
+                line-height: 1.1; /* Satır aralığı daralt */
             }
-            .horizontal-shelf-card .unit-price,
             .horizontal-shelf-card .grammage {
-                font-size: 8pt; /* Yatay için daha küçük alt metin */
-                text-align: left; /* Sola hizala */
+                font-size: 8pt;
+                text-align: left;
                 color: #555;
             }
-            .horizontal-shelf-card .update-date {
-                font-size: 7pt; /* Yatay için daha küçük tarih */
-                text-align: left; /* Sola hizala */
-                color: #777;
-                margin-top: 2mm; /* Diğer bilgilerden sonra boşluk */
+
+            .horizontal-shelf-card .price-section {
+                flex-basis: 40%; /* Fiyat için ayrılan yer */
+                display: flex;
+                justify-content: flex-end; /* Fiyatı sağa hizala */
+                align-items: flex-end; /* Fiyatı dikeyde alta hizala */
+                padding-right: 2mm; /* Sağdan boşluk */
+                font-weight: bold;
+                color: #000;
+                line-height: 0.9; /* Satır aralığı */
             }
-            /* .product-image stili kaldırıldı */
+            .horizontal-shelf-card .price-main {
+                font-size: 28pt; /* Büyük tam kısım */
+                display: inline-block;
+                vertical-align: baseline;
+            }
+            .horizontal-shelf-card .price-decimal {
+                font-size: 16pt; /* Küçük ondalık kısım */
+                vertical-align: super; /* Yukarıya hizala */
+                display: inline-block;
+                margin-left: -2mm; /* Yakınlaştır */
+            }
+            .horizontal-shelf-card .price-currency {
+                font-size: 12pt;
+                font-weight: bold;
+                display: inline-block;
+                vertical-align: bottom; /* En alta hizala */
+                margin-left: 1mm;
+            }
+
+            .horizontal-shelf-card .card-bottom-row {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-end; /* En alttaki bilgileri alta hizala */
+                font-size: 7pt; /* Küçük font boyutu */
+                color: #555;
+                margin-top: auto; /* Üstteki içerikten en altta yer al */
+            }
+            .horizontal-shelf-card .barcode-text {
+                font-family: 'Code39', monospace; /* Eğer barkod fontu varsa */
+                font-size: 10pt;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .horizontal-shelf-card .update-date-label,
+            .horizontal-shelf-card .update-date-value,
+            .horizontal-shelf-card .price-per-kg {
+                white-space: nowrap; /* Metnin tek satırda kalmasını sağla */
+            }
+            .horizontal-shelf-card .price-per-kg {
+                text-align: right;
+            }
         }
     </style>
 </head>
@@ -275,7 +345,7 @@
                                 <!-- Kategoriler JS ile yüklenecek -->
                             </select>
                         </div>
-                         <!-- Yeni: Kart Oryantasyonu Seçimi -->
+                         <!-- Kart Oryantasyonu Seçimi -->
                         <div>
                             <label for="cardOrientationSelect" class="block text-gray-300 text-sm font-semibold mb-2">Kart Oryantasyonu:</label>
                             <select id="cardOrientationSelect" class="form-select w-full p-3 text-base shadow-sm">
@@ -682,22 +752,33 @@
                         displayUnitPricePerKgOrLiter = `1 ${product.unit === 'adet' ? (product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg') : product.unit} Fiyatı: ${parseFloat(product.pricePerUnitKgOrLiter).toFixed(2)} TL`;
                     }
 
-                    // Resim HTML'i tamamen kaldırıldı
-                    // const imageHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="product-image" onerror="this.onerror=null;this.src='https://placehold.co/100x70/E2E8F0/1A202C?text=Resim+Yok';">`;
+                    // Fiyatı tam ve ondalık kısımlarına ayır
+                    const priceParts = product.price.toFixed(2).split('.');
+                    const priceMain = priceParts[0];
+                    const priceDecimal = priceParts[1];
 
                     if (selectedOrientation === 'horizontal') {
-                        // Yatay kart için HTML yapısı (resimsiz)
+                        // Yatay kart için yeni HTML yapısı
                         card.innerHTML = `
-                            <div class="product-info">
-                                <h3 class="product-name">${product.name}</h3>
-                                <div class="price">${product.price.toFixed(2)} TL</div>
-                                ${product.displayGrammage ? `<div class="grammage">${product.displayGrammage}</div>` : ''}
-                                ${displayUnitPricePerKgOrLiter ? `<div class="unit-price">${displayUnitPricePerKgOrLiter}</div>` : ''}
-                                <div class="update-date">Güncelleme: ${updateDate}</div>
+                            <div class="card-top-row">
+                                <div class="product-name-section">
+                                    <h3 class="product-name">${product.name}</h3>
+                                    ${product.displayGrammage ? `<div class="grammage">${product.displayGrammage}</div>` : ''}
+                                </div>
+                                <div class="price-section">
+                                    <span class="price-main">${priceMain}</span>
+                                    <span class="price-decimal">${priceDecimal}</span>
+                                    <span class="price-currency">TL</span>
+                                </div>
+                            </div>
+                            <div class="card-bottom-row">
+                                <span class="barcode-text">Barkod: ${product.barcode || 'Yok'}</span>
+                                <span class="update-date-label">Fiyat Geçerlilik: <span class="update-date-value">${updateDate}</span></span>
+                                ${displayUnitPricePerKgOrLiter ? `<span class="price-per-kg">${displayUnitPricePerKgOrLiter}</span>` : ''}
                             </div>
                         `;
                     } else {
-                        // Dikey kart için HTML yapısı (resimsiz)
+                        // Dikey kart için mevcut HTML yapısı (resimsiz)
                         card.innerHTML = `
                             <h3 class="product-name">${product.name}</h3>
                             <div class="price">${product.price.toFixed(2)} TL</div>
