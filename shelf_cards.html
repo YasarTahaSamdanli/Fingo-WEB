@@ -128,7 +128,7 @@
             #goToDashboardBtn,
             #logoutBtn,
             #loggedInUser,
-            #cardOrientationSelect { /* Oryantasyon seçeneğini yazdırmada gizle */
+            #cardOrientationSelect {
                 display: none !important;
             }
 
@@ -143,7 +143,7 @@
                 padding: 0;
             }
 
-            /* Dikey Kart Stilleri (Mevcut hali) */
+            /* Dikey Kart Stilleri (ESKİ HALİNE DÖNDÜRÜLDÜ - Resimsiz, Barkodsuz) */
             .vertical-shelf-card-wrapper {
                 width: 33.33% !important; /* A4 kağıdında yan yana 3 kart */
                 flex: 0 0 33.33% !important;
@@ -165,7 +165,7 @@
                 background-color: #fff;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
+                justify-content: space-between; /* İçeriği dikeyde yay */
                 box-shadow: none;
                 border-radius: 0;
             }
@@ -197,7 +197,7 @@
                 margin-top: auto;
             }
 
-            /* YATAY KART STİLLERİ - YENİ DÜZEN */
+            /* YATAY KART STİLLERİ - ETİKET.PNG BENZERİ (BARKODSUZ) */
             .horizontal-shelf-card-wrapper {
                 width: 50% !important; /* A4 kağıdında yan yana 2 kart için (105mm genişlik) */
                 flex: 0 0 50% !important;
@@ -220,6 +220,7 @@
                 flex-direction: column; /* Ana içeriği dikeyde sırala (üst ve alt bölümler) */
                 box-shadow: none;
                 border-radius: 0;
+                justify-content: space-between; /* İçeriği dikeyde yay */
             }
 
             .horizontal-shelf-card .card-top-row {
@@ -239,14 +240,14 @@
                 justify-content: flex-start;
             }
             .horizontal-shelf-card .product-name {
-                font-size: 12pt; /* Daha küçük ürün adı */
+                font-size: 14pt; /* Daha küçük ürün adı, etiket.png'ye uygun */
                 font-weight: bold;
                 text-align: left;
                 margin-bottom: 1mm;
                 line-height: 1.1; /* Satır aralığı daralt */
             }
             .horizontal-shelf-card .grammage {
-                font-size: 8pt;
+                font-size: 9pt; /* Gramaj için biraz daha büyük font */
                 text-align: left;
                 color: #555;
             }
@@ -260,6 +261,7 @@
                 font-weight: bold;
                 color: #000;
                 line-height: 0.9; /* Satır aralığı */
+                margin-top: -5mm; /* Fiyatı biraz yukarı çekmek için */
             }
             .horizontal-shelf-card .price-main {
                 font-size: 28pt; /* Büyük tam kısım */
@@ -283,23 +285,11 @@
             .horizontal-shelf-card .card-bottom-row {
                 display: flex;
                 flex-direction: row;
-                justify-content: space-between;
+                justify-content: flex-end; /* Sağ tarafa hizala */
                 align-items: flex-end; /* En alttaki bilgileri alta hizala */
                 font-size: 7pt; /* Küçük font boyutu */
                 color: #555;
                 margin-top: auto; /* Üstteki içerikten en altta yer al */
-            }
-            .horizontal-shelf-card .barcode-text {
-                font-family: 'Code39', monospace; /* Eğer barkod fontu varsa */
-                font-size: 10pt;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .horizontal-shelf-card .update-date-label,
-            .horizontal-shelf-card .update-date-value,
-            .horizontal-shelf-card .price-per-kg {
-                white-space: nowrap; /* Metnin tek satırda kalmasını sağla */
             }
             .horizontal-shelf-card .price-per-kg {
                 text-align: right;
@@ -734,22 +724,18 @@
                     const cardWrapper = document.createElement('div');
                     const card = document.createElement('div');
 
-                    // Oryantasyona göre sınıf ataması
-                    if (selectedOrientation === 'horizontal') {
-                        cardWrapper.className = 'horizontal-shelf-card-wrapper';
-                        card.className = 'horizontal-shelf-card';
-                    } else { // 'vertical' veya varsayılan
-                        cardWrapper.className = 'vertical-shelf-card-wrapper';
-                        card.className = 'vertical-shelf-card';
-                    }
-
                     // Fiyat güncelleme tarihi
                     const updateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleDateString('tr-TR', { year: 'numeric', month: 'numeric', day: 'numeric' }) : 'Tarih Yok';
 
                     // Kilo/litre birimi ve fiyatı için metin
                     let displayUnitPricePerKgOrLiter = '';
                     if (product.pricePerUnitKgOrLiter && parseFloat(product.pricePerUnitKgOrLiter) > 0) {
-                        displayUnitPricePerKgOrLiter = `1 ${product.unit === 'adet' ? (product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg') : product.unit} Fiyatı: ${parseFloat(product.pricePerUnitKgOrLiter).toFixed(2)} TL`;
+                        // Birim "adet" ise, weightOrVolumePerUnit'a göre "gram" veya "kg" kullan
+                        let unitForDisplay = product.unit;
+                        if (product.unit === 'adet' && product.weightOrVolumePerUnit) {
+                            unitForDisplay = product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg';
+                        }
+                        displayUnitPricePerKgOrLiter = `1 ${unitForDisplay} = ${parseFloat(product.pricePerUnitKgOrLiter).toFixed(2)} TL`;
                     }
 
                     // Fiyatı tam ve ondalık kısımlarına ayır
@@ -758,7 +744,9 @@
                     const priceDecimal = priceParts[1];
 
                     if (selectedOrientation === 'horizontal') {
-                        // Yatay kart için yeni HTML yapısı
+                        // Yatay kart için HTML yapısı (barkodsuz)
+                        cardWrapper.className = 'horizontal-shelf-card-wrapper';
+                        card.className = 'horizontal-shelf-card';
                         card.innerHTML = `
                             <div class="card-top-row">
                                 <div class="product-name-section">
@@ -767,18 +755,19 @@
                                 </div>
                                 <div class="price-section">
                                     <span class="price-main">${priceMain}</span>
-                                    <span class="price-decimal">${priceDecimal}</span>
+                                    <span class="price-decimal">,${priceDecimal}</span>
                                     <span class="price-currency">TL</span>
                                 </div>
                             </div>
                             <div class="card-bottom-row">
-                                <span class="barcode-text">Barkod: ${product.barcode || 'Yok'}</span>
-                                <span class="update-date-label">Fiyat Geçerlilik: <span class="update-date-value">${updateDate}</span></span>
+                                <!-- Barkod kaldırıldı -->
                                 ${displayUnitPricePerKgOrLiter ? `<span class="price-per-kg">${displayUnitPricePerKgOrLiter}</span>` : ''}
                             </div>
                         `;
                     } else {
-                        // Dikey kart için mevcut HTML yapısı (resimsiz)
+                        // Dikey kart için eski HTML yapısı (resimsiz, barkodsuz)
+                        cardWrapper.className = 'vertical-shelf-card-wrapper';
+                        card.className = 'vertical-shelf-card';
                         card.innerHTML = `
                             <h3 class="product-name">${product.name}</h3>
                             <div class="price">${product.price.toFixed(2)} TL</div>
