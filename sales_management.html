@@ -514,6 +514,7 @@
 
                             <!-- Yeni Satışı Tamamla ve Formu Temizle Butonları -->
                             <div class="mt-8 flex justify-end space-x-4">
+                                <!-- ÖNEMLİ: Bu butonun ID'si `openPaymentModalBtn` ve doğru yere bağlı! -->
                                 <button type="button" id="openPaymentModalBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-md font-semibold text-lg flex items-center">
                                     <i class="fas fa-hand-holding-usd mr-2"></i> Satışı Tamamla
                                 </button>
@@ -715,7 +716,8 @@
             const totalSaleAmountSpan = document.getElementById('totalSaleAmount');
 
             // Yeni Ödeme Finalizasyon Modalı Elemanları
-            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn'); // Satışı Tamamla butonu
+            // Satışı Tamamla butonu referansı - Burası çok önemli!
+            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn');
             const paymentFinalizationModal = document.getElementById('paymentFinalizationModal');
             const modalTotalSaleAmountSpan = document.getElementById('modalTotalSaleAmount');
             const modalSelectedCustomerInfoSpan = document.getElementById('modalSelectedCustomerInfo');
@@ -918,7 +920,7 @@
                 selectedProductForSale = null; // Seçili ürünü sıfırla
                 clearCustomerSelection(); // Müşteri seçimini de temizle
                 // Ürünler yeniden çekilmeli ki, sepete eklenen ürünlerin stok düşüşü sıfırlansın
-                fetchAllProducts(); // Orjinal stokları tekrar yükle
+                fetchAllProducts(); // Orjinal stokları tekrar yükle (önceki durumda sanal düşüşler sıfırlanır)
             }
 
             // Tüm ürünleri API'den çekme (arama ve barkod için kullanılacak)
@@ -1079,7 +1081,7 @@
 
                     if (searchTerm.length < 2) return; // En az 2 karakter girilince ara
 
-                    // allProducts listesi üzerinde filtreleme yap
+                    // allProducts listesi üzerinde filtreleme yap (bu allProducts, fetchAllProducts'tan gelen orijinal stokları içerir)
                     const filteredProducts = allProducts.filter(product =>
                         product.name.toLowerCase().includes(searchTerm) ||
                         (product.barcode && product.barcode.toLowerCase().includes(searchTerm))
@@ -1089,7 +1091,7 @@
                         filteredProducts.forEach(product => {
                             const li = document.createElement('li');
                             li.className = 'p-2 cursor-pointer hover:bg-gray-700 border-b border-gray-700 last:border-b-0 text-gray-200 text-sm';
-                            li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`;
+                            li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`; // Orijinal stok göster
                             // Ürün bilgilerini dataset'e ekle
                             li.dataset.productId = product._id;
                             li.dataset.productName = product.name;
@@ -1107,7 +1109,7 @@
                                     price: product.price,
                                     unit: product.unit,
                                     category: product.category,
-                                    quantity: product.quantity, // anlık kullanılabilir stok
+                                    quantity: product.quantity, // allProducts'taki anlık kullanılabilir stok
                                     barcode: product.barcode
                                 };
                                 if (productSuggestions) productSuggestions.classList.add('hidden');
@@ -1132,8 +1134,12 @@
                                 if (foundProduct) {
                                     if (productSearchInput) productSearchInput.value = foundProduct.name;
                                     selectedProductForSale = foundProduct;
+                                    addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete ekleniyor...`, 'info');
+                                    if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                                    // Otomatik olarak sepete eklemek için, miktarı 1 yapıp addProductToSaleBtn'e tıklayabiliriz.
+                                    // Bu, kullanıcının ENTER'a basınca otomatik eklemesini sağlar.
+                                    if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
                                     if (addProductToSaleBtn) addProductToSaleBtn.click();
-                                    addNotification(`"${foundProduct.name}" otomatik olarak sepete eklendi.`, 'success');
                                 } else {
                                     addNotification('Girilen barkod veya isimle ürün bulunamadı.', 'error');
                                 }
@@ -1189,7 +1195,6 @@
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
                         console.log("Barkod algılandı:", code);
-                        if (productSearchInput) productSearchInput.value = code;
                         if (barcodeScannerResult) barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
                         addNotification(`Barkod algılandı: ${code}`, 'success');
 
@@ -1199,9 +1204,11 @@
                         const foundProduct = allProducts.find(p => p.barcode === code);
                         if (foundProduct) {
                             if (productSearchInput) productSearchInput.value = foundProduct.name;
-                            selectedProductForSale = foundProduct;
+                            selectedProductForSale = foundProduct; // Seçili ürünü ayarla
                             addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'info');
                             if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                            // Otomatik olarak sepete ekle
+                            if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
                             if (addProductToSaleBtn) addProductToSaleBtn.click();
                         } else {
                             addNotification(`"${code}" barkoduna sahip ürün bulunamadı.`, 'error');
@@ -1256,7 +1263,7 @@
                 });
             }
 
-            // Sepete ürün ekleme
+            // Sepete ürün ekleme (Stok düşüşü burada frontend'de simüle edilecek, backend'de satış tamamlandığında gerçek stok düşecek)
             if (addProductToSaleBtn) {
                 addProductToSaleBtn.addEventListener('click', () => {
                     if (!selectedProductForSale) {
@@ -1272,7 +1279,12 @@
 
                     // allProducts listesindeki gerçek stok miktarı
                     const productInAllProducts = allProducts.find(p => p._id === productId);
-                    let currentStock = productInAllProducts ? parseInt(productInAllProducts.quantity) : 0;
+                    // Burada, sepetteki ürün miktarını da düşerek kullanılabilir stok hesaplanmalı.
+                    // Sepetteki mevcut miktarını bulalım (eğer varsa)
+                    const existingItemInCart = currentSaleItems.find(item => item.productId === productId);
+                    const currentQuantityInCart = existingItemInCart ? existingItemInCart.quantity : 0;
+
+                    let availableStock = productInAllProducts ? parseInt(productInAllProducts.quantity) : 0;
 
                     let quantity = parseInt(productQuantityForSaleInput?.value);
 
@@ -1281,22 +1293,17 @@
                         return;
                     }
 
+                    // Yeni eklenmek istenen miktar + sepetteki mevcut miktar, toplam stoktan fazla mı?
+                    if ((quantity + currentQuantityInCart) > availableStock) {
+                        addNotification(`"${productName}" için yeterli stok yok. Mevcut stok: ${availableStock} ${unit}. Sepette ${currentQuantityInCart} ${unit} var. Maksimum ${availableStock - currentQuantityInCart} ${unit} daha ekleyebilirsiniz.`, 'error');
+                        return;
+                    }
+
                     // Sepette aynı ürün varsa miktarını artır
-                    const existingItemIndex = currentSaleItems.findIndex(item => item.productId === productId);
-                    if (existingItemIndex > -1) {
-                        // Eğer sepette zaten varsa, istenen miktar + sepetteki miktar toplamı stoktan büyük mü?
-                        if ((currentSaleItems[existingItemIndex].quantity + quantity) > currentStock) {
-                            addNotification(`"${productName}" için yeterli stok yok. Sepetinizde ${currentSaleItems[existingItemIndex].quantity} ${unit} var. Maksimum ${currentStock - currentSaleItems[existingItemIndex].quantity} ${unit} daha ekleyebilirsiniz.`, 'error');
-                            return;
-                        }
-                        currentSaleItems[existingItemIndex].quantity += quantity;
-                        currentSaleItems[existingItemIndex].totalPrice = currentSaleItems[existingItemIndex].quantity * currentSaleItems[existingItemIndex].unitPrice;
+                    if (existingItemInCart) {
+                        existingItemInCart.quantity += quantity;
+                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice;
                     } else {
-                        // Yeni ürün ise direkt stokla karşılaştır
-                        if (quantity > currentStock) {
-                            addNotification(`"${productName}" için yeterli stok yok. Maksimum ${currentStock} ${unit} satabilirsiniz.`, 'error');
-                            return;
-                        }
                         currentSaleItems.push({
                             productId,
                             productName,
@@ -1310,7 +1317,7 @@
 
                     // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK azalt (veri tabanına yazma yok)
                     if (productInAllProducts) {
-                        productInAllProducts.quantity -= quantity;
+                        productInAllProducts.quantity -= quantity; // Sanal olarak düşür
                     }
 
                     renderSaleItems();
@@ -1487,10 +1494,15 @@
 
             // Arama sonuçları dışına tıklayınca listeyi kapatma
             document.addEventListener('click', (event) => {
+                // Müşteri arama sonuçlarını kapat
                 if (customerSearchInput && customerSearchResults && !customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
                     customerSearchResults.classList.add('hidden');
                 }
-                // Bildirim merkezini de kapat
+                // Ürün arama önerilerini kapat
+                if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
+                    productSuggestions.classList.add('hidden');
+                }
+                // Bildirim merkezini kapat
                 if (notificationCenter && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
                     notificationCenter.classList.remove('active');
                 }
@@ -1501,10 +1513,13 @@
                 clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection);
             }
 
-            // Open Payment Modal Button
+            // Open Payment Modal Button (Satışı Tamamla butonu)
             if (openPaymentModalBtn) {
                 openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
+            } else {
+                console.error("HATA: 'Satışı Tamamla' butonu (ID: openPaymentModalBtn) DOM'da bulunamadı.");
             }
+
 
             // Update remaining credit amount on input change
             if (cashPaidAmountInput) {
@@ -1520,7 +1535,10 @@
                     event.preventDefault();
                     await finalizePayment();
                 });
+            } else {
+                 console.error("HATA: 'paymentFinalizationForm' formu (ID: paymentFinalizationForm) DOM'da bulunamadı.");
             }
+
 
             // Geçmiş satışları çekme ve listeleme
             async function fetchPastSales() {
