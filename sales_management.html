@@ -715,7 +715,7 @@
             const totalSaleAmountSpan = document.getElementById('totalSaleAmount');
 
             // Yeni Ödeme Finalizasyon Modalı Elemanları
-            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn');
+            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn'); // Satışı Tamamla butonu
             const paymentFinalizationModal = document.getElementById('paymentFinalizationModal');
             const modalTotalSaleAmountSpan = document.getElementById('modalTotalSaleAmount');
             const modalSelectedCustomerInfoSpan = document.getElementById('modalSelectedCustomerInfo');
@@ -771,7 +771,7 @@
 
             let currentSaleItems = []; // Satış sepetindeki ürünleri tutacak dizi
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
-            let allProducts = []; // Tüm ürünleri saklayacak dizi
+            let allProducts = []; // Tüm ürünleri saklayacak dizi (orijinal stokları tutacak)
             let selectedProductForSale = null; // Arama ile seçilen ürünü tutacak
             let scannerRunning = false; // Tarayıcının çalışıp çalışmadığını takip et
             let allCustomers = []; // Tüm müşterileri saklayacak dizi (müşteri arama için)
@@ -849,6 +849,7 @@
 
             // Bildirimleri render etme (HTML'e basma)
             function renderNotifications() {
+                if (!notificationList) return;
                 notificationList.innerHTML = '';
                 if (notifications.length === 0) {
                     notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
@@ -884,6 +885,7 @@
 
             // Okunmamış bildirim sayısını güncelle
             function updateNotificationCount() {
+                if (!notificationCountBadge) return;
                 const unreadCount = notifications.filter(n => !n.isRead).length;
                 if (unreadCount > 0) {
                     notificationCountBadge.textContent = unreadCount;
@@ -903,42 +905,10 @@
                 }
             }
 
-            // Tüm bildirimleri temizle
-            if (clearNotificationsBtn) {
-                clearNotificationsBtn.addEventListener('click', () => {
-                    notifications = [];
-                    saveNotifications();
-                    renderNotifications();
-                    updateNotificationCount();
-                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
-                });
-            }
-
-            // Bildirim merkezini aç/kapat
-            if (notificationBellBtn) {
-                notificationBellBtn.addEventListener('click', () => {
-                    if (notificationCenter) notificationCenter.classList.toggle('active');
-                    // Eğer açılıyorsa, tüm okunmamışları okundu yap
-                    if (notificationCenter && notificationCenter.classList.contains('active')) {
-                        notifications.forEach(notif => notif.isRead = true);
-                        saveNotifications();
-                        renderNotifications();
-                        updateNotificationCount();
-                    }
-                });
-            }
-
-            // Bildirim merkezini kapat butonu
-            if (closeNotificationsBtn) {
-                closeNotificationsBtn.addEventListener('click', () => {
-                    if (notificationCenter) notificationCenter.classList.remove('active');
-                });
-            }
-
-
             // Formu sıfırlama fonksiyonu
             function resetSaleForm() {
                 if (newSaleForm) newSaleForm.reset();
+                // Sepet listesini temizle
                 currentSaleItems = [];
                 renderSaleItems();
                 updateTotalSaleAmount();
@@ -947,9 +917,12 @@
                 if (productSuggestions) productSuggestions.classList.add('hidden'); // Önerileri gizle
                 selectedProductForSale = null; // Seçili ürünü sıfırla
                 clearCustomerSelection(); // Müşteri seçimini de temizle
+                // Ürünler yeniden çekilmeli ki, sepete eklenen ürünlerin stok düşüşü sıfırlansın
+                fetchAllProducts(); // Orjinal stokları tekrar yükle
             }
 
             // Tüm ürünleri API'den çekme (arama ve barkod için kullanılacak)
+            // Bu fonksiyon, veritabanındaki orijinal stokları çeker ve allProducts dizisini doldurur.
             async function fetchAllProducts() {
                 try {
                     const response = await fetch(`${API_BASE_URL}/products?userId=${getUserId()}`, {
@@ -960,14 +933,14 @@
                         throw new Error(`HTTP hata! Durum: ${response.status}`);
                     }
                     allProducts = await response.json();
-                    console.log("Tüm ürünler yüklendi:", allProducts); // Debug
+                    console.log("Tüm ürünler yüklendi (orijinal stoklar dahil):", allProducts); // Debug
                 } catch (error) {
                     console.error('Ürünler çekilirken hata:', error);
                     addNotification('Ürün listesi yüklenemedi.', 'error');
                 }
             }
 
-            // Tüm müşterileri API'den çekme (Müşteri Arama için kullanılacak)
+            // Tüm müşterileri API'den çekme
             async function fetchAllCustomers() {
                 try {
                     const response = await fetch(`${API_BASE_URL}/customers?userId=${getUserId()}`, {
@@ -987,7 +960,7 @@
 
             // Müşteri Arama ve Listeleme
             async function searchCustomers(query) {
-                if (query.length < 2) { // En az 2 karakter girilince ara
+                if (query.length < 2) {
                     if (customerSearchResults) {
                         customerSearchResults.innerHTML = '<div class="p-3 text-gray-400 text-center">En az 2 karakter girin.</div>';
                         customerSearchResults.classList.remove('hidden');
@@ -1106,6 +1079,7 @@
 
                     if (searchTerm.length < 2) return; // En az 2 karakter girilince ara
 
+                    // allProducts listesi üzerinde filtreleme yap
                     const filteredProducts = allProducts.filter(product =>
                         product.name.toLowerCase().includes(searchTerm) ||
                         (product.barcode && product.barcode.toLowerCase().includes(searchTerm))
@@ -1114,22 +1088,31 @@
                     if (filteredProducts.length > 0) {
                         filteredProducts.forEach(product => {
                             const li = document.createElement('li');
-                            li.className = 'p-2 cursor-pointer hover:bg-gray-700 border-b border-gray-700 last:border-b-0 text-gray-200 text-sm'; // Koyu tema stilleri
+                            li.className = 'p-2 cursor-pointer hover:bg-gray-700 border-b border-gray-700 last:border-b-0 text-gray-200 text-sm';
                             li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`;
+                            // Ürün bilgilerini dataset'e ekle
                             li.dataset.productId = product._id;
                             li.dataset.productName = product.name;
                             li.dataset.unitPrice = product.price;
                             li.dataset.unit = product.unit;
                             li.dataset.category = product.category;
-                            li.dataset.currentQuantity = product.quantity;
+                            li.dataset.currentQuantity = product.quantity; // Mevcut anlık stoğu
                             li.dataset.barcode = product.barcode || '';
 
                             li.addEventListener('click', () => {
-                                if (productSearchInput) productSearchInput.value = product.name; // Inputa ürün adını yaz
-                                selectedProductForSale = product; // Seçilen ürünü kaydet
-                                if (productSuggestions) productSuggestions.classList.add('hidden'); // Önerileri gizle
-                                if (productQuantityForSaleInput) productQuantityForSaleInput.focus(); // Miktar inputuna odaklan
-                                addNotification(`"${product.name}" seçildi. Miktar girip sepete ekleyebilirsiniz.`, 'info'); // Daha açıklayıcı mesaj
+                                if (productSearchInput) productSearchInput.value = product.name;
+                                selectedProductForSale = { // allProducts'taki objeyi direkt kullan
+                                    _id: product._id,
+                                    name: product.name,
+                                    price: product.price,
+                                    unit: product.unit,
+                                    category: product.category,
+                                    quantity: product.quantity, // anlık kullanılabilir stok
+                                    barcode: product.barcode
+                                };
+                                if (productSuggestions) productSuggestions.classList.add('hidden');
+                                if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                                addNotification(`"${product.name}" seçildi. Miktar girip sepete ekleyebilirsiniz.`, 'info');
                             });
                             if (productSuggestions) productSuggestions.appendChild(li);
                         });
@@ -1137,23 +1120,19 @@
                     }
                 });
 
-                // Yeni: Enter tuşuna basıldığında ürünü sepete ekle
                 productSearchInput.addEventListener('keypress', (event) => {
                     if (event.key === 'Enter') {
-                        event.preventDefault(); // Form submit etmeyi engelle
+                        event.preventDefault();
                         if (selectedProductForSale) {
-                            // Eğer bir ürün seçiliyse, doğrudan sepete ekle
                             if (addProductToSaleBtn) addProductToSaleBtn.click();
                         } else {
-                            // Eğer bir ürün seçili değilse ama inputta bir değer varsa,
-                            // o değeri barkod olarak kabul edip ürünü bulmaya çalış
                             const searchTerm = productSearchInput.value.trim();
                             if (searchTerm) {
                                 const foundProduct = allProducts.find(p => p.barcode === searchTerm || p.name.toLowerCase() === searchTerm.toLowerCase());
                                 if (foundProduct) {
-                                    if (productSearchInput) productSearchInput.value = foundProduct.name; // Inputu ürün adıyla doldur
+                                    if (productSearchInput) productSearchInput.value = foundProduct.name;
                                     selectedProductForSale = foundProduct;
-                                    if (addProductToSaleBtn) addProductToSaleBtn.click(); // Sepete ekle
+                                    if (addProductToSaleBtn) addProductToSaleBtn.click();
                                     addNotification(`"${foundProduct.name}" otomatik olarak sepete eklendi.`, 'success');
                                 } else {
                                     addNotification('Girilen barkod veya isimle ürün bulunamadı.', 'error');
@@ -1165,7 +1144,6 @@
                     }
                 });
 
-                // Input dışına tıklayınca önerileri gizle
                 document.addEventListener('click', (event) => {
                     if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
                         productSuggestions.classList.add('hidden');
@@ -1173,34 +1151,33 @@
                 });
             }
 
-            // Barkod Tara butonu (GERÇEK KAMERA ENTEGRASYONU)
+            // Barkod Tara butonu
             if (scanBarcodeBtn) {
                 scanBarcodeBtn.addEventListener('click', () => {
-                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active'); // Modalı göster
-                    if (barcodeScannerResult) barcodeScannerResult.textContent = 'Tarama başlatılıyor...'; // Mesajı sıfırla
+                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active');
+                    if (barcodeScannerResult) barcodeScannerResult.textContent = 'Tarama başlatılıyor...';
 
-                    // QuaggaJS başlatma ayarları
                     Quagga.init({
                         inputStream: {
                             name: "Live",
                             type: "LiveStream",
-                            target: videoElement, // video elementini hedefle
+                            target: videoElement,
                             constraints: {
                                 width: 640,
                                 height: 480,
-                                facingMode: "environment" // Arka kamera tercih edilir
+                                facingMode: "environment"
                             },
                         },
                         decoder: {
                             readers: ["ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "codabar_reader", "upc_reader", "upc_e_reader", "i2of5_reader"]
                         },
-                        locate: true, // Barkodun konumunu bulmaya çalış
+                        locate: true,
                     }, function (err) {
                         if (err) {
                             console.error("Quagga Başlatma Hatası:", err);
                             if (barcodeScannerResult) barcodeScannerResult.textContent = `Kamera başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`;
                             addNotification(`Barkod tarayıcı başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`, 'error');
-                            if (barcodeScannerModal) barcodeScannerModal.classList.remove('active'); // Modalı kapat
+                            if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
                             return;
                         }
                         console.log("Quagga başlatıldı, tarama başlıyor.");
@@ -1209,7 +1186,6 @@
                         scannerRunning = true;
                     });
 
-                    // Barkod algılandığında
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
                         console.log("Barkod algılandı:", code);
@@ -1217,24 +1193,22 @@
                         if (barcodeScannerResult) barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
                         addNotification(`Barkod algılandı: ${code}`, 'success');
 
-                        stopBarcodeScanner(); // Tarayıcıyı durdur
-                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active'); // Modalı kapat
+                        stopBarcodeScanner();
+                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
 
-                        // Algılanan barkod ile ürünü bul ve sepete ekle
                         const foundProduct = allProducts.find(p => p.barcode === code);
                         if (foundProduct) {
                             if (productSearchInput) productSearchInput.value = foundProduct.name;
                             selectedProductForSale = foundProduct;
-                            addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'success');
+                            addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'info');
                             if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
-                            if (addProductToSaleBtn) addProductToSaleBtn.click(); // Otomatik sepete ekle
+                            if (addProductToSaleBtn) addProductToSaleBtn.click();
                         } else {
                             addNotification(`"${code}" barkoduna sahip ürün bulunamadı.`, 'error');
                             selectedProductForSale = null;
                         }
                     });
 
-                    // Tarama sırasında barkodun etrafına kutu çizme (Görsel geri bildirim)
                     Quagga.onProcessed(function (result) {
                         const drawingCtx = Quagga.canvas.ctx.overlay;
                         const drawingCanvas = Quagga.canvas.dom.overlay;
@@ -1261,7 +1235,6 @@
                 });
             }
 
-            // Barkod Tarayıcıyı Durdurma Fonksiyonu
             function stopBarcodeScanner() {
                 if (scannerRunning) {
                     Quagga.stop();
@@ -1270,7 +1243,6 @@
                 }
             }
 
-            // Modal kapatma butonları
             if (barcodeScannerCloseBtn) {
                 barcodeScannerCloseBtn.addEventListener('click', () => {
                     if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
@@ -1284,8 +1256,7 @@
                 });
             }
 
-
-            // Satış sepetine ürün ekleme
+            // Sepete ürün ekleme
             if (addProductToSaleBtn) {
                 addProductToSaleBtn.addEventListener('click', () => {
                     if (!selectedProductForSale) {
@@ -1298,26 +1269,34 @@
                     const unitPrice = parseFloat(selectedProductForSale.price);
                     const unit = selectedProductForSale.unit;
                     const category = selectedProductForSale.category;
-                    const currentStock = parseInt(selectedProductForSale.quantity); // selectedProductForSale'deki güncel stok
 
-                    let quantity = parseInt(productQuantityForSaleInput?.value); // Null check eklendi
+                    // allProducts listesindeki gerçek stok miktarı
+                    const productInAllProducts = allProducts.find(p => p._id === productId);
+                    let currentStock = productInAllProducts ? parseInt(productInAllProducts.quantity) : 0;
+
+                    let quantity = parseInt(productQuantityForSaleInput?.value);
 
                     if (isNaN(quantity) || quantity <= 0) {
                         addNotification('Lütfen geçerli bir miktar girin.', 'error');
-                        return;
-                    }
-                    if (quantity > currentStock) {
-                        addNotification(`"${productName}" için yeterli stok yok. Maksimum ${currentStock} ${unit} satabilirsiniz.`, 'error');
                         return;
                     }
 
                     // Sepette aynı ürün varsa miktarını artır
                     const existingItemIndex = currentSaleItems.findIndex(item => item.productId === productId);
                     if (existingItemIndex > -1) {
-                        // Sepetteki ürünün miktarını artır
+                        // Eğer sepette zaten varsa, istenen miktar + sepetteki miktar toplamı stoktan büyük mü?
+                        if ((currentSaleItems[existingItemIndex].quantity + quantity) > currentStock) {
+                            addNotification(`"${productName}" için yeterli stok yok. Sepetinizde ${currentSaleItems[existingItemIndex].quantity} ${unit} var. Maksimum ${currentStock - currentSaleItems[existingItemIndex].quantity} ${unit} daha ekleyebilirsiniz.`, 'error');
+                            return;
+                        }
                         currentSaleItems[existingItemIndex].quantity += quantity;
                         currentSaleItems[existingItemIndex].totalPrice = currentSaleItems[existingItemIndex].quantity * currentSaleItems[existingItemIndex].unitPrice;
                     } else {
+                        // Yeni ürün ise direkt stokla karşılaştır
+                        if (quantity > currentStock) {
+                            addNotification(`"${productName}" için yeterli stok yok. Maksimum ${currentStock} ${unit} satabilirsiniz.`, 'error');
+                            return;
+                        }
                         currentSaleItems.push({
                             productId,
                             productName,
@@ -1325,30 +1304,30 @@
                             quantity,
                             unit,
                             category,
-                            totalPrice: quantity * unitPrice // Yeni ürün eklenirken totalPrice'ı da ekle
+                            totalPrice: quantity * unitPrice
                         });
                     }
 
-                    // allProducts dizisindeki ürünün stok miktarını güncelle (UI'da doğru görünmesi için)
-                    const productInAllProductsIndex = allProducts.findIndex(p => p._id === productId);
-                    if (productInAllProductsIndex > -1) {
-                        allProducts[productInAllProductsIndex].quantity -= quantity;
+                    // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK azalt (veri tabanına yazma yok)
+                    if (productInAllProducts) {
+                        productInAllProducts.quantity -= quantity;
                     }
 
                     renderSaleItems();
                     updateTotalSaleAmount();
-                    if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1'; // Miktarı sıfırla
-                    if (productSearchInput) productSearchInput.value = ''; // Arama inputunu temizle
-                    selectedProductForSale = null; // Seçili ürünü sıfırla
+                    if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
+                    if (productSearchInput) productSearchInput.value = '';
+                    selectedProductForSale = null;
                     addNotification(`"${productName}" sepete eklendi.`, 'info');
                 });
             }
 
             // Satış sepetindeki ürünleri render etme
             function renderSaleItems() {
-                if (saleItemsList) saleItemsList.innerHTML = '';
+                if (!saleItemsList) return;
+                saleItemsList.innerHTML = '';
                 if (currentSaleItems.length === 0) {
-                    if (saleItemsList) saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-2">Henüz ürün eklenmedi.</p>';
+                    saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-2">Henüz ürün eklenmedi.</p>';
                     return;
                 }
 
@@ -1362,19 +1341,18 @@
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     `;
-                    if (saleItemsList) saleItemsList.appendChild(itemDiv);
+                    saleItemsList.appendChild(itemDiv);
                 });
 
-                // Ürün silme butonlarına olay dinleyicileri ekle
                 document.querySelectorAll('.remove-sale-item-btn').forEach(button => {
                     button.addEventListener('click', (event) => {
                         const indexToRemove = parseInt(event.target.closest('button').dataset.index);
                         const removedItem = currentSaleItems.splice(indexToRemove, 1)[0];
 
-                        // allProducts dizisindeki ürünün stok miktarını geri getir
-                        const productInAllProductsIndex = allProducts.findIndex(p => p._id === removedItem.productId);
-                        if (productInAllProductsIndex > -1) {
-                            allProducts[productInAllProductsIndex].quantity += removedItem.quantity;
+                        // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK geri getir
+                        const productInAllProducts = allProducts.find(p => p._id === removedItem.productId);
+                        if (productInAllProducts) {
+                            productInAllProducts.quantity += removedItem.quantity;
                         }
 
                         renderSaleItems();
@@ -1390,10 +1368,9 @@
                 currentSaleItems.forEach(item => {
                     total += item.quantity * item.unitPrice;
                 });
-                totalSaleAmount = total; // Global değişkeni güncelle
+                totalSaleAmount = total;
                 if (totalSaleAmountSpan) totalSaleAmountSpan.textContent = `${total.toFixed(2)} TL`;
 
-                // Eğer ödeme modalı açıksa, oradaki kalan borcu da güncelle
                 if (paymentFinalizationModal && paymentFinalizationModal.classList.contains('show')) {
                     updateRemainingCreditAmount();
                 }
@@ -1401,11 +1378,11 @@
 
             // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
-                const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0; // Null check eklendi
-                const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0; // Null check eklendi
+                const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
+                const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
                 const paidTotal = cashPaid + cardPaid;
                 const creditAmount = totalSaleAmount - paidTotal;
-                const saleDate = saleDateInput?.value; // Null check eklendi
+                const saleDate = saleDateInput?.value;
 
                 if (currentSaleItems.length === 0) {
                     addNotification('Sepetiniz boş.', 'error');
@@ -1422,7 +1399,6 @@
                     return;
                 }
 
-                // `finalizePaymentBtn` için loading state'i
                 if (finalizePaymentBtn) {
                     finalizePaymentBtn.disabled = true;
                     finalizePaymentBtn.innerHTML = '<span class="inline-block h-4 w-4 border-2 border-t-2 border-white rounded-full animate-spin mr-2"></span> İşlem Yapılıyor...';
@@ -1437,13 +1413,11 @@
                     if (creditAmount > 0) {
                         paymentMethodDescription += (paymentMethodDescription ? '+' : '') + 'Veresiye';
                     } else if (!paymentMethodDescription && totalSaleAmount === 0) {
-                        paymentMethodDescription = 'Ödeme Yok'; // Sepet 0 ise
+                        paymentMethodDescription = 'Ödeme Yok';
                     } else if (!paymentMethodDescription) {
-                        paymentMethodDescription = 'Belirtilmedi'; // Ödenen miktar 0 ama sepet > 0 ve veresiye de 0 ise
+                        paymentMethodDescription = 'Belirtilmedi';
                     }
 
-
-                    // 1. Ana satış kaydını oluştur
                     const saleResponse = await fetch(`${API_BASE_URL}/sales`, {
                         method: 'POST',
                         headers: {
@@ -1477,8 +1451,7 @@
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
                     closePaymentFinalizationModal();
-                    resetSaleForm();
-                    await fetchAllProducts();
+                    resetSaleForm(); // Bu, allProducts'ı yeniden çekecek ve stokları güncelleyecek
                     fetchPastSales();
 
                 } catch (error) {
@@ -1493,12 +1466,14 @@
             }
 
 
-            // Formu temizle butonu (Event Listener)
+            // --- Olay Dinleyicileri ---
+
+            // Formu temizle butonu
             if (clearSaleFormBtn) {
                 clearSaleFormBtn.addEventListener('click', resetSaleForm);
             }
 
-            // Müşteri arama girişi Event Listener
+            // Müşteri arama girişi
             if (customerSearchInput) {
                 customerSearchInput.addEventListener('input', (event) => {
                     const query = event.target.value.trim();
@@ -1510,24 +1485,28 @@
                 });
             }
 
-            // Arama sonuçları dışına tıklayınca listeyi kapatma Event Listener
+            // Arama sonuçları dışına tıklayınca listeyi kapatma
             document.addEventListener('click', (event) => {
                 if (customerSearchInput && customerSearchResults && !customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
                     customerSearchResults.classList.add('hidden');
                 }
+                // Bildirim merkezini de kapat
+                if (notificationCenter && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
+                    notificationCenter.classList.remove('active');
+                }
             });
 
-            // Seçili müşteriyi temizleme butonu Event Listener
+            // Seçili müşteriyi temizleme butonu
             if (clearCustomerSelectionBtn) {
                 clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection);
             }
 
-            // Open Payment Modal Button Event Listener
+            // Open Payment Modal Button
             if (openPaymentModalBtn) {
                 openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
             }
 
-            // Update remaining credit amount on input change Event Listeners
+            // Update remaining credit amount on input change
             if (cashPaidAmountInput) {
                 cashPaidAmountInput.addEventListener('input', updateRemainingCreditAmount);
             }
@@ -1535,11 +1514,11 @@
                 cardPaidAmountInput.addEventListener('input', updateRemainingCreditAmount);
             }
 
-            // Finalize Payment Form Submission Event Listener
+            // Finalize Payment Form Submission
             if (finalizePaymentForm) {
                 finalizePaymentForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
-                    await finalizePayment(); // Yeni fonksiyonu çağır
+                    await finalizePayment();
                 });
             }
 
@@ -1556,9 +1535,9 @@
                     return;
                 }
 
-                const filterCustomer = filterCustomerNameInput?.value.trim() || ''; // Null check eklendi
-                const filterStartDate = filterSaleStartDateInput?.value || ''; // Null check eklendi
-                const filterEndDate = filterSaleEndDateInput?.value || ''; // Null check eklendi
+                const filterCustomer = filterCustomerNameInput?.value.trim() || '';
+                const filterStartDate = filterSaleStartDateInput?.value || '';
+                const filterEndDate = filterSaleEndDateInput?.value || '';
 
                 let url = `${API_BASE_URL}/sales?userId=${getUserId()}&`;
                 if (filterCustomer) url += `customerName=${encodeURIComponent(filterCustomer)}&`;
@@ -1633,7 +1612,6 @@
                     });
                     if (totalSalesVolumeSpan) totalSalesVolumeSpan.textContent = `${totalSalesValue.toFixed(2)} TL`;
 
-                    // Detayları Görüntüle butonlarına event listener ekle
                     document.querySelectorAll('.view-sale-details-btn').forEach(button => {
                         button.addEventListener('click', (e) => {
                             const saleId = e.target.dataset.saleId;
@@ -1806,7 +1784,7 @@
             }
 
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
-            fetchAllProducts();
+            fetchAllProducts(); // Bu, allProducts dizisini dolduracak
             fetchAllCustomers();
             fetchPastSales();
             loadNotifications();
