@@ -1,6 +1,6 @@
-    // routes/sales.js
+// routes/sales.js
 const express = require('express');
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require('mongodb'); // ObjectId'yi içe aktardık
 const { getDb } = require('../db'); // db.js'den getDb fonksiyonunu al
 const { authenticateToken, verify2FA } = require('../middleware/authMiddleware'); // Middleware'leri al
 
@@ -8,7 +8,8 @@ const router = express.Router(); // Yeni bir router objesi oluştur
 
 // Yeni Satış Ekleme Rotası
 router.post('/sales', authenticateToken, async (req, res) => {
-    const { saleItems, customerName, saleDate } = req.body;
+    // Frontend'den beklenen yeni alanlar: customerId, customerName, paymentMethod, cashPaid, cardPaid
+    const { saleItems, customerId, customerName, saleDate, paymentMethod, cashPaid, cardPaid } = req.body;
     const userId = req.user.userId;
 
     if (!saleItems || !Array.isArray(saleItems) || saleItems.length === 0) {
@@ -24,13 +25,15 @@ router.post('/sales', authenticateToken, async (req, res) => {
             const product = await db.collection('products').findOne({ _id: new ObjectId(item.productId), userId: userId });
 
             if (!product) {
+                // Eğer ürün bulunamazsa, hata fırlat ve işlemi durdur
                 throw new Error(`Ürün bulunamadı: ${item.productName || item.productId}`);
             }
             if (product.quantity < item.quantity) {
+                // Yetersiz stok durumunda hata fırlat
                 throw new Error(`Yetersiz stok: ${product.name}. Mevcut: ${product.quantity}, İstenen: ${item.quantity}`);
             }
 
-            // Stoktan düş
+            // Stoktan düşme işlemi
             await db.collection('products').updateOne(
                 { _id: new ObjectId(item.productId), userId: userId },
                 { $inc: { quantity: -item.quantity }, $set: { updatedAt: new Date() } }
@@ -39,8 +42,9 @@ router.post('/sales', authenticateToken, async (req, res) => {
             const itemTotalPrice = product.price * item.quantity;
             totalAmount += itemTotalPrice;
 
+            // Satış öğesi detaylarını hazırla
             processedSaleItems.push({
-                productId: product._id.toString(),
+                productId: product._id.toString(), // Ürün ID'sini string olarak kaydet
                 productName: product.name,
                 unitPrice: product.price,
                 quantity: item.quantity,
@@ -50,16 +54,57 @@ router.post('/sales', authenticateToken, async (req, res) => {
             });
         }
 
+        // Kalan veresiye tutarını hesapla (eğer varsa)
+        // totalAmount, sepetin toplamıdır. cashPaid ve cardPaid, müşterinin ödediği toplamdır.
+        // Kalan (veresiye yazılacak) tutar: totalAmount - (cashPaid + cardPaid)
+        const creditDebtAmount = totalAmount - (parseFloat(cashPaid || 0) + parseFloat(cardPaid || 0));
+
+        // Yeni satış belgesini oluştur
         const newSale = {
             userId: userId,
             saleItems: processedSaleItems,
-            customerName: customerName || 'Anonim',
-            totalAmount: totalAmount,
+            customerId: customerId || null, // Seçili müşteri ID'si
+            customerName: customerName || 'Anonim', // Seçili müşteri adı veya 'Anonim'
+            totalAmount: totalAmount, // Sepet toplam tutarı
             saleDate: new Date(saleDate), // Frontend'den gelen tarihi kullan
+            paymentMethod: paymentMethod, // Ödeme metodu (Nakit, Kart, Nakit+Kart, Veresiye, Nakit+Veresiye vb.)
+            cashPaid: parseFloat(cashPaid || 0), // Nakit ödenen miktar
+            cardPaid: parseFloat(cardPaid || 0), // Kartla ödenen miktar
+            creditDebt: creditDebtAmount > 0 ? creditDebtAmount : 0, // Veresiye kalan tutarı
             createdAt: new Date()
         };
 
+        // Satış kaydını veritabanına ekle
         await db.collection('sales').insertOne(newSale);
+
+        // Eğer veresiye borcu varsa, müşterinin toplam veresiye borcunu ve işlem geçmişini güncelle
+        if (creditDebtAmount > 0 && customerId) {
+            const customerObjectId = new ObjectId(customerId);
+            const customer = await db.collection('customers').findOne({ _id: customerObjectId, userId: userId });
+
+            if (customer) {
+                const newTotalCreditDebt = customer.totalCreditDebt + creditDebtAmount;
+                const newTransaction = {
+                    type: 'Sale', // Borçlandırma işlemi
+                    amount: creditDebtAmount,
+                    description: `Satıştan veresiye (${totalAmount.toFixed(2)} TL). Nakit:${parseFloat(cashPaid || 0).toFixed(2)}, Kart:${parseFloat(cardPaid || 0).toFixed(2)}`,
+                    date: new Date(),
+                    transactionId: new ObjectId() // Her işlem için benzersiz ID
+                };
+
+                await db.collection('customers').updateOne(
+                    { _id: customerObjectId, userId: userId },
+                    {
+                        $set: { totalCreditDebt: newTotalCreditDebt, updatedAt: new Date() },
+                        $push: { creditTransactions: newTransaction }
+                    }
+                );
+            } else {
+                console.warn(`Veresiye borcu eklenemedi: Müşteri ID ${customerId} bulunamadı.`);
+            }
+        }
+
+        // Başarılı yanıt gönder
         res.status(201).json({ message: 'Satış başarıyla kaydedildi!', sale: newSale });
 
     } catch (error) {
@@ -76,6 +121,8 @@ router.get('/sales', authenticateToken, async (req, res) => {
     const { customerName, startDate, endDate } = req.query;
 
     // 2FA doğrulaması yapılmış mı kontrol et (raporlama için gerekli)
+    // Bu kontrol, 2FA'nın aktif olup olmamasına veya kullanıcının rolüne göre değişebilir
+    // Şimdilik, sadece satış geçmişini görmek için 2FA doğrulaması istiyoruz
     if (!req.user.is2FAVerified) {
         return res.status(403).json({ message: 'Satış geçmişini görüntülemek için 2FA doğrulaması gerekli.' });
     }
@@ -83,21 +130,25 @@ router.get('/sales', authenticateToken, async (req, res) => {
     let query = { userId: userId };
 
     if (customerName) {
-        query.customerName = { $regex: customerName, $options: 'i' }; // Case-insensitive arama
+        // Müşteri adına göre case-insensitive arama
+        query.customerName = { $regex: customerName, $options: 'i' };
     }
 
     if (startDate || endDate) {
         query.saleDate = {};
         if (startDate) {
+            // Başlangıç tarihinden büyük veya eşit
             query.saleDate.$gte = new Date(startDate);
         }
         if (endDate) {
+            // Bitiş tarihinden küçük veya eşit
             query.saleDate.$lte = new Date(endDate);
         }
     }
 
     try {
         const db = getDb(); // Veritabanı bağlantısını al
+        // Satışları bul ve tarihe göre azalan sırada sırala
         const sales = await db.collection('sales').find(query).sort({ saleDate: -1 }).toArray();
         res.status(200).json(sales);
     } catch (error) {
