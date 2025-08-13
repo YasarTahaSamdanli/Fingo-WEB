@@ -459,7 +459,7 @@
                                 <input type="date" id="saleDate" class="form-input w-full p-3 text-base shadow-sm" value="">
                             </div>
 
-                            <!-- Müşteri Seçme Alanı (Veresiye için Gerekli) - BURADA DİKKAT! Eğer daha önce eklemediysen ekle -->
+                            <!-- Müşteri Seçme Alanı (Veresiye için Gerekli) -->
                             <div class="mb-6 bg-gray-700 p-4 rounded-lg shadow-inner">
                                 <h3 class="text-lg font-semibold text-gray-200 mb-3 flex items-center">
                                     <i class="fas fa-user-tag text-blue-400 mr-2"></i> Müşteri Seçimi (Veresiye İşlemi İçin)
@@ -512,7 +512,7 @@
                                 <p class="text-right text-2xl font-bold text-gray-100 mt-4">Toplam Tutar: <span id="totalSaleAmount" class="text-green-400">0.00 TL</span></p>
                             </div>
 
-                            <!-- Yeni Satışı Tamamla ve Formu Temizle Butonları (Mevcut Satışı Tamamla butonunu DEĞİŞTİR) -->
+                            <!-- Yeni Satışı Tamamla ve Formu Temizle Butonları -->
                             <div class="mt-8 flex justify-end space-x-4">
                                 <button type="button" id="openPaymentModalBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-md font-semibold text-lg flex items-center">
                                     <i class="fas fa-hand-holding-usd mr-2"></i> Satışı Tamamla
@@ -610,7 +610,7 @@
         </div>
     </div>
 
-    <!-- Ödeme Finalizasyon Modalı - YENİ EKLENDİ -->
+    <!-- Ödeme Finalizasyon Modalı -->
     <div id="paymentFinalizationModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-lg w-full">
             <button class="modal-close-btn" onclick="closePaymentFinalizationModal()">&times;</button>
@@ -696,7 +696,6 @@
             // Sales Form Elements
             const newSaleForm = document.getElementById('newSaleForm');
             const saleDateInput = document.getElementById('saleDate');
-            // customerNameInput ve customerDatalist kaldırıldı veya kullanılmayacak
 
             // Müşteri Seçimi Elemanları
             const customerSearchInput = document.getElementById('customerSearchInput');
@@ -761,10 +760,10 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
             const mainContent = document.getElementById('mainContent');
-            const manageCustomersBtn = document.getElementById('manageCustomersBtn'); // Müşteri Yönetimi butonu
+            const manageCustomersBtn = document.getElementById('manageCustomersBtn');
             const manageProductsBtn = document.getElementById('manageProductsBtn');
             const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
-            const manageRecurringTransactionsBtn = document = document.getElementById('manageRecurringTransactionsBtn');
+            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
             const viewReportsBtn = document.getElementById('viewReportsBtn');
             const exportCsvBtn = document.getElementById('exportCsvBtn');
             const importCsvBtn = document.getElementById('importCsvBtn');
@@ -968,7 +967,7 @@
                 }
             }
 
-            // Tüm müşterileri API'den çekme ve datalist'i doldurma (Müşteri Arama için kullanılacak)
+            // Tüm müşterileri API'den çekme (Müşteri Arama için kullanılacak)
             async function fetchAllCustomers() {
                 try {
                     const response = await fetch(`${API_BASE_URL}/customers?userId=${getUserId()}`, {
@@ -980,24 +979,23 @@
                     }
                     allCustomers = await response.json();
                     console.log("Tüm müşteriler yüklendi:", allCustomers); // Debug
-
-                    // customerDatalist kaldırıldığı için artık doğrudan arama kutusuna odaklanıyoruz.
                 } catch (error) {
                     console.error('Müşteriler çekilirken hata:', error);
                     addNotification('Müşteri listesi yüklenemedi.', 'error');
                 }
             }
 
-            // Yeni fonksiyonlar: Müşteri Arama ve Listeleme (sales.js'den taşındı ve düzenlendi)
+            // Müşteri Arama ve Listeleme
             async function searchCustomers(query) {
                 if (query.length < 2) { // En az 2 karakter girilince ara
-                    customerSearchResults.innerHTML = '<div class="p-3 text-gray-400 text-center">En az 2 karakter girin.</div>';
-                    customerSearchResults.classList.remove('hidden');
+                    if (customerSearchResults) {
+                        customerSearchResults.innerHTML = '<div class="p-3 text-gray-400 text-center">En az 2 karakter girin.</div>';
+                        customerSearchResults.classList.remove('hidden');
+                    }
                     return;
                 }
 
                 try {
-                    // Müşteri adına veya telefon numarasına göre arama yap
                     const filteredCustomers = allCustomers.filter(customer =>
                         customer.name.toLowerCase().includes(query.toLowerCase()) ||
                         customer.phoneNumber.includes(query)
@@ -1005,11 +1003,12 @@
                     renderCustomerSearchResults(filteredCustomers);
                 } catch (error) {
                     console.error('Müşteri arama hatası:', error);
-                    customerSearchResults.innerHTML = `<div class="p-3 text-red-400 text-center">Arama sırasında hata oluştu.</div>`;
+                    if (customerSearchResults) customerSearchResults.innerHTML = `<div class="p-3 text-red-400 text-center">Arama sırasında hata oluştu.</div>`;
                 }
             }
 
             function renderCustomerSearchResults(customers) {
+                if (!customerSearchResults) return;
                 customerSearchResults.innerHTML = '';
                 if (customers.length === 0) {
                     customerSearchResults.innerHTML = '<div class="p-3 text-gray-400 text-center">Müşteri bulunamadı.</div>';
@@ -1030,19 +1029,19 @@
 
             function selectCustomer(customer) {
                 selectedCustomer = customer;
-                selectedCustomerNameSpan.textContent = customer.name;
-                modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${customer.name} (${customer.phoneNumber})</span>`; // Modaldaki müşteri bilgisini güncelle
-                selectedCustomerDisplay.classList.remove('hidden');
-                customerSearchResults.classList.add('hidden');
-                customerSearchInput.value = ''; // Arama kutusunu temizle
+                if (selectedCustomerNameSpan) selectedCustomerNameSpan.textContent = customer.name;
+                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${customer.name} (${customer.phoneNumber})</span>`; // Modaldaki müşteri bilgisini güncelle
+                if (selectedCustomerDisplay) selectedCustomerDisplay.classList.remove('hidden');
+                if (customerSearchResults) customerSearchResults.classList.add('hidden');
+                if (customerSearchInput) customerSearchInput.value = ''; // Arama kutusunu temizle
                 addNotification(`Müşteri seçildi: ${customer.name}`, 'info');
                 updateRemainingCreditAmount(); // Müşteri seçimi değiştiğinde kalan borcu güncelle
             }
 
             function clearCustomerSelection() {
                 selectedCustomer = null;
-                selectedCustomerDisplay.classList.add('hidden');
-                modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`; // Modaldaki müşteri bilgisini sıfırla
+                if (selectedCustomerDisplay) selectedCustomerDisplay.classList.add('hidden');
+                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`; // Modaldaki müşteri bilgisini sıfırla
                 addNotification('Müşteri seçimi kaldırıldı.', 'info');
                 updateRemainingCreditAmount(); // Müşteri seçimi değiştiğinde kalan borcu güncelle
             }
@@ -1055,45 +1054,45 @@
                 }
 
                 totalSaleAmount = currentSaleItems.reduce((sum, item) => sum + item.totalPrice, 0);
-                modalTotalSaleAmountSpan.textContent = `${totalSaleAmount.toFixed(2)} TL`;
+                if (modalTotalSaleAmountSpan) modalTotalSaleAmountSpan.textContent = `${totalSaleAmount.toFixed(2)} TL`;
 
                 // Müşteri seçili ise bilgilerini göster, değilse "Yok" yazsın
                 if (selectedCustomer) {
-                    modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${selectedCustomer.name} (${selectedCustomer.phoneNumber})</span>`;
+                    if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${selectedCustomer.name} (${selectedCustomer.phoneNumber})</span>`;
                 } else {
-                    modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`;
+                    if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`;
                 }
 
                 // Ödeme miktarlarını sıfırla ve kalan borcu güncelle
-                cashPaidAmountInput.value = '0.00';
-                cardPaidAmountInput.value = '0.00';
+                if (cashPaidAmountInput) cashPaidAmountInput.value = '0.00';
+                if (cardPaidAmountInput) cardPaidAmountInput.value = '0.00';
                 updateRemainingCreditAmount(); // Başlangıçta kalan borç tüm toplam tutar olacak
 
-                paymentFinalizationModal.classList.add('show');
+                if (paymentFinalizationModal) paymentFinalizationModal.classList.add('show');
             }
 
             function closePaymentFinalizationModal() {
-                paymentFinalizationModal.classList.remove('show');
-                finalizePaymentForm.reset();
-                creditRequiredMessage.classList.add('hidden'); // Mesajı gizle
+                if (paymentFinalizationModal) paymentFinalizationModal.classList.remove('show');
+                if (finalizePaymentForm) finalizePaymentForm.reset();
+                if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden'); // Mesajı gizle
             }
 
             // Kalan veresiye borcunu dinamik olarak güncelleme
             function updateRemainingCreditAmount() {
-                const cashPaid = parseFloat(cashPaidAmountInput.value) || 0;
-                const cardPaid = parseFloat(cardPaidAmountInput.value) || 0;
+                const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0; // Null check eklendi
+                const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0; // Null check eklendi
                 const paidTotal = cashPaid + cardPaid;
                 let remaining = totalSaleAmount - paidTotal;
 
                 if (remaining < 0) remaining = 0; // Ödenen miktar toplamı aşarsa sıfıra çek
 
-                remainingCreditAmountSpan.textContent = `${remaining.toFixed(2)} TL`;
+                if (remainingCreditAmountSpan) remainingCreditAmountSpan.textContent = `${remaining.toFixed(2)} TL`;
 
                 // Eğer kalan borç varsa ve müşteri seçili değilse uyarı göster
                 if (remaining > 0 && !selectedCustomer) {
-                    creditRequiredMessage.classList.remove('hidden');
+                    if (creditRequiredMessage) creditRequiredMessage.classList.remove('hidden');
                 } else {
-                    creditRequiredMessage.classList.add('hidden');
+                    if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden');
                 }
             }
 
@@ -1101,8 +1100,8 @@
             if (productSearchInput) {
                 productSearchInput.addEventListener('input', () => {
                     const searchTerm = productSearchInput.value.toLowerCase();
-                    productSuggestions.innerHTML = '';
-                    productSuggestions.classList.add('hidden');
+                    if (productSuggestions) productSuggestions.innerHTML = '';
+                    if (productSuggestions) productSuggestions.classList.add('hidden');
                     selectedProductForSale = null; // Yeni arama başladığında seçili ürünü sıfırla
 
                     if (searchTerm.length < 2) return; // En az 2 karakter girilince ara
@@ -1126,15 +1125,15 @@
                             li.dataset.barcode = product.barcode || '';
 
                             li.addEventListener('click', () => {
-                                productSearchInput.value = product.name; // Inputa ürün adını yaz
+                                if (productSearchInput) productSearchInput.value = product.name; // Inputa ürün adını yaz
                                 selectedProductForSale = product; // Seçilen ürünü kaydet
-                                productSuggestions.classList.add('hidden'); // Önerileri gizle
-                                productQuantityForSaleInput.focus(); // Miktar inputuna odaklan
+                                if (productSuggestions) productSuggestions.classList.add('hidden'); // Önerileri gizle
+                                if (productQuantityForSaleInput) productQuantityForSaleInput.focus(); // Miktar inputuna odaklan
                                 addNotification(`"${product.name}" seçildi. Miktar girip sepete ekleyebilirsiniz.`, 'info'); // Daha açıklayıcı mesaj
                             });
-                            productSuggestions.appendChild(li);
+                            if (productSuggestions) productSuggestions.appendChild(li);
                         });
-                        productSuggestions.classList.remove('hidden');
+                        if (productSuggestions) productSuggestions.classList.remove('hidden');
                     }
                 });
 
@@ -1144,7 +1143,7 @@
                         event.preventDefault(); // Form submit etmeyi engelle
                         if (selectedProductForSale) {
                             // Eğer bir ürün seçiliyse, doğrudan sepete ekle
-                            addProductToSaleBtn.click();
+                            if (addProductToSaleBtn) addProductToSaleBtn.click();
                         } else {
                             // Eğer bir ürün seçili değilse ama inputta bir değer varsa,
                             // o değeri barkod olarak kabul edip ürünü bulmaya çalış
@@ -1152,9 +1151,9 @@
                             if (searchTerm) {
                                 const foundProduct = allProducts.find(p => p.barcode === searchTerm || p.name.toLowerCase() === searchTerm.toLowerCase());
                                 if (foundProduct) {
-                                    productSearchInput.value = foundProduct.name; // Inputu ürün adıyla doldur
+                                    if (productSearchInput) productSearchInput.value = foundProduct.name; // Inputu ürün adıyla doldur
                                     selectedProductForSale = foundProduct;
-                                    addProductToSaleBtn.click(); // Sepete ekle
+                                    if (addProductToSaleBtn) addProductToSaleBtn.click(); // Sepete ekle
                                     addNotification(`"${foundProduct.name}" otomatik olarak sepete eklendi.`, 'success');
                                 } else {
                                     addNotification('Girilen barkod veya isimle ürün bulunamadı.', 'error');
@@ -1168,7 +1167,7 @@
 
                 // Input dışına tıklayınca önerileri gizle
                 document.addEventListener('click', (event) => {
-                    if (!productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
+                    if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
                         productSuggestions.classList.add('hidden');
                     }
                 });
@@ -1177,8 +1176,8 @@
             // Barkod Tara butonu (GERÇEK KAMERA ENTEGRASYONU)
             if (scanBarcodeBtn) {
                 scanBarcodeBtn.addEventListener('click', () => {
-                    barcodeScannerModal.classList.add('active'); // Modalı göster
-                    barcodeScannerResult.textContent = 'Tarama başlatılıyor...'; // Mesajı sıfırla
+                    if (barcodeScannerModal) barcodeScannerModal.classList.add('active'); // Modalı göster
+                    if (barcodeScannerResult) barcodeScannerResult.textContent = 'Tarama başlatılıyor...'; // Mesajı sıfırla
 
                     // QuaggaJS başlatma ayarları
                     Quagga.init({
@@ -1199,13 +1198,13 @@
                     }, function (err) {
                         if (err) {
                             console.error("Quagga Başlatma Hatası:", err);
-                            barcodeScannerResult.textContent = `Kamera başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`;
+                            if (barcodeScannerResult) barcodeScannerResult.textContent = `Kamera başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`;
                             addNotification(`Barkod tarayıcı başlatılamadı: ${err.message || 'Bilinmeyen Hata'}. Lütfen kamera izni verdiğinizden emin olun.`, 'error');
-                            barcodeScannerModal.classList.remove('active'); // Modalı kapat
+                            if (barcodeScannerModal) barcodeScannerModal.classList.remove('active'); // Modalı kapat
                             return;
                         }
                         console.log("Quagga başlatıldı, tarama başlıyor.");
-                        barcodeScannerResult.textContent = 'Barkod bekleniyor...';
+                        if (barcodeScannerResult) barcodeScannerResult.textContent = 'Barkod bekleniyor...';
                         Quagga.start();
                         scannerRunning = true;
                     });
@@ -1214,21 +1213,21 @@
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
                         console.log("Barkod algılandı:", code);
-                        productSearchInput.value = code;
-                        barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
+                        if (productSearchInput) productSearchInput.value = code;
+                        if (barcodeScannerResult) barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
                         addNotification(`Barkod algılandı: ${code}`, 'success');
 
                         stopBarcodeScanner(); // Tarayıcıyı durdur
-                        barcodeScannerModal.classList.remove('active'); // Modalı kapat
+                        if (barcodeScannerModal) barcodeScannerModal.classList.remove('active'); // Modalı kapat
 
                         // Algılanan barkod ile ürünü bul ve sepete ekle
                         const foundProduct = allProducts.find(p => p.barcode === code);
                         if (foundProduct) {
-                            productSearchInput.value = foundProduct.name;
+                            if (productSearchInput) productSearchInput.value = foundProduct.name;
                             selectedProductForSale = foundProduct;
                             addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'success');
-                            productQuantityForSaleInput.focus();
-                            addProductToSaleBtn.click(); // Otomatik sepete ekle
+                            if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                            if (addProductToSaleBtn) addProductToSaleBtn.click(); // Otomatik sepete ekle
                         } else {
                             addNotification(`"${code}" barkoduna sahip ürün bulunamadı.`, 'error');
                             selectedProductForSale = null;
@@ -1274,19 +1273,19 @@
             // Modal kapatma butonları
             if (barcodeScannerCloseBtn) {
                 barcodeScannerCloseBtn.addEventListener('click', () => {
-                    barcodeScannerModal.classList.remove('active');
+                    if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
                     stopBarcodeScanner();
                 });
             }
             if (stopScanBtn) {
                 stopScanBtn.addEventListener('click', () => {
-                    barcodeScannerModal.classList.remove('active');
+                    if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
                     stopBarcodeScanner();
                 });
             }
 
 
-            // Satış sepetine ürün ekleme (Güncellendi: selectedProductForSale kullanılıyor)
+            // Satış sepetine ürün ekleme
             if (addProductToSaleBtn) {
                 addProductToSaleBtn.addEventListener('click', () => {
                     if (!selectedProductForSale) {
@@ -1301,7 +1300,7 @@
                     const category = selectedProductForSale.category;
                     const currentStock = parseInt(selectedProductForSale.quantity); // selectedProductForSale'deki güncel stok
 
-                    let quantity = parseInt(productQuantityForSaleInput.value);
+                    let quantity = parseInt(productQuantityForSaleInput?.value); // Null check eklendi
 
                     if (isNaN(quantity) || quantity <= 0) {
                         addNotification('Lütfen geçerli bir miktar girin.', 'error');
@@ -1338,8 +1337,8 @@
 
                     renderSaleItems();
                     updateTotalSaleAmount();
-                    productQuantityForSaleInput.value = 1; // Miktarı sıfırla
-                    productSearchInput.value = ''; // Arama inputunu temizle
+                    if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1'; // Miktarı sıfırla
+                    if (productSearchInput) productSearchInput.value = ''; // Arama inputunu temizle
                     selectedProductForSale = null; // Seçili ürünü sıfırla
                     addNotification(`"${productName}" sepete eklendi.`, 'info');
                 });
@@ -1347,15 +1346,15 @@
 
             // Satış sepetindeki ürünleri render etme
             function renderSaleItems() {
-                saleItemsList.innerHTML = '';
+                if (saleItemsList) saleItemsList.innerHTML = '';
                 if (currentSaleItems.length === 0) {
-                    saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-2">Henüz ürün eklenmedi.</p>'; // Koyu tema metin rengi
+                    if (saleItemsList) saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-2">Henüz ürün eklenmedi.</p>';
                     return;
                 }
 
                 currentSaleItems.forEach((item, index) => {
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'flex justify-between items-center p-2 bg-gray-800 rounded-md shadow-sm border border-gray-700'; // Koyu tema stilleri
+                    itemDiv.className = 'flex justify-between items-center p-2 bg-gray-800 rounded-md shadow-sm border border-gray-700';
                     itemDiv.innerHTML = `
                         <span class="text-gray-200 font-medium">${item.productName} (${item.quantity} ${item.unit})</span>
                         <span class="text-blue-400 font-semibold">${(item.quantity * item.unitPrice).toFixed(2)} TL</span>
@@ -1363,7 +1362,7 @@
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     `;
-                    saleItemsList.appendChild(itemDiv);
+                    if (saleItemsList) saleItemsList.appendChild(itemDiv);
                 });
 
                 // Ürün silme butonlarına olay dinleyicileri ekle
@@ -1400,13 +1399,13 @@
                 }
             }
 
-            // Ödeme finalizasyonunu yönetir - YENİ FONKSİYON
+            // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
-                const cashPaid = parseFloat(cashPaidAmountInput.value) || 0;
-                const cardPaid = parseFloat(cardPaidAmountInput.value) || 0;
+                const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0; // Null check eklendi
+                const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0; // Null check eklendi
                 const paidTotal = cashPaid + cardPaid;
                 const creditAmount = totalSaleAmount - paidTotal;
-                const saleDate = saleDateInput.value; // Satış tarihi
+                const saleDate = saleDateInput?.value; // Null check eklendi
 
                 if (currentSaleItems.length === 0) {
                     addNotification('Sepetiniz boş.', 'error');
@@ -1418,7 +1417,6 @@
                     return;
                 }
 
-                // Ödenen miktar toplam tutardan fazlaysa, hata ver veya düzelt (örneğin sadece total amount kadar ödeme al)
                 if (paidTotal > totalSaleAmount) {
                     addNotification(`Ödenen miktar (${paidTotal.toFixed(2)} TL) sepet toplamından (${totalSaleAmount.toFixed(2)} TL) fazla olamaz. Lütfen miktarları kontrol edin.`, 'error');
                     return;
@@ -1438,8 +1436,10 @@
 
                     if (creditAmount > 0) {
                         paymentMethodDescription += (paymentMethodDescription ? '+' : '') + 'Veresiye';
-                    } else if (!paymentMethodDescription) { // Hiç ödeme yapılmadıysa ve veresiye de yoksa (tamamı 0sa)
-                        paymentMethodDescription = 'Ödeme Yok'; // Bu durum normalde oluşmamalı ama bir fallback
+                    } else if (!paymentMethodDescription && totalSaleAmount === 0) {
+                        paymentMethodDescription = 'Ödeme Yok'; // Sepet 0 ise
+                    } else if (!paymentMethodDescription) {
+                        paymentMethodDescription = 'Belirtilmedi'; // Ödenen miktar 0 ama sepet > 0 ve veresiye de 0 ise
                     }
 
 
@@ -1458,13 +1458,13 @@
                                 unitPrice: item.unitPrice,
                                 totalPrice: item.totalPrice
                             })),
-                            customerName: selectedCustomer ? selectedCustomer.name : 'Anonim', // Seçili müşteri varsa onun adını kullan
-                            customerId: selectedCustomer ? selectedCustomer._id : null, // Müşteri ID'sini de gönder
-                            totalAmount: totalSaleAmount, // Toplam satış tutarı (değişmez)
+                            customerName: selectedCustomer ? selectedCustomer.name : 'Anonim',
+                            customerId: selectedCustomer ? selectedCustomer._id : null,
+                            totalAmount: totalSaleAmount,
                             saleDate: saleDate,
-                            paymentMethod: paymentMethodDescription, // Hangi ödeme metotları kullanıldı
-                            cashPaid: cashPaid, // Ne kadar nakit ödendi
-                            cardPaid: cardPaid // Ne kadar kartla ödendi
+                            paymentMethod: paymentMethodDescription,
+                            cashPaid: cashPaid,
+                            cardPaid: cardPaid
                         })
                     });
 
@@ -1476,10 +1476,10 @@
                     }
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
-                    closePaymentFinalizationModal(); // Modalı kapat
-                    resetSaleForm(); // Satış formunu temizle
-                    await fetchAllProducts(); // Tüm ürünleri tekrar çek (stoklar güncellendiği için)
-                    fetchPastSales(); // Geçmiş satışları yenile
+                    closePaymentFinalizationModal();
+                    resetSaleForm();
+                    await fetchAllProducts();
+                    fetchPastSales();
 
                 } catch (error) {
                     console.error('Satış işlemi sırasında hata:', error);
@@ -1499,24 +1499,28 @@
             }
 
             // Müşteri arama girişi Event Listener
-            customerSearchInput.addEventListener('input', (event) => {
-                const query = event.target.value.trim();
-                if (query) {
-                    searchCustomers(query);
-                } else {
-                    customerSearchResults.classList.add('hidden');
-                }
-            });
+            if (customerSearchInput) {
+                customerSearchInput.addEventListener('input', (event) => {
+                    const query = event.target.value.trim();
+                    if (query) {
+                        searchCustomers(query);
+                    } else {
+                        if (customerSearchResults) customerSearchResults.classList.add('hidden');
+                    }
+                });
+            }
 
             // Arama sonuçları dışına tıklayınca listeyi kapatma Event Listener
             document.addEventListener('click', (event) => {
-                if (!customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
+                if (customerSearchInput && customerSearchResults && !customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
                     customerSearchResults.classList.add('hidden');
                 }
             });
 
             // Seçili müşteriyi temizleme butonu Event Listener
-            clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection);
+            if (clearCustomerSelectionBtn) {
+                clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection);
+            }
 
             // Open Payment Modal Button Event Listener
             if (openPaymentModalBtn) {
@@ -1552,9 +1556,9 @@
                     return;
                 }
 
-                const filterCustomer = filterCustomerNameInput.value.trim();
-                const filterStartDate = filterSaleStartDateInput.value;
-                const filterEndDate = filterSaleEndDateInput.value;
+                const filterCustomer = filterCustomerNameInput?.value.trim() || ''; // Null check eklendi
+                const filterStartDate = filterSaleStartDateInput?.value || ''; // Null check eklendi
+                const filterEndDate = filterSaleEndDateInput?.value || ''; // Null check eklendi
 
                 let url = `${API_BASE_URL}/sales?userId=${getUserId()}&`;
                 if (filterCustomer) url += `customerName=${encodeURIComponent(filterCustomer)}&`;
@@ -1573,7 +1577,7 @@
 
                     if (response.status === 403) {
                          addNotification('Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
-                         if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`; // Koyu tema metin rengi
+                         if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
                          return;
                     }
 
@@ -1586,37 +1590,37 @@
                     if (pastSalesListDiv) pastSalesListDiv.innerHTML = '';
 
                     if (sales.length === 0) {
-                        if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Henüz hiç satış yapılmamış.</p>`; // Koyu tema metin rengi
+                        if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Henüz hiç satış yapılmamış.</p>`;
                         return;
                     }
 
                     let totalSalesValue = 0;
                     sales.forEach(sale => {
                         const saleItemDiv = document.createElement('div');
-                        saleItemDiv.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600`; // Koyu tema stilleri
+                        saleItemDiv.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600`;
 
                         const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
-                        const customerInfo = sale.customerName ? `Müşteri: <span class="font-medium text-gray-200">${sale.customerName}</span>` : 'Müşteri: <span class="font-medium text-gray-200">Anonim</span>'; // Koyu tema metin rengi
-                        const paymentMethodInfo = sale.paymentMethod ? `Ödeme Tipi: <span class="font-medium text-gray-200">${sale.paymentMethod}</span>` : ''; // Ödeme metodu bilgisini ekle
-                        const cashPaidInfo = sale.cashPaid > 0 ? `Nakit: <span class="font-medium text-gray-200">${sale.cashPaid.toFixed(2)} TL</span>` : ''; // Nakit ödenen miktar
-                        const cardPaidInfo = sale.cardPaid > 0 ? `Kart: <span class="font-medium text-gray-200">${sale.cardPaid.toFixed(2)} TL</span>` : ''; // Kartla ödenen miktar
-                        const creditDebtInfo = sale.creditDebt > 0 ? `Veresiye: <span class="font-medium text-red-400">${sale.creditDebt.toFixed(2)} TL</span>` : ''; // Veresiye tutarı
+                        const customerInfo = sale.customerName ? `Müşteri: <span class="font-medium text-gray-200">${sale.customerName}</span>` : 'Müşteri: <span class="font-medium text-gray-200">Anonim</span>';
+                        const paymentMethodInfo = sale.paymentMethod ? `Ödeme Tipi: <span class="font-medium text-gray-200">${sale.paymentMethod}</span>` : '';
+                        const cashPaidInfo = sale.cashPaid > 0 ? `Nakit: <span class="font-medium text-gray-200">${sale.cashPaid.toFixed(2)} TL</span>` : '';
+                        const cardPaidInfo = sale.cardPaid > 0 ? `Kart: <span class="font-medium text-gray-200">${sale.cardPaid.toFixed(2)} TL</span>` : '';
+                        const creditDebtInfo = sale.creditDebt > 0 ? `Veresiye: <span class="font-medium text-red-400">${sale.creditDebt.toFixed(2)} TL</span>` : '';
 
                         let paymentDetails = [cashPaidInfo, cardPaidInfo, creditDebtInfo].filter(Boolean).join(' | ');
                         if(paymentDetails) paymentDetails = `(${paymentDetails})`;
 
                         let itemsHtml = sale.saleItems.map(item => `
-                            <li class="text-sm text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li> <!-- Koyu tema metin rengi -->
+                            <li class="text-sm text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
                         `).join('');
 
                         saleItemDiv.innerHTML = `
                             <div class="flex justify-between items-center mb-2">
-                                <p class="text-lg font-semibold text-gray-200">Satış Tarihi: <span class="text-blue-400">${saleDate}</span></p> <!-- Koyu tema metin rengi -->
+                                <p class="text-lg font-semibold text-gray-200">Satış Tarihi: <span class="text-blue-400">${saleDate}</span></p>
                                 <p class="text-lg font-bold text-green-400">${sale.totalAmount.toFixed(2)} TL</p>
                             </div>
                             <p class="text-sm text-gray-300 mb-1">${customerInfo}</p>
                             <p class="text-sm text-gray-300 mb-2">${paymentMethodInfo} ${paymentDetails}</p>
-                            <p class="text-md font-semibold text-gray-200 mb-1">Satılan Ürünler:</p> <!-- Koyu tema metin rengi -->
+                            <p class="text-md font-semibold text-gray-200 mb-1">Satılan Ürünler:</p>
                             <ul class="list-disc list-inside">
                                 ${itemsHtml}
                             </ul>
@@ -1629,12 +1633,10 @@
                     });
                     if (totalSalesVolumeSpan) totalSalesVolumeSpan.textContent = `${totalSalesValue.toFixed(2)} TL`;
 
-                    // Detayları Görüntüle butonlarına event listener ekle (Yeni eklendi)
+                    // Detayları Görüntüle butonlarına event listener ekle
                     document.querySelectorAll('.view-sale-details-btn').forEach(button => {
                         button.addEventListener('click', (e) => {
                             const saleId = e.target.dataset.saleId;
-                            // Burada satış detaylarını gösteren bir modal açabilir veya ayrı bir sayfaya yönlendirebilirsin.
-                            // Şimdilik sadece konsola logluyorum:
                             addNotification(`Satış ID: ${saleId} detayları görüntülenecek (geliştirilecek).`, 'info');
                             console.log(`Satış ID: ${saleId} detayları görüntülenecek.`);
                         });
@@ -1643,7 +1645,7 @@
                 } catch (error) {
                     console.error('Geçmiş satışları çekerken hata:', error);
                     addNotification(`Geçmiş satışlar yüklenirken bir hata oluştu: ${error.message}`, 'error');
-                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışlar yüklenemedi.</p>`; // Koyu tema metin rengi
+                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışlar yüklenemedi.</p>`;
                 } finally {
                     if (salesLoadingOverlay) salesLoadingOverlay.classList.add('hidden');
                 }
@@ -1652,7 +1654,7 @@
             // Filtreleme Butonları
             if (applySaleFilterBtn) {
                 applySaleFilterBtn.addEventListener('click', () => {
-                    fetchPastSales(); // Filtreleri uygulayıp satışları tekrar çek
+                    fetchPastSales();
                 });
             }
 
@@ -1661,11 +1663,11 @@
                     if (filterCustomerNameInput) filterCustomerNameInput.value = '';
                     if (filterSaleStartDateInput) filterSaleStartDateInput.value = '';
                     if (filterSaleEndDateInput) filterSaleEndDateInput.value = '';
-                    fetchPastSales(); // Filtreleri temizleyip satışları tekrar çek
+                    fetchPastSales();
                 });
             }
 
-            // Sidebar Fonksiyonları (reports.html'den kopyalandı)
+            // Sidebar Fonksiyonları
             const closeSidebar = () => {
                 if (sidebar) {
                     sidebar.classList.remove('open');
@@ -1724,7 +1726,7 @@
                 });
             }
 
-            // Yönlendirme Butonları (reports.html ile senkronize)
+            // Yönlendirme Butonları
             if (goToDashboardBtn) {
                 goToDashboardBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1749,8 +1751,7 @@
             if (goToSalesManagementBtn) {
                 goToSalesManagementBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    // Şu anki sayfa olduğu için ekstra bir şey yapmaya gerek yok
-                    closeSidebar();
+                    closeSidebar(); // Zaten bu sayfadayız
                 });
             }
             if (manageRecurringTransactionsBtn) {
@@ -1794,7 +1795,7 @@
                 });
             }
 
-            // handleAuthError fonksiyonu (token süresi dolduğunda veya yetkilendirme hatasında yönlendirme)
+            // handleAuthError fonksiyonu
             function handleAuthError() {
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
@@ -1804,14 +1805,14 @@
                 window.location.href = 'auth.html';
             }
 
-            // Initial calls on page load (Tüm fonksiyonlar tanımlandıktan sonra çağır)
-            fetchAllProducts(); // Tüm ürünleri başta bir kere çek
-            fetchAllCustomers(); // Yeni: Tüm müşterileri çek (müşteri arama için)
-            fetchPastSales(); // Geçmiş satışları yükle
-            loadNotifications(); // Bildirimleri yükle
-            if (saleDateInput) saleDateInput.valueAsDate = new Date(); // Satış tarihini bugüne ayarla
-            if (productSearchInput) productSearchInput.focus(); // Sayfa yüklendiğinde arama inputuna odaklan
-            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla
+            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            fetchAllProducts();
+            fetchAllCustomers();
+            fetchPastSales();
+            loadNotifications();
+            if (saleDateInput) saleDateInput.valueAsDate = new Date();
+            if (productSearchInput) productSearchInput.focus();
+            initializeSidebarState();
         });
     </script>
 </body>
