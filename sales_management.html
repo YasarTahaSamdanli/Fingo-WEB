@@ -716,8 +716,7 @@
             const totalSaleAmountSpan = document.getElementById('totalSaleAmount');
 
             // Yeni Ödeme Finalizasyon Modalı Elemanları
-            // Satışı Tamamla butonu referansı - Burası çok önemli!
-            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn');
+            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn'); // Satışı Tamamla butonu
             const paymentFinalizationModal = document.getElementById('paymentFinalizationModal');
             const modalTotalSaleAmountSpan = document.getElementById('modalTotalSaleAmount');
             const modalSelectedCustomerInfoSpan = document.getElementById('modalSelectedCustomerInfo');
@@ -1023,6 +1022,7 @@
 
             // Yeni Modal Yönetim Fonksiyonları
             function openPaymentFinalizationModal() {
+                console.log("openPaymentFinalizationModal fonksiyonu çağrıldı."); // Debug log
                 if (currentSaleItems.length === 0) {
                     addNotification('Satışı tamamlamak için sepete ürün eklemelisiniz.', 'error');
                     return;
@@ -1043,7 +1043,12 @@
                 if (cardPaidAmountInput) cardPaidAmountInput.value = '0.00';
                 updateRemainingCreditAmount(); // Başlangıçta kalan borç tüm toplam tutar olacak
 
-                if (paymentFinalizationModal) paymentFinalizationModal.classList.add('show');
+                if (paymentFinalizationModal) {
+                    paymentFinalizationModal.classList.add('show');
+                    console.log("Ödeme modalı gösterildi."); // Debug log
+                } else {
+                    console.error("HATA: paymentFinalizationModal DOM'da bulunamadı."); // Debug log
+                }
             }
 
             function closePaymentFinalizationModal() {
@@ -1205,7 +1210,7 @@
                         if (foundProduct) {
                             if (productSearchInput) productSearchInput.value = foundProduct.name;
                             selectedProductForSale = foundProduct; // Seçili ürünü ayarla
-                            addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete eklendi.`, 'info');
+                            addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete ekleniyor...`, 'info');
                             if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
                             // Otomatik olarak sepete ekle
                             if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
@@ -1385,6 +1390,7 @@
 
             // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
+                console.log("finalizePayment fonksiyonu çağrıldı."); // Debug log
                 const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
                 const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
                 const paidTotal = cashPaid + cardPaid;
@@ -1516,8 +1522,9 @@
             // Open Payment Modal Button (Satışı Tamamla butonu)
             if (openPaymentModalBtn) {
                 openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
+                console.log("Satışı Tamamla butonuna olay dinleyicisi eklendi."); // Debug log
             } else {
-                console.error("HATA: 'Satışı Tamamla' butonu (ID: openPaymentModalBtn) DOM'da bulunamadı.");
+                console.error("HATA: 'Satışı Tamamla' butonu (ID: openPaymentModalBtn) DOM'da bulunamadı."); // Debug log
             }
 
 
@@ -1533,10 +1540,11 @@
             if (finalizePaymentForm) {
                 finalizePaymentForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
+                    console.log("Ödeme Finalizasyon Formu gönderildi."); // Debug log
                     await finalizePayment();
                 });
             } else {
-                 console.error("HATA: 'paymentFinalizationForm' formu (ID: paymentFinalizationForm) DOM'da bulunamadı.");
+                 console.error("HATA: 'paymentFinalizationForm' formu (ID: paymentFinalizationForm) DOM'da bulunamadı."); // Debug log
             }
 
 
