@@ -1,13 +1,14 @@
 // routes/sales.js
 const express = require('express');
-const { ObjectId } = require('mongodb');
-const { getDb } = require('../db');
-const { authenticateToken, verify2FA } = require('../middleware/authMiddleware');
+const { ObjectId } = require('mongodb'); // ObjectId'yi içe aktardık
+const { getDb } = require('../db'); // db.js'den getDb fonksiyonunu al
+const { authenticateToken, verify2FA } = require('../middleware/authMiddleware'); // Middleware'leri al
 
-const router = express.Router();
+const router = express.Router(); // Yeni bir router objesi oluştur
 
 // Yeni Satış Ekleme Rotası
 router.post('/sales', authenticateToken, async (req, res) => {
+    // Frontend'den beklenen yeni alanlar: customerId, customerName, paymentMethod, cashPaid, cardPaid
     const { saleItems, customerId, customerName, saleDate, paymentMethod, cashPaid, cardPaid } = req.body;
     const userId = req.user.userId;
 
@@ -16,10 +17,11 @@ router.post('/sales', authenticateToken, async (req, res) => {
     }
 
     try {
-        const db = getDb();
+        const db = getDb(); // Veritabanı bağlantısını al
         let totalAmount = 0;
         let processedSaleItems = [];
 
+        // Her bir satış öğesi için stok düşme işlemi (ŞİMDİ SADECE BURADA YAPILACAK)
         for (const item of saleItems) {
             const product = await db.collection('products').findOne({ _id: new ObjectId(item.productId), userId: userId });
 
@@ -30,7 +32,7 @@ router.post('/sales', authenticateToken, async (req, res) => {
                 throw new Error(`Yetersiz stok: ${product.name}. Mevcut: ${product.quantity}, İstenen: ${item.quantity}`);
             }
 
-            // Stoktan düşme işlemi
+            // Stoktan düşme işlemi (Veri Tabanı Güncellemesi)
             await db.collection('products').updateOne(
                 { _id: new ObjectId(item.productId), userId: userId },
                 { $inc: { quantity: -item.quantity }, $set: { updatedAt: new Date() } }
@@ -39,8 +41,9 @@ router.post('/sales', authenticateToken, async (req, res) => {
             const itemTotalPrice = product.price * item.quantity;
             totalAmount += itemTotalPrice;
 
+            // Satış öğesi detaylarını hazırla
             processedSaleItems.push({
-                productId: product._id.toString(),
+                productId: product._id.toString(), // Ürün ID'sini string olarak kaydet
                 productName: product.name,
                 unitPrice: product.price,
                 quantity: item.quantity,
@@ -50,22 +53,25 @@ router.post('/sales', authenticateToken, async (req, res) => {
             });
         }
 
+        // Kalan veresiye tutarını hesapla
         const creditDebtAmount = totalAmount - (parseFloat(cashPaid || 0) + parseFloat(cardPaid || 0));
 
+        // Yeni satış belgesini oluştur
         const newSale = {
             userId: userId,
             saleItems: processedSaleItems,
-            customerId: customerId || null,
-            customerName: customerName || 'Anonim',
-            totalAmount: totalAmount,
-            saleDate: new Date(saleDate),
-            paymentMethod: paymentMethod,
-            cashPaid: parseFloat(cashPaid || 0),
-            cardPaid: parseFloat(cardPaid || 0),
-            creditDebt: creditDebtAmount > 0 ? creditDebtAmount : 0,
+            customerId: customerId || null, // Seçili müşteri ID'si
+            customerName: customerName || 'Anonim', // Seçili müşteri adı veya 'Anonim'
+            totalAmount: totalAmount, // Sepet toplam tutarı
+            saleDate: new Date(saleDate), // Frontend'den gelen tarihi kullan
+            paymentMethod: paymentMethod, // Ödeme metodu (Nakit, Kart, Nakit+Kart, Veresiye, Nakit+Veresiye vb.)
+            cashPaid: parseFloat(cashPaid || 0), // Nakit ödenen miktar
+            cardPaid: parseFloat(cardPaid || 0), // Kartla ödenen miktar
+            creditDebt: creditDebtAmount > 0 ? creditDebtAmount : 0, // Veresiye kalan tutarı
             createdAt: new Date()
         };
 
+        // Satış kaydını veritabanına ekle
         await db.collection('sales').insertOne(newSale);
 
         // Eğer veresiye borcu varsa, müşterinin toplam veresiye borcunu ve işlem geçmişini güncelle
@@ -80,7 +86,7 @@ router.post('/sales', authenticateToken, async (req, res) => {
                     amount: creditDebtAmount,
                     description: `Satıştan veresiye (${totalAmount.toFixed(2)} TL). Nakit:${parseFloat(cashPaid || 0).toFixed(2)}, Kart:${parseFloat(cardPaid || 0).toFixed(2)}`,
                     date: new Date(),
-                    transactionId: new ObjectId()
+                    transactionId: new ObjectId() // Her işlem için benzersiz ID
                 };
 
                 await db.collection('customers').updateOne(
@@ -95,10 +101,13 @@ router.post('/sales', authenticateToken, async (req, res) => {
             }
         }
 
+        // Başarılı yanıt gönder
         res.status(201).json({ message: 'Satış başarıyla kaydedildi!', sale: newSale });
 
     } catch (error) {
         console.error('Satış kaydetme hatası:', error);
+        // Hata durumunda stokları geri alma (işlemi geri alma - opsiyonel ama iyi bir uygulama)
+        // Bu kısım daha karmaşık bir "işlem yönetimi" gerektirebilir.
         res.status(500).json({ message: error.message || 'Satış işlemi sırasında bir hata oluştu.' });
     }
 });
@@ -129,7 +138,7 @@ router.get('/sales', authenticateToken, async (req, res) => {
     }
 
     try {
-        const db = getDb();
+        const db = getDb(); // Veritabanı bağlantısını al
         const sales = await db.collection('sales').find(query).sort({ saleDate: -1 }).toArray();
         res.status(200).json(sales);
     } catch (error) {
@@ -138,4 +147,4 @@ router.get('/sales', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = router; // Router objesini dışa aktar
