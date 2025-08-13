@@ -261,7 +261,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Video'nun üzerinde olsun */
+            z-index: 2; /* Video'nın üzerinde olsun */
         }
         /* Diğer modal elemanları için stiller */
         .barcode-scanner-content h3 {
@@ -646,7 +646,7 @@
     <!-- Ödeme Finalizasyon Modalı Sonu -->
 
 
-    <script> <!-- BURADAKİ type="module" KALDIRILDI! -->
+    <script>
         // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
         const initialJwtToken = localStorage.getItem('jwtToken');
         const initialUserId = localStorage.getItem('userId');
@@ -1021,7 +1021,7 @@
 
             // Yeni Modal Yönetim Fonksiyonları
             function openPaymentFinalizationModal() {
-                console.log("openPaymentFinalizationModal fonksiyonu çağrıldı."); // Debug log
+                console.log("[DEBUG] openPaymentFinalizationModal fonksiyonu çağrıldı."); // Debug log
                 if (currentSaleItems.length === 0) {
                     addNotification('Satışı tamamlamak için sepete ürün eklemelisiniz.', 'error');
                     return;
@@ -1044,7 +1044,7 @@
 
                 if (paymentFinalizationModal) {
                     paymentFinalizationModal.classList.add('show');
-                    console.log("Ödeme modalı gösterildi."); // Debug log
+                    console.log("[DEBUG] Ödeme modalı gösterildi."); // Debug log
                 } else {
                     console.error("HATA: paymentFinalizationModal DOM'da bulunamadı."); // Debug log
                 }
@@ -1055,7 +1055,7 @@
                 if (paymentFinalizationModal) paymentFinalizationModal.classList.remove('show');
                 if (finalizePaymentForm) finalizePaymentForm.reset();
                 if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden'); // Mesajı gizle
-                console.log("Ödeme modalı kapatıldı."); // Debug log
+                console.log("[DEBUG] Ödeme modalı kapatıldı."); // Debug log
             };
 
             // Kalan veresiye borcunu dinamik olarak güncelleme
@@ -1308,7 +1308,7 @@
                     // Sepette aynı ürün varsa miktarını artır
                     if (existingItemInCart) {
                         existingItemInCart.quantity += quantity;
-                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice;
+                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItem.unitPrice; // Corrected: Use existingItem.unitPrice
                     } else {
                         currentSaleItems.push({
                             productId,
@@ -1391,7 +1391,8 @@
 
             // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
-                console.log("finalizePayment fonksiyonu çağrıldı."); // Debug log
+                console.log("[DEBUG] finalizePayment fonksiyonu çağrıldı."); // Debug log
+
                 const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
                 const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
                 const paidTotal = cashPaid + cardPaid;
@@ -1400,16 +1401,20 @@
 
                 if (currentSaleItems.length === 0) {
                     addNotification('Sepetiniz boş.', 'error');
+                    console.log("[DEBUG] Sepet boş, satış işlemi iptal edildi.");
                     return;
                 }
 
                 if (creditAmount > 0 && !selectedCustomer) {
                     addNotification('Veresiye işlemi için bir müşteri seçmelisiniz.', 'error');
+                    console.log("[DEBUG] Veresiye var ama müşteri seçili değil, satış işlemi iptal edildi.");
                     return;
                 }
 
+                // Ödenen miktar toplam sepeti aşamaz (kalan borç negatif olmamalı)
                 if (paidTotal > totalSaleAmount) {
                     addNotification(`Ödenen miktar (${paidTotal.toFixed(2)} TL) sepet toplamından (${totalSaleAmount.toFixed(2)} TL) fazla olamaz. Lütfen miktarları kontrol edin.`, 'error');
+                    console.log(`[DEBUG] Ödenen miktar sepet toplamından fazla. Ödenen: ${paidTotal.toFixed(2)}, Toplam: ${totalSaleAmount.toFixed(2)}. Satış iptal edildi.`);
                     return;
                 }
 
@@ -1432,35 +1437,41 @@
                         paymentMethodDescription = 'Belirtilmedi';
                     }
 
+                    const salePayload = {
+                        saleItems: currentSaleItems.map(item => ({
+                            productId: item.productId,
+                            quantity: item.quantity,
+                            productName: item.productName,
+                            unitPrice: item.unitPrice,
+                            totalPrice: item.totalPrice
+                        })),
+                        customerName: selectedCustomer ? selectedCustomer.name : 'Anonim',
+                        customerId: selectedCustomer ? selectedCustomer._id : null,
+                        totalAmount: totalSaleAmount,
+                        saleDate: saleDate,
+                        paymentMethod: paymentMethodDescription,
+                        cashPaid: cashPaid,
+                        cardPaid: cardPaid,
+                        creditDebt: creditAmount > 0 ? creditAmount : 0 // Veresiye miktarını ekle
+                    };
+
+                    console.log("[DEBUG] API'ye gönderilecek satış verisi (Payload):", JSON.stringify(salePayload, null, 2)); // Payload'ı daha okunur formatta logla
+
                     const saleResponse = await fetch(`${API_BASE_URL}/sales`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${getToken()}`
                         },
-                        body: JSON.stringify({
-                            saleItems: currentSaleItems.map(item => ({
-                                productId: item.productId,
-                                quantity: item.quantity,
-                                productName: item.productName,
-                                unitPrice: item.unitPrice,
-                                totalPrice: item.totalPrice
-                            })),
-                            customerName: selectedCustomer ? selectedCustomer.name : 'Anonim',
-                            customerId: selectedCustomer ? selectedCustomer._id : null,
-                            totalAmount: totalSaleAmount,
-                            saleDate: saleDate,
-                            paymentMethod: paymentMethodDescription,
-                            cashPaid: cashPaid,
-                            cardPaid: cardPaid
-                        })
+                        body: JSON.stringify(salePayload)
                     });
 
                     const saleResult = await saleResponse.json();
+                    console.log("[DEBUG] API'den gelen satış cevabı:", saleResult); // API cevabını logla
 
                     if (!saleResponse.ok) {
                         if (saleResponse.status === 401 || saleResponse.status === 403) { handleAuthError(); return; }
-                        throw new Error(saleResult.message || 'Satış kaydı sırasında hata oluştu.');
+                        throw new Error(saleResult.message || `Satış kaydı sırasında hata oluştu. Durum Kodu: ${saleResponse.status}`);
                     }
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
@@ -1469,7 +1480,7 @@
                     fetchPastSales();
 
                 } catch (error) {
-                    console.error('Satış işlemi sırasında hata:', error);
+                    console.error('[DEBUG] Satış işlemi sırasında hata:', error); // Hata objesini detaylı logla
                     addNotification(`Satış işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
                 } finally {
                     if (finalizePaymentBtn) {
@@ -1523,7 +1534,7 @@
             // Open Payment Modal Button (Satışı Tamamla butonu)
             if (openPaymentModalBtn) {
                 openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
-                console.log("Satışı Tamamla butonuna olay dinleyicisi eklendi."); // Debug log
+                console.log("[DEBUG] 'Satışı Tamamla' butonuna olay dinleyicisi eklendi."); // Debug log
             } else {
                 console.error("HATA: 'Satışı Tamamla' butonu (ID: openPaymentModalBtn) DOM'da bulunamadı."); // Debug log
             }
@@ -1541,7 +1552,7 @@
             if (finalizePaymentForm) {
                 finalizePaymentForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
-                    console.log("Ödeme Finalizasyon Formu gönderildi."); // Debug log
+                    console.log("[DEBUG] Ödeme Finalizasyon Formu gönderildi."); // Debug log
                     await finalizePayment();
                 });
             } else {
