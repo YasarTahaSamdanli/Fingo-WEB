@@ -135,7 +135,7 @@ router.delete('/transactions/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// CSV içe aktarma rotası
+// CSV içe aktırma rotası
 router.post('/transactions/import-csv', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const { csvData } = req.body;
@@ -254,22 +254,20 @@ router.get('/transactions/credit/:customerId', authenticateToken, async (req, re
     try {
         const db = getDb();
 
-        // Buradaki sorguyu daha basit yapalım. CustomerId'nin ObjectId olup olmadığını kontrol edelim.
         let customerObjectId;
         try {
             customerObjectId = new ObjectId(customerId);
         } catch (e) {
-            console.error('[DEBUG] Geçersiz customerId formatı:', customerId, e);
+            console.error('[DEBUG-BACKEND] Geçersiz customerId formatı (GET):', customerId, e);
             return res.status(400).json({ message: 'Geçersiz müşteri ID formatı.' });
         }
 
-        console.log(`[DEBUG-BACKEND] Veresiye işlemleri çekiliyor. customerId: ${customerId}, userId: ${userId}`);
+        console.log(`[DEBUG-BACKEND] Veresiye işlemleri çekiliyor. customerId (string): ${customerId}, customerId (ObjectId): ${customerObjectId}, userId: ${userId}`);
 
-        // Müşteriye ait olan ve 'transactions' koleksiyonundaki 'payment' veya 'debt' tipli işlemleri çek
         const creditTransactions = await db.collection('transactions').find({
             userId: new ObjectId(userId),
-            customerId: customerObjectId, // Müşteri ID'sine göre filtrele
-            type: { $in: ['payment', 'debt'] } // Sadece ödeme veya borç ekleme işlemleri
+            customerId: customerObjectId,
+            type: { $in: ['payment', 'debt'] }
         }).sort({ date: -1, createdAt: -1 }).toArray();
 
         console.log(`[DEBUG-BACKEND] Müşteri ${customerId} için ${creditTransactions.length} veresiye işlemi bulundu.`);
@@ -288,16 +286,17 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
 
     console.log('[DEBUG-BACKEND] POST /transactions/credit rotası çağrıldı.');
     console.log('[DEBUG-BACKEND] Gelen Body:', { customerId, amount, type, description });
+    console.log(`[DEBUG-BACKEND] JWT'den gelen userId: ${userId}`);
+
 
     if (!customerId || amount === undefined || !type) {
         console.error('[DEBUG-BACKEND] Eksik alanlar: customerId, amount veya type eksik.');
         return res.status(400).json({ message: 'Müşteri ID, miktar ve işlem tipi gereklidir.' });
     }
 
-    // amount her zaman pozitif gelmeli, backend tipiyle borcu ayarlasın.
     const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0) { // Miktarın pozitif bir sayı olduğundan emin ol
-        console.error('[DEBUG-BACKEND] Geçersiz miktar değeri:', amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        console.error('[DEBUG-BACKEND] Geçersiz miktar değeri (POST):', amount, 'Parsed:', parsedAmount);
         return res.status(400).json({ message: 'Geçerli ve pozitif bir miktar girilmelidir.' });
     }
 
@@ -315,52 +314,59 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
             customerObjectId = new ObjectId(customerId);
             userObjectId = new ObjectId(userId);
         } catch (e) {
-            console.error('[DEBUG-BACKEND] ObjectId dönüşüm hatası:', e);
+            console.error('[DEBUG-BACKEND] ObjectId dönüşüm hatası (POST):', e);
             return res.status(400).json({ message: 'Geçersiz ID formatı.' });
         }
 
-        // Müşteriyi bul
-        console.log(`[DEBUG-BACKEND] Müşteri aranıyor: _id: ${customerObjectId}, userId: ${userObjectId}`);
+        // Müşteriyi bul: Hem _id hem de userId ile doğrula
+        console.log(`[DEBUG-BACKEND] Müşteri aranıyor: { _id: ObjectId("${customerObjectId}"), userId: "${userObjectId}" }`);
         const customer = await db.collection('customers').findOne({ _id: customerObjectId, userId: userObjectId });
 
         if (!customer) {
-            console.error('[DEBUG-BACKEND] Müşteri bulunamadı. Sorgu:', { _id: customerObjectId, userId: userObjectId });
+            console.error('[DEBUG-BACKEND] Müşteri bulunamadı. Sorgu parametreleri:', { _id: customerObjectId.toString(), userId: userObjectId.toString() });
+            // Ekstra kontrol: Sadece _id ile var mı diye bak, sadece debug amaçlı
+            const customerByIdOnly = await db.collection('customers').findOne({ _id: customerObjectId });
+            if (customerByIdOnly) {
+                console.warn(`[DEBUG-BACKEND] Müşteri ID ile bulundu (${customerByIdOnly._id}), ancak userId eşleşmiyor. Müşterinin veritabanındaki userId: ${customerByIdOnly.userId}`);
+            } else {
+                console.warn(`[DEBUG-BACKEND] Müşteri ID ile de bulunamadı.`);
+            }
             return res.status(404).json({ message: 'Müşteri bulunamadı.' });
         }
 
         let newDebtAmount = customer.currentDebt || 0;
 
-        // Borç veya ödeme miktarına göre borcu güncelle
         if (type === 'payment') {
-            newDebtAmount -= parsedAmount; // Ödeme yapıldığında borç azalır
+            newDebtAmount -= parsedAmount;
         } else if (type === 'debt') {
-            newDebtAmount += parsedAmount; // Borç eklendiğinde borç artar
+            newDebtAmount += parsedAmount;
         }
 
-        // currentDebt negatif olamaz, en az 0 olmalı
         if (newDebtAmount < 0) {
             newDebtAmount = 0;
         }
 
         console.log(`[DEBUG-BACKEND] Müşteri ${customer.name} (${customerId}) için eski borç: ${customer.currentDebt}, İşlem miktarı: ${parsedAmount}, İşlem tipi: ${type}, Yeni borç hesaplandı: ${newDebtAmount}`);
 
-        // Müşterinin güncel borcunu güncelle
         const updateResult = await db.collection('customers').updateOne(
-            { _id: customerObjectId },
+            { _id: customerObjectId, userId: userObjectId }, // Güncelleme yaparken de userId kontrolü yapalım
             { $set: { currentDebt: newDebtAmount, updatedAt: new Date() } }
         );
         console.log(`[DEBUG-BACKEND] Müşteri güncelleme sonucu: matchedCount: ${updateResult.matchedCount}, modifiedCount: ${updateResult.modifiedCount}`);
 
+        if (updateResult.matchedCount === 0) {
+             console.error('[DEBUG-BACKEND] Müşteri güncellenemedi, belki eşleşme yoktu (userId veya _id hatası)');
+             return res.status(500).json({ message: 'Müşteri güncellenemedi. Lütfen tekrar deneyin.' });
+        }
 
-        // İşlem kaydını 'transactions' koleksiyonuna ekle
         const newTransaction = {
             userId: userObjectId,
             customerId: customerObjectId,
-            customerName: customer.name, // Raporlama kolaylığı için müşteri adını da kaydet
-            type: type, // 'payment' veya 'debt'
+            customerName: customer.name,
+            type: type,
             amount: parsedAmount,
             description: description || (type === 'payment' ? 'Veresiye Ödemesi' : 'Manuel Borç Ekleme'),
-            date: new Date(), // İşlem tarihi
+            date: new Date(),
             createdAt: new Date()
         };
         const transactionInsertResult = await db.collection('transactions').insertOne(newTransaction);
@@ -368,7 +374,7 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
 
         res.status(200).json({
             message: 'Veresiye işlemi başarıyla kaydedildi ve borç güncellendi.',
-            newDebt: newDebtAmount // Frontend'e yeni borcu gönder
+            newDebt: newDebtAmount
         });
 
     } catch (error) {
