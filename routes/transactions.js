@@ -245,31 +245,34 @@ router.get('/transactions/export-csv', authenticateToken, async (req, res) => {
     }
 });
 
-// YENİ ROTA: Müşteriye ait veresiye işlemlerini getirme
+// Müşteriye ait veresiye işlemlerini getirme
 // GET /api/transactions/credit/:customerId
 router.get('/transactions/credit/:customerId', authenticateToken, async (req, res) => {
     const { customerId } = req.params;
     const userId = req.user.userId;
 
-    // 2FA doğrulaması kontrolü, eğer yetkilendirme middleware'i bunu yapmıyorsa
-    // Bu rotta 2FA'ya gerek olmadığı varsayılıyor, çünkü müşteri detaylarında gösteriliyor
-    // Eğer 2FA kontrolü isteniyorsa buraya eklenebilir.
-
     try {
         const db = getDb();
-        // Belirli müşteriye ait ve 'veresiye' (creditDebt) ile ilgili tüm işlemleri getir
-        // Veresiye işlemleri 'sales' koleksiyonunda depolanıyor
-        // Ancak 'transactions' koleksiyonunda da doğrudan 'payment' veya 'debt' tipli işlemler olabilir.
-        // Müşteri yönetimi sayfasındaki 'Veresiye İşlemleri' modalı,
-        // hem satışlardan doğan veresiyeleri hem de sonradan elle yapılan ödemeleri/borçları listelemeli.
+
+        // Buradaki sorguyu daha basit yapalım. CustomerId'nin ObjectId olup olmadığını kontrol edelim.
+        let customerObjectId;
+        try {
+            customerObjectId = new ObjectId(customerId);
+        } catch (e) {
+            console.error('[DEBUG] Geçersiz customerId formatı:', customerId, e);
+            return res.status(400).json({ message: 'Geçersiz müşteri ID formatı.' });
+        }
+
+        console.log(`[DEBUG-BACKEND] Veresiye işlemleri çekiliyor. customerId: ${customerId}, userId: ${userId}`);
 
         // Müşteriye ait olan ve 'transactions' koleksiyonundaki 'payment' veya 'debt' tipli işlemleri çek
         const creditTransactions = await db.collection('transactions').find({
             userId: new ObjectId(userId),
-            customerId: new ObjectId(customerId), // Müşteri ID'sine göre filtrele
+            customerId: customerObjectId, // Müşteri ID'sine göre filtrele
             type: { $in: ['payment', 'debt'] } // Sadece ödeme veya borç ekleme işlemleri
         }).sort({ date: -1, createdAt: -1 }).toArray();
 
+        console.log(`[DEBUG-BACKEND] Müşteri ${customerId} için ${creditTransactions.length} veresiye işlemi bulundu.`);
         res.status(200).json(creditTransactions);
     } catch (error) {
         console.error('Müşteriye ait veresiye işlemleri çekilirken hata:', error);
@@ -277,48 +280,77 @@ router.get('/transactions/credit/:customerId', authenticateToken, async (req, re
     }
 });
 
-// YENİ ROTA: Müşterinin veresiye borcuna yeni bir işlem (ödeme veya borç ekleme) ekleme
+// Müşterinin veresiye borcuna yeni bir işlem (ödeme veya borç ekleme) ekleme
 // POST /api/transactions/credit
 router.post('/transactions/credit', authenticateToken, async (req, res) => {
     const { customerId, amount, type, description } = req.body;
     const userId = req.user.userId;
 
+    console.log('[DEBUG-BACKEND] POST /transactions/credit rotası çağrıldı.');
+    console.log('[DEBUG-BACKEND] Gelen Body:', { customerId, amount, type, description });
+
     if (!customerId || amount === undefined || !type) {
+        console.error('[DEBUG-BACKEND] Eksik alanlar: customerId, amount veya type eksik.');
         return res.status(400).json({ message: 'Müşteri ID, miktar ve işlem tipi gereklidir.' });
     }
-    if (isNaN(amount) || (type === 'payment' && amount <= 0) || (type === 'debt' && amount <= 0)) {
-        return res.status(400).json({ message: 'Geçerli bir miktar girilmelidir.' });
+
+    // amount her zaman pozitif gelmeli, backend tipiyle borcu ayarlasın.
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) { // Miktarın pozitif bir sayı olduğundan emin ol
+        console.error('[DEBUG-BACKEND] Geçersiz miktar değeri:', amount);
+        return res.status(400).json({ message: 'Geçerli ve pozitif bir miktar girilmelidir.' });
     }
+
     if (type !== 'payment' && type !== 'debt') {
+        console.error('[DEBUG-BACKEND] Geçersiz işlem tipi:', type);
         return res.status(400).json({ message: 'Geçersiz işlem tipi. "payment" veya "debt" olmalıdır.' });
     }
 
     try {
         const db = getDb();
-        const customerObjectId = new ObjectId(customerId);
-        const userObjectId = new ObjectId(userId);
+        let customerObjectId;
+        let userObjectId;
+
+        try {
+            customerObjectId = new ObjectId(customerId);
+            userObjectId = new ObjectId(userId);
+        } catch (e) {
+            console.error('[DEBUG-BACKEND] ObjectId dönüşüm hatası:', e);
+            return res.status(400).json({ message: 'Geçersiz ID formatı.' });
+        }
 
         // Müşteriyi bul
+        console.log(`[DEBUG-BACKEND] Müşteri aranıyor: _id: ${customerObjectId}, userId: ${userObjectId}`);
         const customer = await db.collection('customers').findOne({ _id: customerObjectId, userId: userObjectId });
+
         if (!customer) {
+            console.error('[DEBUG-BACKEND] Müşteri bulunamadı. Sorgu:', { _id: customerObjectId, userId: userObjectId });
             return res.status(404).json({ message: 'Müşteri bulunamadı.' });
         }
 
         let newDebtAmount = customer.currentDebt || 0;
-        const transactionAmount = parseFloat(amount);
 
         // Borç veya ödeme miktarına göre borcu güncelle
         if (type === 'payment') {
-            newDebtAmount -= transactionAmount; // Ödeme yapıldığında borç azalır
+            newDebtAmount -= parsedAmount; // Ödeme yapıldığında borç azalır
         } else if (type === 'debt') {
-            newDebtAmount += transactionAmount; // Borç eklendiğinde borç artar
+            newDebtAmount += parsedAmount; // Borç eklendiğinde borç artar
         }
 
+        // currentDebt negatif olamaz, en az 0 olmalı
+        if (newDebtAmount < 0) {
+            newDebtAmount = 0;
+        }
+
+        console.log(`[DEBUG-BACKEND] Müşteri ${customer.name} (${customerId}) için eski borç: ${customer.currentDebt}, İşlem miktarı: ${parsedAmount}, İşlem tipi: ${type}, Yeni borç hesaplandı: ${newDebtAmount}`);
+
         // Müşterinin güncel borcunu güncelle
-        await db.collection('customers').updateOne(
+        const updateResult = await db.collection('customers').updateOne(
             { _id: customerObjectId },
             { $set: { currentDebt: newDebtAmount, updatedAt: new Date() } }
         );
+        console.log(`[DEBUG-BACKEND] Müşteri güncelleme sonucu: matchedCount: ${updateResult.matchedCount}, modifiedCount: ${updateResult.modifiedCount}`);
+
 
         // İşlem kaydını 'transactions' koleksiyonuna ekle
         const newTransaction = {
@@ -326,20 +358,21 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
             customerId: customerObjectId,
             customerName: customer.name, // Raporlama kolaylığı için müşteri adını da kaydet
             type: type, // 'payment' veya 'debt'
-            amount: transactionAmount,
+            amount: parsedAmount,
             description: description || (type === 'payment' ? 'Veresiye Ödemesi' : 'Manuel Borç Ekleme'),
             date: new Date(), // İşlem tarihi
             createdAt: new Date()
         };
-        await db.collection('transactions').insertOne(newTransaction);
+        const transactionInsertResult = await db.collection('transactions').insertOne(newTransaction);
+        console.log(`[DEBUG-BACKEND] İşlem kaydı eklendi. Inserted ID: ${transactionInsertResult.insertedId}`);
 
         res.status(200).json({
             message: 'Veresiye işlemi başarıyla kaydedildi ve borç güncellendi.',
-            newDebt: newDebtAmount
+            newDebt: newDebtAmount // Frontend'e yeni borcu gönder
         });
 
     } catch (error) {
-        console.error('Veresiye işlemi kaydedilirken hata:', error);
+        console.error('[DEBUG-BACKEND] Veresiye işlemi kaydedilirken genel hata:', error);
         res.status(500).json({ message: 'Veresiye işlemi kaydedilirken sunucu hatası oluştu. Lütfen tekrar deneyin.', error: error.message });
     }
 });
