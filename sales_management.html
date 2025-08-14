@@ -334,7 +334,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.75);
-            display: none; /* Varsayılan olarak gizli */
+            /* Başlangıçta hidden sınıfı ile gizleneceği için display: none buradan kaldırıldı */
             justify-content: center;
             align-items: center;
             z-index: 500;
@@ -343,17 +343,17 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-overlay.show {
-            /* AGRESİF DÜZELTME BAŞLANGICI */
-            display: flex !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            background-color: rgba(255, 0, 0, 0.5) !important; /* Kırmızı yaparak görünürlüğünü zorla */
-            top: 0 !important; /* Ekranın en üstüne sabitle */
-            left: 0 !important; /* Ekranın en soluna sabitle */
-            width: 100vw !important; /* Ekranın tam genişliği */
-            height: 100vh !important; /* Ekranın tam yüksekliği */
-            z-index: 99999 !important; /* Her şeyin üstünde olsun */
-            /* AGRESİF DÜZELTME SONU */
+            /* !important kaldırıldı, çünkü hidden kaldırıldığında bu kurallar yeterli olacak */
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            /* Test için eklenen kırmızı arka plan kaldırıldı, gerçek stilini alsın */
+            /* background-color: rgba(255, 0, 0, 0.5) !important; */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
         }
         .modal-content {
             background-color: #1A202C; /* Koyu modal arkaplanı */
@@ -620,7 +620,7 @@
     </div>
 
     <!-- Ödeme Finalizasyon Modalı -->
-    <div id="paymentFinalizationModal" class="modal-overlay hidden">
+    <div id="paymentFinalizationModal" class="modal-overlay hidden"> <!-- Başlangıçta hidden sınıfı ile gizli -->
         <div class="modal-content relative max-w-lg w-full">
             <button class="modal-close-btn" onclick="closePaymentFinalizationModal()">&times;</button>
             <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Ödemeyi Tamamla</h3>
@@ -1052,6 +1052,8 @@
                 updateRemainingCreditAmount(); // Başlangıçta kalan borç tüm toplam tutar olacak
 
                 if (paymentFinalizationModal) {
+                    // Kritical Düzeltme: 'hidden' sınıfını kaldır
+                    paymentFinalizationModal.classList.remove('hidden');
                     paymentFinalizationModal.classList.add('show');
                     console.log("[DEBUG] Ödeme modalı gösterildi."); // Debug log
                 } else {
@@ -1061,7 +1063,11 @@
 
             // Bu fonksiyonu global scope'ta tanımlıyoruz ki HTML'deki onclick eventi onu çağırabilsin
             window.closePaymentFinalizationModal = function() {
-                if (paymentFinalizationModal) paymentFinalizationModal.classList.remove('show');
+                if (paymentFinalizationModal) {
+                    paymentFinalizationModal.classList.remove('show');
+                    // Kritical Düzeltme: 'hidden' sınıfını geri ekle
+                    paymentFinalizationModal.classList.add('hidden');
+                }
                 if (finalizePaymentForm) finalizePaymentForm.reset();
                 if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden'); // Mesajı gizle
                 console.log("[DEBUG] Ödeme modalı kapatıldı."); // Debug log
