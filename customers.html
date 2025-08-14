@@ -40,7 +40,7 @@
         }
 
         /* Input ve Select Elementleri için Tema Uyumu */
-        .form-input, .form-select {
+        .form-input, .form-select, .w-full.p-3.border { /* Genel input ve select stilleri */
             background-color: #1A202C; /* Koyu input arkaplanı */
             color: #E2E8F0; /* Açık metin rengi */
             border-color: #4A5568; /* Koyu border */
@@ -48,49 +48,31 @@
         .form-input::placeholder {
             color: #A0AEC0; /* Açık placeholder */
         }
-        .form-input:focus, .form-select:focus {
+        .form-input:focus, .form-select:focus, .w-full.p-3.border:focus {
             border-color: #60A5FA; /* Mavi odaklama rengi */
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
         }
 
-        /* Table stilleri */
-        .table-header th {
-            background-color: #2D3748; /* Koyu gri header */
-            color: #E2E8F0;
-            padding: 12px 15px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid #4A5568;
-        }
-
-        .table-row td {
-            background-color: #1A202C; /* Koyu arkaplan */
-            color: #A0AEC0;
-            padding: 10px 15px;
-            border-bottom: 1px solid #4A5568;
-        }
-
-        .table-row:hover td {
-            background-color: #2D3748; /* Hoverda biraz daha koyu */
-        }
-
-        /* Message Box stilleri */
+        /* Message Box Stillleri */
         .message-box {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
+            background-color: #4CAF50;
             color: white;
-            font-weight: bold;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-            z-index: 1000;
+            min-width: 280px;
+            max-width: 90%;
+            font-size: 0.95rem;
         }
         .message-box.show {
             opacity: 1;
@@ -120,21 +102,127 @@
             top: 5px;
             right: 10px;
         }
-        /* Spinner CSS */
-        .spinner {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid #fff;
-            border-radius: 50%;
-            width: 1em;
-            height: 1em;
-            animation: spin 1s linear infinite;
+
+        /* Bildirim Merkezi Stillleri */
+        .notification-center {
+            position: fixed;
+            top: 70px; /* Header'ın altında başla */
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background-color: #2D3748; /* Koyu tema için koyu gri */
+            color: #e2e8f0; /* Açık gri metin */
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900; /* Mesaj kutusunun altında olsun */
+            transform: translateX(110%); /* Başlangıçta ekran dışı */
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .notification-center.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #4A5568; /* Koyu border */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #e2e8f0; /* Açık metin */
+        }
+        .notification-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .notification-item.unread {
+            background-color: #1A202C; /* Koyu mavi-gri */
+            border-left: 4px solid #6366F1; /* Tailwind indigo-500 */
+            color: #E2E8F0;
+        }
+        .notification-item.read {
+            background-color: #2D3748; /* Biraz daha açık koyu gri */
+            border-left: 4px solid #4A5568; /* Koyu gri border */
+            color: #A0AEC0; /* Biraz daha açık metin */
+        }
+        .notification-item.success { border-left-color: #34D399; }
+        .notification-item.error { border-left-color: #F87171; }
+        .notification-item.warning { border-left-color: #FBBF24; }
+        .notification-item.info { border-left-color: #60A5FA; }
+
+        .notification-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            color: #A0AEC0; /* Açık gri ikon */
+        }
+        .notification-item.success .notification-item-icon { color: #34D399; }
+        .notification-item.error .notification-item-icon { color: #F87171; }
+        .notification-item.warning .notification-item-icon { color: #FBBF24; }
+        .notification-item.info .notification-item-icon { color: #60A5FA; }
+
+        .notification-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #4A5568; /* Koyu border */
+            text-align: center;
+        }
+        .notification-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444; /* Tailwind red-500 */
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
         }
 
-        /* Modal Stilleri */
+        /* Sidebar Geçiş Animasyonu */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            width: 256px;
+            z-index: 50;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebarOverlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out;
+            flex-grow: 1;
+            padding-top: 16px; /* Header yüksekliği kadar padding-top (pt-16 tailwind sınıfına karşılık gelir) */
+        }
+
+        /* Modal Stilleri (Ortak) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -142,7 +230,6 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
             justify-content: center;
             align-items: center;
             z-index: 500;
@@ -151,23 +238,29 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-overlay.show {
+            display: flex;
             opacity: 1;
             visibility: visible;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
         }
         .modal-content {
-            background-color: #1A202C;
+            background-color: #1A202C; /* Koyu modal arkaplanı */
             padding: 2rem;
             border-radius: 0.75rem;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
             max-width: 90%;
             width: 500px; /* Sabit genişlik veya responsive için daha uygun değerler */
             transform: translateY(-20px);
-            opacity: 0;
+            opacity: 0; /* Başlangıçta içeriği de gizle */
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .modal-overlay.show .modal-content {
             transform: translateY(0);
-            opacity: 1;
+            opacity: 1; /* Modal gösterildiğinde içeriği de görünür yap */
         }
         .modal-close-btn {
             position: absolute;
@@ -176,229 +269,148 @@
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: #A0AEC0;
+            color: #A0AEC0; /* Kapatma butonu rengi */
             cursor: pointer;
             transition: color 0.2s ease;
         }
         .modal-close-btn:hover {
             color: #E2E8F0;
         }
-
-        /* Credit History Modal Specific Styles */
-        #creditHistoryModal .modal-content {
-            width: 700px; /* Daha geniş modal */
-            max-height: 80vh; /* Ekran yüksekliğinin %80'i kadar */
-            overflow-y: auto; /* İçerik taşarsa kaydırma çubuğu */
-        }
-        .credit-history-table th, .credit-history-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #4A5568;
-            text-align: left;
-        }
-        .credit-history-table th {
-            background-color: #2D3748;
-            color: #E2E8F0;
-            font-weight: 600;
-        }
-        .credit-history-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        .credit-history-table .credit-sale { color: #EF4444; } /* Red */
-        .credit-history-table .credit-payment { color: #10B981; } /* Green */
-
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header - Başlık ve Navigasyon -->
+    <!-- Header -->
     <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
         <div class="flex items-center">
-            <!-- Ana Sayfa Butonu -->
-            <button id="goToDashboardBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-                <i class="fas fa-home text-white text-xl"></i>
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
             </button>
             <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Müşteri Yönetimi</h1>
         </div>
         <div class="flex items-center space-x-3 md:space-x-4">
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-white text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+            </button>
             <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
             <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
     <!-- Ana İçerik Alanı -->
-    <main class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl pt-20"> <!-- Header yüksekliği kadar padding-top -->
-        <p class="text-lg text-gray-400 text-center mb-10 font-light">Müşterilerinizi yönetin, veresiye borçlarını takip edin.</p>
+    <div class="flex flex-1 pt-16">
 
-        <!-- Müşteri Ekleme Formu -->
-        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mb-8">
-            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h2>
-            <form id="addCustomerForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="customerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı Soyadı <span class="text-red-500">*</span></label>
-                    <input type="text" id="customerName" placeholder="Müşteri Adı" class="form-input w-full p-3 text-base rounded-md shadow-sm" required>
-                </div>
-                <div>
-                    <label for="customerShopName" class="block text-gray-300 text-sm font-semibold mb-2">Dükkan/Firma Adı (Opsiyonel)</label>
-                    <input type="text" id="customerShopName" placeholder="Dükkan Adı" class="form-input w-full p-3 text-base rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="customerPhoneNumber" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası <span class="text-red-500">*</span></label>
-                    <input type="tel" id="customerPhoneNumber" placeholder="Telefon Numarası (örn: 5XX-XXX-XXXX)" class="form-input w-full p-3 text-base rounded-md shadow-sm" required>
-                </div>
-                <div>
-                    <label for="customerEmail" class="block text-gray-300 text-sm font-semibold mb-2">E-posta (Opsiyonel)</label>
-                    <input type="email" id="customerEmail" placeholder="E-posta Adresi" class="form-input w-full p-3 text-base rounded-md shadow-sm">
-                </div>
-                <div class="md:col-span-2">
-                    <label for="customerAddress" class="block text-gray-300 text-sm font-semibold mb-2">Adres (Opsiyonel)</label>
-                    <textarea id="customerAddress" placeholder="Müşteri Adresi" rows="2" class="form-input w-full p-3 text-base rounded-md shadow-sm"></textarea>
-                </div>
-                <div class="md:col-span-2 flex justify-end mt-4">
-                    <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors shadow-md font-semibold text-lg flex items-center">
-                        <i class="fas fa-plus mr-2"></i> Müşteri Ekle
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Müşteri Arama ve Liste -->
-        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Müşteri Listesi</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label for="searchCustomerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı Ara:</label>
-                    <input type="text" id="searchCustomerName" placeholder="Müşteri adına göre ara" class="form-input w-full p-3 text-base rounded-md shadow-sm">
-                </div>
-                <div>
-                    <label for="searchCustomerPhone" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası Ara:</label>
-                    <input type="tel" id="searchCustomerPhone" placeholder="Telefon numarasına göre ara" class="form-input w-full p-3 text-base rounded-md shadow-sm">
-                </div>
-                <div class="md:col-span-2 flex space-x-3">
-                    <button id="applyCustomerFilterBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Filtrele</button>
-                    <button id="clearCustomerFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Filtreleri Temizle</button>
-                </div>
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
+                <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
+                </a>
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
+                    <i class="fas fa-users"></i> <span class="text-gray-100">Müşteri Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
+                </a>
+                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
+                </a>
+                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
+                </a>
+                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                    <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
+                </a>
+            </nav>
+        </aside>
 
-            <div class="overflow-x-auto rounded-lg shadow-md border border-gray-700 relative">
-                <table class="min-w-full divide-y divide-gray-700">
-                    <thead class="table-header">
-                        <tr>
-                            <th>Adı Soyadı</th>
-                            <th>Dükkan Adı</th>
-                            <th>Telefon</th>
-                            <th>E-posta</th>
-                            <th>Toplam Veresiye Borcu</th>
-                            <th class="text-center">İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody id="customerTableBody" class="divide-y divide-gray-700">
-                        <!-- Müşteriler buraya JS ile yüklenecek -->
-                        <tr><td colspan="6" class="text-center text-gray-400 py-4">Müşteriler yükleniyor...</td></tr>
-                    </tbody>
-                </table>
-                <div id="customerListLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-lg">
-                    <p class="text-center text-gray-300 text-lg">
-                        <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
-                        Yükleniyor...
-                    </p>
-                </div>
-            </div>
-        </div>
-    </main>
+        <!-- Sidebar Overlay -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-    <!-- Müşteri Düzenleme Modalı -->
-    <div id="editCustomerModal" class="modal-overlay hidden">
-        <div class="modal-content relative">
-            <button class="modal-close-btn" onclick="closeEditCustomerModal()">&times;</button>
-            <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşteri Bilgilerini Düzenle</h3>
-            <form id="editCustomerForm">
-                <input type="hidden" id="editCustomerId">
-                <div class="mb-4">
-                    <label for="editCustomerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı Soyadı <span class="text-red-500">*</span></label>
-                    <input type="text" id="editCustomerName" class="form-input w-full p-3 text-base rounded-md" required>
-                </div>
-                <div class="mb-4">
-                    <label for="editCustomerShopName" class="block text-gray-300 text-sm font-semibold mb-2">Dükkan/Firma Adı</label>
-                    <input type="text" id="editCustomerShopName" class="form-input w-full p-3 text-base rounded-md">
-                </div>
-                <div class="mb-4">
-                    <label for="editCustomerPhoneNumber" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası <span class="text-red-500">*</span></label>
-                    <input type="tel" id="editCustomerPhoneNumber" class="form-input w-full p-3 text-base rounded-md" required>
-                </div>
-                <div class="mb-4">
-                    <label for="editCustomerEmail" class="block text-gray-300 text-sm font-semibold mb-2">E-posta</label>
-                    <input type="email" id="editCustomerEmail" class="form-input w-full p-3 text-base rounded-md">
-                </div>
-                <div class="mb-6">
-                    <label for="editCustomerAddress" class="block text-gray-300 text-sm font-semibold mb-2">Adres</label>
-                    <textarea id="editCustomerAddress" rows="2" class="form-input w-full p-3 text-base rounded-md"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeEditCustomerModal()" class="bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition-colors font-semibold">İptal</button>
-                    <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">Kaydet</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        <!-- Müşteri Yönetimi Ana İçerik Alanı -->
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Müşteri Yönetimi</h2>
+            <p class="text-lg text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve geçmişlerini görüntüleyin.</p>
 
-    <!-- Veresiye İşlemi Modalı (Borçlandırma/Tahsilat) -->
-    <div id="creditTransactionModal" class="modal-overlay hidden">
-        <div class="modal-content relative">
-            <button class="modal-close-btn" onclick="closeCreditTransactionModal()">&times;</button>
-            <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veresiye İşlemi Yap</h3>
-            <p class="text-gray-400 text-center mb-6">Müşteri: <span id="creditModalCustomerName" class="font-bold text-blue-200"></span></p>
-            <p class="text-gray-400 text-center mb-6">Mevcut Borç: <span id="creditModalCurrentDebt" class="font-bold text-red-400">0.00 TL</span></p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-            <form id="creditTransactionForm">
-                <input type="hidden" id="creditTransactionCustomerId">
-                <div class="mb-4">
-                    <label for="transactionType" class="block text-gray-300 text-sm font-semibold mb-2">İşlem Tipi</label>
-                    <select id="transactionType" class="form-select w-full p-3 text-base rounded-md shadow-sm" required>
-                        <option value="Sale">Veresiye Borçlandır (+)</option>
-                        <option value="Payment">Veresiye Tahsilat (-)</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label for="transactionAmount" class="block text-gray-300 text-sm font-semibold mb-2">Miktar (TL) <span class="text-red-500">*</span></label>
-                    <input type="number" id="transactionAmount" step="0.01" min="0.01" placeholder="Miktar" class="form-input w-full p-3 text-base rounded-md shadow-sm" required>
-                </div>
-                <div class="mb-6">
-                    <label for="transactionDescription" class="block text-gray-300 text-sm font-semibold mb-2">Açıklama (Opsiyonel)</label>
-                    <textarea id="transactionDescription" rows="2" placeholder="İşlem açıklaması" class="form-input w-full p-3 text-base rounded-md shadow-sm"></textarea>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeCreditTransactionModal()" class="bg-gray-600 text-white px-5 py-2 rounded-lg hover:bg-gray-700 transition-colors font-semibold">İptal</button>
-                    <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">İşlemi Kaydet</button>
-                </div>
-            </form>
-        </div>
-    </div>
+                <!-- Left Column (Yeni Müşteri Ekle) -->
+                <div class="lg:col-span-1">
+                    <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
+                        <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h3>
+                        <form id="newCustomerForm" class="space-y-5">
+                            <div>
+                                <label for="customerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı:</label>
+                                <input type="text" id="customerName" placeholder="Müşteri Adı Soyadı" class="form-input w-full p-3 text-base shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="customerPhoneNumber" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası:</label>
+                                <input type="tel" id="customerPhoneNumber" placeholder="5xx-xxx-xx-xx" class="form-input w-full p-3 text-base shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="customerEmail" class="block text-gray-300 text-sm font-semibold mb-2">E-posta (Opsiyonel):</label>
+                                <input type="email" id="customerEmail" placeholder="ornek@email.com" class="form-input w-full p-3 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="customerAddress" class="block text-gray-300 text-sm font-semibold mb-2">Adres (Opsiyonel):</label>
+                                <textarea id="customerAddress" rows="3" placeholder="Müşteri Adresi" class="form-input w-full p-3 text-base shadow-sm"></textarea>
+                            </div>
+                            <div>
+                                <label for="customerShopName" class="block text-gray-300 text-sm font-semibold mb-2">İşletme Adı (Opsiyonel):</label>
+                                <input type="text" id="customerShopName" placeholder="İşletme Adı" class="form-input w-full p-3 text-base shadow-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Müşteri Ekle</button>
+                        </form>
+                    </div>
+                </div> <!-- Left Column End -->
 
-    <!-- Veresiye Geçmişi Modalı -->
-    <div id="creditHistoryModal" class="modal-overlay hidden">
-        <div class="modal-content relative">
-            <button class="modal-close-btn" onclick="closeCreditHistoryModal()">&times;</button>
-            <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veresiye Geçmişi</h3>
-            <p class="text-gray-400 text-center mb-6">Müşteri: <span id="historyModalCustomerName" class="font-bold text-blue-200"></span></p>
+                <!-- Right Column (Müşteri Listesi) -->
+                <div class="lg:col-span-1 space-y-8">
 
-            <div class="overflow-x-auto rounded-lg shadow-md border border-gray-700">
-                <table class="min-w-full credit-history-table">
-                    <thead>
-                        <tr>
-                            <th>Tarih</th>
-                            <th>Tip</th>
-                            <th>Miktar</th>
-                            <th>Açıklama</th>
-                        </tr>
-                    </thead>
-                    <tbody id="creditHistoryTableBody">
-                        <!-- Veresiye geçmişi buraya JS ile yüklenecek -->
-                        <tr><td colspan="4" class="text-center text-gray-400 py-4">Veresiye geçmişi yükleniyor...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="noCreditHistoryMessage" class="text-center text-gray-400 py-4 hidden">Bu müşterinin henüz veresiye işlemi bulunmamaktadır.</div>
-        </div>
+                    <!-- Müşteri Ara -->
+                    <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                        <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Müşteri Ara</h3>
+                        <div class="relative">
+                            <input type="text" id="searchCustomerInput" placeholder="Müşteri adı veya telefon numarası" class="form-input w-full p-3 text-base shadow-sm">
+                            <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <div class="flex space-x-3 mt-6">
+                            <button id="applyCustomerFilterBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Ara</button>
+                            <button id="clearCustomerFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-md hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Filtreleri Temizle</button>
+                        </div>
+                    </div>
+
+                    <!-- Müşteri Listesi -->
+                    <div id="customerListContainer" class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
+                        <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Müşterileriniz</h3>
+                        <div id="customerList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                            <p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>
+                        </div>
+                        <!-- Loading Overlay -->
+                        <div id="customerLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                            <p class="text-center text-gray-300 text-lg">
+                                <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                                Yükleniyor...
+                            </p>
+                        </div>
+                    </div>
+                </div> <!-- Right Column End -->
+
+            </div> <!-- Main Content Grid End -->
+        </main>
     </div>
 
     <!-- Mesaj Kutusu -->
@@ -407,16 +419,109 @@
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <script type="module">
-        const jwtToken = localStorage.getItem('jwtToken');
-        const userId = localStorage.getItem('userId');
-        const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+    <!-- Bildirim Merkezi Paneli -->
+    <div id="notificationCenter" class="notification-center">
+        <div class="notification-header">
+            <span>Bildirimler</span>
+            <button id="clearNotificationsBtn" class="text-blue-400 hover:text-blue-200 text-sm">Tümünü Temizle</button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>
+        </div>
+        <div class="notification-footer">
+            <button id="closeNotificationsBtn" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm">Kapat</button>
+        </div>
+    </div>
 
-        // Kullanıcı giriş yapmamışsa auth sayfasına yönlendir
-        if (!jwtToken || !userId) {
+    <!-- Müşteri Düzenleme Modalı -->
+    <div id="editCustomerModal" class="modal-overlay hidden">
+        <div class="modal-content relative">
+            <button class="modal-close-btn" onclick="closeEditCustomerModal()">&times;</button>
+            <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Müşteriyi Düzenle</h3>
+            <form id="editCustomerForm" class="space-y-4">
+                <input type="hidden" id="editCustomerId">
+                <div>
+                    <label for="editCustomerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı:</label>
+                    <input type="text" id="editCustomerName" class="form-input w-full p-3" required>
+                </div>
+                <div>
+                    <label for="editCustomerPhoneNumber" class="block text-gray-300 text-sm font-semibold mb-2">Telefon Numarası:</label>
+                    <input type="tel" id="editCustomerPhoneNumber" class="form-input w-full p-3" required>
+                </div>
+                <div>
+                    <label for="editCustomerEmail" class="block text-gray-300 text-sm font-semibold mb-2">E-posta:</label>
+                    <input type="email" id="editCustomerEmail" class="form-input w-full p-3">
+                </div>
+                <div>
+                    <label for="editCustomerAddress" class="block text-gray-300 text-sm font-semibold mb-2">Adres:</label>
+                    <textarea id="editCustomerAddress" rows="3" class="form-input w-full p-3"></textarea>
+                </div>
+                <div>
+                    <label for="editCustomerShopName" class="block text-gray-300 text-sm font-semibold mb-2">İşletme Adı:</label>
+                    <input type="text" id="editCustomerShopName" class="form-input w-full p-3">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition-colors font-semibold">Değişiklikleri Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <!-- Müşteri Geçmişi Modalı -->
+    <div id="customerHistoryModal" class="modal-overlay hidden">
+        <div class="modal-content relative max-w-2xl w-full">
+            <button class="modal-close-btn" onclick="closeCustomerHistoryModal()">&times;</button>
+            <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Müşteri Geçmişi: <span id="historyCustomerName" class="text-blue-200"></span></h3>
+            <div id="customerSalesHistory" class="max-h-96 overflow-y-auto space-y-3 p-2 bg-gray-900 rounded-md border border-gray-700">
+                <p class="text-center text-gray-400 py-2">Yükleniyor veya geçmiş bulunamadı...</p>
+            </div>
+        </div>
+    </div>
+    <!-- Veresiye İşlemleri Modalı -->
+    <div id="customerCreditTransactionsModal" class="modal-overlay hidden">
+        <div class="modal-content relative max-w-2xl w-full">
+            <button class="modal-close-btn" onclick="closeCustomerCreditTransactionsModal()">&times;</button>
+            <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veresiye İşlemleri: <span id="creditCustomerName" class="text-blue-200"></span></h3>
+            <div class="mb-4 p-3 bg-gray-700 rounded-md shadow-inner">
+                <p class="text-lg font-semibold text-gray-200">Mevcut Veresiye Borcu: <span id="currentCreditDebt" class="text-red-400 ml-2">0.00 TL</span></p>
+            </div>
+            <form id="addCreditPaymentForm" class="space-y-3 mb-6 p-4 bg-gray-800 rounded-md border border-gray-700">
+                <h4 class="text-lg font-semibold text-gray-200 mb-3">Yeni Ödeme/Borç Ekle</h4>
+                <input type="hidden" id="creditCustomerId">
+                <div>
+                    <label for="creditAmount" class="block text-gray-300 text-sm font-semibold mb-2">Miktar (TL):</label>
+                    <input type="number" id="creditAmount" step="0.01" min="0" class="form-input w-full p-3" placeholder="Ödenen veya eklenen borç miktarı" required>
+                </div>
+                <div>
+                    <label for="creditTransactionType" class="block text-gray-300 text-sm font-semibold mb-2">İşlem Tipi:</label>
+                    <select id="creditTransactionType" class="form-select w-full p-3" required>
+                        <option value="payment">Ödeme Yapıldı</option>
+                        <option value="debt">Borç Eklendi</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="creditDescription" class="block text-gray-300 text-sm font-semibold mb-2">Açıklama (Opsiyonel):</label>
+                    <input type="text" id="creditDescription" class="form-input w-full p-3" placeholder="Ödeme/Borç açıklaması">
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition-colors font-semibold">İşlemi Kaydet</button>
+            </form>
+            <h4 class="text-lg font-bold text-blue-300 mb-3">Veresiye İşlem Geçmişi</h4>
+            <div id="creditTransactionHistory" class="max-h-60 overflow-y-auto space-y-2 p-2 bg-gray-900 rounded-md border border-gray-700">
+                <p class="text-center text-gray-400 py-2">Yükleniyor veya işlem geçmişi bulunamadı...</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
+        const initialJwtToken = localStorage.getItem('jwtToken');
+        const initialUserId = localStorage.getItem('userId');
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
+
+        // Redirect if not logged in
+        if (!initialJwtToken || !initialUserId) {
             window.location.href = 'auth.html';
         }
 
+        // JWT Token'ı parse eden yardımcı fonksiyon
         function parseJwt (token) {
             try {
                 const base64Url = token.split('.')[1];
@@ -426,14 +531,14 @@
                 }).join(''));
                 return JSON.parse(jsonPayload);
             } catch (e) {
-                console.error("JWT parse edilirken hata:", e);
+                console.error("JWT parse error:", e);
                 return null;
             }
         };
 
-        const decodedToken = parseJwt(jwtToken);
-        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== userId) {
-            console.warn("JWT geçersiz veya süresi dolmuş. Giriş sayfasına yönlendiriliyor.");
+        const decodedToken = parseJwt(initialJwtToken);
+        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
+            console.warn("JWT invalid or expired. Redirecting to login.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
             localStorage.removeItem('fingoNotifications');
@@ -443,56 +548,105 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOMContentLoaded fired. Initializing Customer Management application...");
 
-            // DOM Elementleri
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const getToken = () => localStorage.getItem('jwtToken');
+            const getUserId = () => localStorage.getItem('userId');
+
+            // DOM Elements
             const logoutBtn = document.getElementById('logoutBtn');
             const loggedInUserSpan = document.getElementById('loggedInUser');
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
 
-            const addCustomerForm = document.getElementById('addCustomerForm');
+            // Customer Form Elements
+            const newCustomerForm = document.getElementById('newCustomerForm');
             const customerNameInput = document.getElementById('customerName');
-            const customerShopNameInput = document.getElementById('customerShopName');
             const customerPhoneNumberInput = document.getElementById('customerPhoneNumber');
             const customerEmailInput = document.getElementById('customerEmail');
             const customerAddressInput = document.getElementById('customerAddress');
+            const customerShopNameInput = document.getElementById('customerShopName');
 
-            const searchCustomerNameInput = document.getElementById('searchCustomerName');
-            const searchCustomerPhoneInput = document.getElementById('searchCustomerPhone');
+            // Customer List and Search Elements
+            const searchCustomerInput = document.getElementById('searchCustomerInput');
             const applyCustomerFilterBtn = document.getElementById('applyCustomerFilterBtn');
             const clearCustomerFilterBtn = document.getElementById('clearCustomerFilterBtn');
-            const customerTableBody = document.getElementById('customerTableBody');
-            const customerListLoadingOverlay = document.getElementById('customerListLoadingOverlay');
+            const customerListDiv = document.getElementById('customerList');
+            const customerLoadingOverlay = document.getElementById('customerLoadingOverlay');
 
-            // Edit Modal Elements
+            // Modals and their elements
             const editCustomerModal = document.getElementById('editCustomerModal');
             const editCustomerForm = document.getElementById('editCustomerForm');
             const editCustomerIdInput = document.getElementById('editCustomerId');
             const editCustomerNameInput = document.getElementById('editCustomerName');
-            const editCustomerShopNameInput = document.getElementById('editCustomerShopName');
             const editCustomerPhoneNumberInput = document.getElementById('editCustomerPhoneNumber');
             const editCustomerEmailInput = document.getElementById('editCustomerEmail');
             const editCustomerAddressInput = document.getElementById('editCustomerAddress');
+            const editCustomerShopNameInput = document.getElementById('editCustomerShopName');
 
-            // Credit Transaction Modal Elements
-            const creditTransactionModal = document.getElementById('creditTransactionModal');
-            const creditTransactionForm = document.getElementById('creditTransactionForm');
-            const creditTransactionCustomerIdInput = document.getElementById('creditTransactionCustomerId');
-            const creditModalCustomerNameSpan = document.getElementById('creditModalCustomerName');
-            const creditModalCurrentDebtSpan = document.getElementById('creditModalCurrentDebt');
-            const transactionTypeSelect = document.getElementById('transactionType');
-            const transactionAmountInput = document.getElementById('transactionAmount');
-            const transactionDescriptionInput = document.getElementById('transactionDescription');
+            const customerHistoryModal = document.getElementById('customerHistoryModal');
+            const historyCustomerNameSpan = document.getElementById('historyCustomerName');
+            const customerSalesHistoryDiv = document.getElementById('customerSalesHistory');
 
-            // Credit History Modal Elements
-            const creditHistoryModal = document.getElementById('creditHistoryModal');
-            const historyModalCustomerNameSpan = document.getElementById('historyModalCustomerName');
-            const creditHistoryTableBody = document.getElementById('creditHistoryTableBody');
-            const noCreditHistoryMessage = document.getElementById('noCreditHistoryMessage');
+            const customerCreditTransactionsModal = document.getElementById('customerCreditTransactionsModal');
+            const creditCustomerNameSpan = document.getElementById('creditCustomerName');
+            const currentCreditDebtSpan = document.getElementById('currentCreditDebt');
+            const creditCustomerIdInput = document.getElementById('creditCustomerId');
+            const addCreditPaymentForm = document.getElementById('addCreditPaymentForm');
+            const creditAmountInput = document.getElementById('creditAmount');
+            const creditTransactionTypeSelect = document.getElementById('creditTransactionType');
+            const creditDescriptionInput = document.getElementById('creditDescription');
+            const creditTransactionHistoryDiv = document.getElementById('creditTransactionHistory');
 
 
-            // Genel Mesaj Gösterici
-            function showMessage(message, type = 'success') {
+            // Bildirim Merkezi DOM Elementleri
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+
+            // Sidebar ve Yönlendirme Butonları
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            const manageProductsBtn = document.getElementById('manageProductsBtn');
+            const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
+            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
+            const viewReportsBtn = document.getElementById('viewReportsBtn');
+            const exportCsvBtn = document.getElementById('exportCsvBtn');
+            const importCsvBtn = document.getElementById('importCsvBtn');
+
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+
+
+            // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            // Bildirimleri Local Storage'a kaydet
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+
+                // Anlık mesaj kutusunu da göster
+                showMessageBox(message, type);
+            }
+
+            // Anlık mesaj kutusu gösterme fonksiyonu (eski showMessage)
+            function showMessageBox(message, type = 'success') {
                 if (!messageBox || !messageText) {
                     console.error("Message box elements not found!");
                     return;
@@ -500,418 +654,680 @@
                 messageText.innerHTML = message;
                 messageBox.className = `message-box show ${type}`;
                 messageBox.classList.remove('hidden');
-                if (type !== 'confirm') {
-                    setTimeout(() => {
-                        messageBox.classList.remove('show');
-                        setTimeout(() => {
-                            messageBox.classList.add('hidden');
-                        }, 300);
-                    }, 3000);
-                }
-            }
-
-            // Yetkilendirme Hatası Yönetimi
-            function handleAuthError() {
-                localStorage.removeItem('jwtToken');
-                localStorage.removeItem('userId');
-                localStorage.removeItem('fingoNotifications');
-                showMessage('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'error');
                 setTimeout(() => {
-                    window.location.href = 'auth.html';
-                }, 1500);
+                    messageBox.classList.remove('show');
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 300);
+                }, 3000);
             }
 
-            // Modalları Yönetme Fonksiyonları
-            function openEditCustomerModal(customer) {
-                editCustomerIdInput.value = customer._id;
-                editCustomerNameInput.value = customer.name;
-                editCustomerShopNameInput.value = customer.shopName || '';
-                editCustomerPhoneNumberInput.value = customer.phoneNumber;
-                editCustomerEmailInput.value = customer.email || '';
-                editCustomerAddressInput.value = customer.address || '';
-                editCustomerModal.classList.add('show');
-            }
-
-            function closeEditCustomerModal() {
-                editCustomerModal.classList.remove('show');
-                editCustomerForm.reset();
-            }
-
-            function openCreditTransactionModal(customer) {
-                creditTransactionCustomerIdInput.value = customer._id;
-                creditModalCustomerNameSpan.textContent = customer.name;
-                creditModalCurrentDebtSpan.textContent = `${customer.totalCreditDebt.toFixed(2)} TL`;
-                creditTransactionModal.classList.add('show');
-                transactionAmountInput.focus();
-            }
-
-            function closeCreditTransactionModal() {
-                creditTransactionModal.classList.remove('show');
-                creditTransactionForm.reset();
-            }
-
-            async function openCreditHistoryModal(customer) {
-                historyModalCustomerNameSpan.textContent = customer.name;
-                creditHistoryTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-400 py-4">Veresiye geçmişi yükleniyor...</td></tr>';
-                noCreditHistoryMessage.classList.add('hidden');
-                creditHistoryModal.classList.add('show');
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/customers/${customer._id}/credit-history`, {
-                        headers: { 'Authorization': `Bearer ${jwtToken}` }
-                    });
-
-                    if (!response.ok) {
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                        throw new Error(`HTTP hata! Durum: ${response.status}`);
-                    }
-                    const transactions = await response.json();
-
-                    renderCreditHistory(transactions);
-
-                } catch (error) {
-                    console.error('Veresiye geçmişi çekerken hata:', error);
-                    creditHistoryTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-400 py-4">Geçmiş yüklenirken hata oluştu: ${error.message}</td></tr>`;
-                }
-            }
-
-            function renderCreditHistory(transactions) {
-                creditHistoryTableBody.innerHTML = '';
-                if (transactions.length === 0) {
-                    noCreditHistoryMessage.classList.remove('hidden');
-                    return;
-                }
-                transactions.forEach(transaction => {
-                    const row = document.createElement('tr');
-                    row.className = 'table-row';
-                    const date = new Date(transaction.date).toLocaleDateString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    const amountClass = transaction.type === 'Sale' ? 'text-red-400' : 'text-green-400';
-                    const sign = transaction.type === 'Sale' ? '+' : '-';
-                    row.innerHTML = `
-                        <td>${date}</td>
-                        <td><span class="font-semibold ${amountClass}">${transaction.type === 'Sale' ? 'Borçlanma' : 'Tahsilat'}</span></td>
-                        <td><span class="font-semibold ${amountClass}">${sign}${transaction.amount.toFixed(2)} TL</span></td>
-                        <td>${transaction.description || '-'}</td>
-                    `;
-                    creditHistoryTableBody.appendChild(row);
-                });
-            }
-
-            function closeCreditHistoryModal() {
-                creditHistoryModal.classList.remove('show');
-            }
-
-
-            // Müşterileri Çekme ve Listeleme
-            async function fetchCustomers() {
-                if (customerListLoadingOverlay) customerListLoadingOverlay.classList.remove('hidden');
-                if (customerTableBody) customerTableBody.innerHTML = '';
-
-                try {
-                    const queryParams = new URLSearchParams();
-                    if (searchCustomerNameInput && searchCustomerNameInput.value.trim()) {
-                        queryParams.append('name', searchCustomerNameInput.value.trim());
-                    }
-                    if (searchCustomerPhoneInput && searchCustomerPhoneInput.value.trim()) {
-                        queryParams.append('phoneNumber', searchCustomerPhoneInput.value.trim());
-                    }
-
-                    const url = `${API_BASE_URL}/customers?${queryParams.toString()}&timestamp=${Date.now()}`;
-                    const response = await fetch(url, {
-                        headers: { 'Authorization': `Bearer ${jwtToken}` }
-                    });
-
-                    if (!response.ok) {
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                        throw new Error(`HTTP hata! Durum: ${response.status}`);
-                    }
-                    const customers = await response.json();
-                    renderCustomers(customers);
-
-                } catch (error) {
-                    console.error('Müşterileri çekerken hata:', error);
-                    if (customerTableBody) customerTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-400 py-4">Müşteriler yüklenirken bir hata oluştu: ${error.message}</td></tr>`;
-                } finally {
-                    if (customerListLoadingOverlay) customerListLoadingOverlay.classList.add('hidden');
-                }
-            }
-
-            // Müşterileri Tabloya Render Et
-            function renderCustomers(customers) {
-                if (customerTableBody) customerTableBody.innerHTML = ''; // Önceki satırları temizle
-                if (customers.length === 0) {
-                    if (customerTableBody) customerTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 py-4">Filtrelere uygun müşteri bulunmamaktadır.</td></tr>';
+            // Confirm Box fonksiyonu (yeniden kullanıldı)
+            function showConfirmBox(message, onConfirm) {
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found! Cannot display confirm box.");
                     return;
                 }
 
-                customers.forEach(customer => {
-                    const row = document.createElement('tr');
-                    row.className = 'table-row';
-                    row.innerHTML = `
-                        <td>${customer.name}</td>
-                        <td>${customer.shopName || '-'}</td>
-                        <td>${customer.phoneNumber}</td>
-                        <td>${customer.email || '-'}</td>
-                        <td><span class="font-bold ${customer.totalCreditDebt > 0 ? 'text-red-400' : 'text-green-400'}">${customer.totalCreditDebt.toFixed(2)} TL</span></td>
-                        <td class="text-center">
-                            <button data-id="${customer._id}" class="edit-btn bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-sm mr-2">
-                                <i class="fas fa-edit"></i> Düzenle
-                            </button>
-                            <button data-id="${customer._id}" data-name="${customer.name}" class="credit-transaction-btn bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition-colors text-sm mr-2">
-                                <i class="fas fa-exchange-alt"></i> Veresiye İşlemi
-                            </button>
-                            <button data-id="${customer._id}" data-name="${customer.name}" class="credit-history-btn bg-purple-500 text-white px-3 py-1 rounded-md hover:bg-purple-600 transition-colors text-sm mr-2">
-                                <i class="fas fa-history"></i> Geçmiş
-                            </button>
-                            <button data-id="${customer._id}" data-name="${customer.name}" class="delete-btn bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm">
-                                <i class="fas fa-trash-alt"></i> Sil
-                            </button>
-                        </td>
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
+                messageBox.classList.add('show', 'confirm');
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
+
+                document.getElementById('confirmYes').onclick = () => {
+                    onConfirm();
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
+
+                document.getElementById('confirmNo').onclick = () => {
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
+            }
+
+            // Bildirimleri render etme (HTML'e basma)
+            function renderNotifications() {
+                if (!notificationList) return;
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index; // Index'i sakla
+
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
                     `;
-                    customerTableBody.appendChild(row);
-                });
-                addCustomerEventListeners();
-            }
+                    notificationList.appendChild(notificationItem);
 
-            // Müşteri İşlem Butonlarına Olay Dinleyicisi Ekle
-            function addCustomerEventListeners() {
-                document.querySelectorAll('.edit-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const customerId = button.dataset.id;
-                        try {
-                            const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
-                                headers: { 'Authorization': `Bearer ${jwtToken}` }
-                            });
-                            if (!response.ok) {
-                                if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                                throw new Error(`HTTP hata! Durum: ${response.status}`);
-                            }
-                            const customer = await response.json();
-                            openEditCustomerModal(customer);
-                        } catch (error) {
-                            console.error('Müşteri çekerken hata:', error);
-                            showMessage(`Müşteri bilgileri alınamadı: ${error.message}`, 'error');
-                        }
-                    };
-                });
-
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const customerId = button.dataset.id;
-                        const customerName = button.dataset.name;
-                        // ConfirmBox simülasyonu
-                        const isConfirmed = await new Promise(resolve => {
-                            const confirmBox = document.createElement('div');
-                            confirmBox.className = 'message-box show confirm';
-                            confirmBox.innerHTML = `
-                                <p class="mb-4">"${customerName}" müşterisini silmek istediğinize emin misiniz?</p>
-                                <div class="flex space-x-4">
-                                    <button id="confirmYes" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">Evet</button>
-                                    <button id="confirmNo" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">Hayır</button>
-                                </div>
-                                <button class="message-box-close" onclick="this.parentElement.classList.remove('show'); resolve(false);">&times;</button>
-                            `;
-                            document.body.appendChild(confirmBox);
-
-                            document.getElementById('confirmYes').onclick = () => {
-                                confirmBox.classList.remove('show');
-                                confirmBox.remove();
-                                resolve(true);
-                            };
-                            document.getElementById('confirmNo').onclick = () => {
-                                confirmBox.classList.remove('show');
-                                confirmBox.remove();
-                                resolve(false);
-                            };
-                        });
-
-                        if (isConfirmed) {
-                            try {
-                                const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
-                                    method: 'DELETE',
-                                    headers: { 'Authorization': `Bearer ${jwtToken}` }
-                                });
-                                if (!response.ok) {
-                                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                                    const errorData = await response.json();
-                                    throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
-                                }
-                                showMessage(`"${customerName}" müşterisi başarıyla silindi.`, 'success');
-                                fetchCustomers(); // Listeyi yenile
-                            } catch (error) {
-                                console.error('Müşteri silme hatası:', error);
-                                showMessage(`Müşteri silinirken hata oluştu: ${error.message}`, 'error');
-                            }
-                        }
-                    };
-                });
-
-                document.querySelectorAll('.credit-transaction-btn').forEach(button => {
-                    button.onclick = (event) => {
-                        const customerId = button.dataset.id;
-                        const customerName = button.dataset.name;
-                        // Mevcut borcu bulmak için müşteriyi tekrar çek veya listeden bul
-                        const customer = Array.from(customerTableBody.children).find(row => {
-                            const editBtn = row.querySelector('.edit-btn');
-                            return editBtn && editBtn.dataset.id === customerId;
-                        });
-                        if (customer) {
-                            const currentDebtText = customer.children[4].textContent; // 5. sütundaki borç bilgisi
-                            const currentDebt = parseFloat(currentDebtText.replace(' TL', '').replace(',', '.'));
-                            openCreditTransactionModal({ _id: customerId, name: customerName, totalCreditDebt: currentDebt });
-                        } else {
-                            showMessage('Müşteri bilgisi bulunamadı.', 'error');
-                        }
-                    };
-                });
-
-                document.querySelectorAll('.credit-history-btn').forEach(button => {
-                    button.onclick = (event) => {
-                        const customerId = button.dataset.id;
-                        const customerName = button.dataset.name;
-                        openCreditHistoryModal({ _id: customerId, name: customerName });
-                    };
+                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
                 });
             }
 
+            // Okunmamış bildirim sayısını güncelle
+            function updateNotificationCount() {
+                if (!notificationCountBadge) return;
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
 
-            // Form Submit Dinleyicileri
-            if (addCustomerForm) {
-                addCustomerForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const customerData = {
-                        name: customerNameInput.value.trim(),
-                        shopName: customerShopNameInput.value.trim() || null,
-                        phoneNumber: customerPhoneNumberInput.value.trim(),
-                        email: customerEmailInput.value.trim() || null,
-                        address: customerAddressInput.value.trim() || null
-                    };
+            // Bildirimi okundu olarak işaretle
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
+            // Yeni Müşteri Ekleme Formu Gönderimi
+            if (newCustomerForm) {
+                newCustomerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const name = customerNameInput?.value.trim();
+                    const phoneNumber = customerPhoneNumberInput?.value.trim();
+                    const email = customerEmailInput?.value.trim() || null;
+                    const address = customerAddressInput?.value.trim() || null;
+                    const shopName = customerShopNameInput?.value.trim() || null;
+
+                    if (!name || !phoneNumber) {
+                        addNotification('Müşteri adı ve telefon numarası zorunludur.', 'error');
+                        return;
+                    }
 
                     try {
                         const response = await fetch(`${API_BASE_URL}/customers`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${jwtToken}`
+                                'Authorization': `Bearer ${getToken()}`
                             },
-                            body: JSON.stringify(customerData)
+                            body: JSON.stringify({
+                                name,
+                                phoneNumber,
+                                email,
+                                address,
+                                shopName,
+                                userId: getUserId()
+                            })
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
+                            throw new Error(result.message || 'Müşteri eklenirken hata oluştu.');
                         }
-                        const result = await response.json();
-                        showMessage(result.message, 'success');
-                        addCustomerForm.reset();
+
+                        addNotification('Müşteri başarıyla eklendi!', 'success');
+                        newCustomerForm.reset();
                         fetchCustomers(); // Listeyi yenile
                     } catch (error) {
-                        console.error('Müşteri eklenirken hata:', error);
-                        showMessage(`Müşteri eklenirken hata oluştu: ${error.message}`, 'error');
+                        console.error('Müşteri ekleme hatası:', error);
+                        addNotification(`Müşteri eklenirken hata: ${error.message}`, 'error');
                     }
                 });
             }
 
+            // Müşterileri API'den çekme ve listeleme
+            async function fetchCustomers() {
+                if (customerLoadingOverlay) customerLoadingOverlay.classList.remove('hidden');
+                if (customerListDiv) customerListDiv.innerHTML = '';
+
+                const token = getToken();
+                if (!token) {
+                    addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error');
+                    window.location.href = 'auth.html';
+                    return;
+                }
+
+                const searchTerm = searchCustomerInput?.value.trim() || '';
+                let url = `${API_BASE_URL}/customers?userId=${getUserId()}`;
+                if (searchTerm) {
+                    url += `&search=${encodeURIComponent(searchTerm)}`;
+                }
+                url += `&timestamp=${Date.now()}`; // Cache busting
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+
+                    const customers = await response.json();
+                    if (customerListDiv) customerListDiv.innerHTML = ''; // Eski müşterileri temizle
+
+                    if (customers.length === 0) {
+                        if (customerListDiv) customerListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>';
+                        return;
+                    }
+
+                    customers.forEach(customer => {
+                        const customerCard = document.createElement('div');
+                        customerCard.className = 'bg-gray-700 p-4 rounded-lg shadow-md border border-gray-600';
+                        customerCard.innerHTML = `
+                            <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4>
+                            <p class="text-gray-300 text-sm">Telefon: ${customer.phoneNumber}</p>
+                            ${customer.email ? `<p class="text-gray-300 text-sm">E-posta: ${customer.email}</p>` : ''}
+                            ${customer.address ? `<p class="text-gray-300 text-sm">Adres: ${customer.address}</p>` : ''}
+                            ${customer.shopName ? `<p class="text-gray-300 text-sm">İşletme: ${customer.shopName}</p>` : ''}
+                            <p class="text-gray-300 text-sm font-semibold mt-2">Veresiye Borcu: <span class="text-red-400">${(customer.currentDebt || 0).toFixed(2)} TL</span></p>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <button class="edit-customer-btn bg-yellow-600 text-white px-3 py-1 rounded-md hover:bg-yellow-700 text-sm transition-colors" data-customer-id="${customer._id}">
+                                    <i class="fas fa-edit mr-1"></i> Düzenle
+                                </button>
+                                <button class="view-history-btn bg-purple-600 text-white px-3 py-1 rounded-md hover:bg-purple-700 text-sm transition-colors" data-customer-id="${customer._id}" data-customer-name="${customer.name}">
+                                    <i class="fas fa-history mr-1"></i> Geçmiş
+                                </button>
+                                <button class="view-credit-btn bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700 text-sm transition-colors" data-customer-id="${customer._id}" data-customer-name="${customer.name}" data-current-debt="${customer.currentDebt || 0}">
+                                    <i class="fas fa-file-invoice-dollar mr-1"></i> Veresiye İşlemleri
+                                </button>
+                                <button class="delete-customer-btn bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-sm transition-colors" data-customer-id="${customer._id}" data-customer-name="${customer.name}">
+                                    <i class="fas fa-trash-alt mr-1"></i> Sil
+                                </button>
+                            </div>
+                        `;
+                        if (customerListDiv) customerListDiv.appendChild(customerCard);
+                    });
+
+                    // Add event listeners for action buttons
+                    addCustomerActionListeners();
+
+                } catch (error) {
+                    console.error('Müşteriler çekilirken hata:', error);
+                    addNotification(`Müşteriler yüklenirken hata: ${error.message}`, 'error');
+                    if (customerListDiv) customerListDiv.innerHTML = '<p class="text-center text-red-400 py-4">Müşteriler yüklenemedi.</p>';
+                } finally {
+                    if (customerLoadingOverlay) customerLoadingOverlay.classList.add('hidden');
+                }
+            }
+
+            function addCustomerActionListeners() {
+                // Edit Button
+                document.querySelectorAll('.edit-customer-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const customerId = e.target.dataset.customerId;
+                        await openEditCustomerModal(customerId);
+                    });
+                });
+
+                // View History Button
+                document.querySelectorAll('.view-history-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const customerId = e.target.dataset.customerId;
+                        const customerName = e.target.dataset.customerName;
+                        await openCustomerHistoryModal(customerId, customerName);
+                    });
+                });
+
+                // View Credit Transactions Button
+                document.querySelectorAll('.view-credit-btn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const customerId = e.target.dataset.customerId;
+                        const customerName = e.target.dataset.customerName;
+                        const currentDebt = parseFloat(e.target.dataset.currentDebt);
+                        await openCreditTransactionsModal(customerId, customerName, currentDebt);
+                    });
+                });
+
+                // Delete Button (Works, so keeping its original logic)
+                document.querySelectorAll('.delete-customer-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const customerId = e.target.dataset.customerId;
+                        const customerName = e.target.dataset.customerName;
+                        showConfirmBox(`Are you sure you want to delete customer '${customerName}'?`, async () => {
+                            try {
+                                const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                                });
+                                const result = await response.json();
+                                if (!response.ok) {
+                                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                                    throw new Error(result.message || 'Müşteri silinirken hata oluştu.');
+                                }
+                                addNotification('Müşteri başarıyla silindi!', 'success');
+                                fetchCustomers(); // Listeyi yenile
+                            } catch (error) {
+                                console.error('Müşteri silme hatası:', error);
+                                addNotification(`Müşteri silinirken hata: ${error.message}`, 'error');
+                            }
+                        });
+                    });
+                });
+            }
+
+            // Düzenleme Modalı Fonksiyonları
+            async function openEditCustomerModal(customerId) {
+                console.log(`[DEBUG] openEditCustomerModal çağrıldı, ID: ${customerId}`);
+                try {
+                    const response = await fetch(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    const customer = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(customer.message || 'Müşteri bilgileri çekilirken hata oluştu.');
+                    }
+
+                    if (editCustomerIdInput) editCustomerIdInput.value = customer._id;
+                    if (editCustomerNameInput) editCustomerNameInput.value = customer.name;
+                    if (editCustomerPhoneNumberInput) editCustomerPhoneNumberInput.value = customer.phoneNumber;
+                    if (editCustomerEmailInput) editCustomerEmailInput.value = customer.email || '';
+                    if (editCustomerAddressInput) editCustomerAddressInput.value = customer.address || '';
+                    if (editCustomerShopNameInput) editCustomerShopNameInput.value = customer.shopName || '';
+
+                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
+                    if (editCustomerModal) {
+                        editCustomerModal.classList.remove('hidden');
+                        editCustomerModal.classList.add('show');
+                        console.log("[DEBUG] Edit Customer Modal gösterildi.");
+                    }
+                } catch (error) {
+                    console.error('Müşteri düzenleme modalı açılırken hata:', error);
+                    addNotification(`Müşteri düzenleme ekranı yüklenemedi: ${error.message}`, 'error');
+                }
+            }
+
+            window.closeEditCustomerModal = function() {
+                if (editCustomerModal) {
+                    editCustomerModal.classList.remove('show');
+                    // HIDDEN SINIFINI GERİ EKLE
+                    editCustomerModal.classList.add('hidden');
+                    console.log("[DEBUG] Edit Customer Modal kapatıldı.");
+                }
+                if (editCustomerForm) editCustomerForm.reset();
+            };
+
             if (editCustomerForm) {
-                editCustomerForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const customerId = editCustomerIdInput.value;
-                    const customerData = {
-                        name: editCustomerNameInput.value.trim(),
-                        shopName: editCustomerShopNameInput.value.trim() || null,
-                        phoneNumber: editCustomerPhoneNumberInput.value.trim(),
-                        email: editCustomerEmailInput.value.trim() || null,
-                        address: editCustomerAddressInput.value.trim() || null
-                    };
+                editCustomerForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const customerId = editCustomerIdInput?.value;
+                    const name = editCustomerNameInput?.value.trim();
+                    const phoneNumber = editCustomerPhoneNumberInput?.value.trim();
+                    const email = editCustomerEmailInput?.value.trim() || null;
+                    const address = editCustomerAddressInput?.value.trim() || null;
+                    const shopName = editCustomerShopNameInput?.value.trim() || null;
+
+                    if (!name || !phoneNumber) {
+                        addNotification('Müşteri adı ve telefon numarası zorunludur.', 'error');
+                        return;
+                    }
 
                     try {
                         const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
-                            method: 'PUT', // PUT metodu ile güncelleme
+                            method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${jwtToken}`
+                                'Authorization': `Bearer ${getToken()}`
                             },
-                            body: JSON.stringify(customerData)
+                            body: JSON.stringify({ name, phoneNumber, email, address, shopName, userId: getUserId() })
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
+                            throw new Error(result.message || 'Müşteri güncellenirken hata oluştu.');
                         }
-                        const result = await response.json();
-                        showMessage(result.message, 'success');
+
+                        addNotification('Müşteri başarıyla güncellendi!', 'success');
                         closeEditCustomerModal();
                         fetchCustomers(); // Listeyi yenile
                     } catch (error) {
-                        console.error('Müşteri güncellenirken hata:', error);
-                        showMessage(`Müşteri güncellenirken hata oluştu: ${error.message}`, 'error');
+                        console.error('Müşteri güncelleme hatası:', error);
+                        addNotification(`Müşteri güncellenirken hata: ${error.message}`, 'error');
                     }
                 });
             }
 
-            if (creditTransactionForm) {
-                creditTransactionForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-                    const customerId = creditTransactionCustomerIdInput.value;
-                    const transactionData = {
-                        type: transactionTypeSelect.value,
-                        amount: parseFloat(transactionAmountInput.value),
-                        description: transactionDescriptionInput.value.trim() || null
-                    };
+            // Müşteri Geçmişi Modalı Fonksiyonları
+            async function openCustomerHistoryModal(customerId, customerName) {
+                console.log(`[DEBUG] openCustomerHistoryModal çağrıldı, ID: ${customerId}, Ad: ${customerName}`);
+                if (historyCustomerNameSpan) historyCustomerNameSpan.textContent = customerName;
+                if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    const salesHistory = await response.json();
+
+                    if (!response.ok) {
+                         if (response.status === 403) {
+                            customerSalesHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.</p>`;
+                            throw new Error(salesHistory.message || 'Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.');
+                         }
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(salesHistory.message || 'Müşteri geçmişi çekilirken hata oluştu.');
+                    }
+
+                    if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '';
+                    if (salesHistory.length === 0) {
+                        customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait geçmiş satış bulunamadı.</p>';
+                    } else {
+                        salesHistory.forEach(sale => {
+                            const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
+                            const itemsHtml = sale.saleItems.map(item => `
+                                <li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
+                            `).join('');
+                            const saleEntry = document.createElement('div');
+                            saleEntry.className = 'bg-gray-800 p-3 rounded-md border border-gray-700';
+                            saleEntry.innerHTML = `
+                                <p class="text-md font-semibold text-blue-300 mb-1">Tarih: ${saleDate} - Toplam: ${sale.totalAmount.toFixed(2)} TL</p>
+                                <p class="text-sm text-gray-400 mb-1">Ödeme Tipi: ${sale.paymentMethod || 'Belirtilmemiş'}</p>
+                                ${sale.creditDebt > 0 ? `<p class="text-sm text-red-400 font-semibold">Veresiye: ${sale.creditDebt.toFixed(2)} TL</p>` : ''}
+                                <ul class="list-disc list-inside mt-1">
+                                    ${itemsHtml}
+                                </ul>
+                            `;
+                            customerSalesHistoryDiv.appendChild(saleEntry);
+                        });
+                    }
+
+                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
+                    if (customerHistoryModal) {
+                        customerHistoryModal.classList.remove('hidden');
+                        customerHistoryModal.classList.add('show');
+                        console.log("[DEBUG] Customer History Modal gösterildi.");
+                    }
+                } catch (error) {
+                    console.error('Müşteri geçmişi modalı açılırken hata:', error);
+                    addNotification(`Müşteri geçmişi yüklenemedi: ${error.message}`, 'error');
+                }
+            }
+
+            window.closeCustomerHistoryModal = function() {
+                if (customerHistoryModal) {
+                    customerHistoryModal.classList.remove('show');
+                    // HIDDEN SINIFINI GERİ EKLE
+                    customerHistoryModal.classList.add('hidden');
+                    console.log("[DEBUG] Customer History Modal kapatıldı.");
+                }
+            };
+
+            // Veresiye İşlemleri Modalı Fonksiyonları
+            async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
+                console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
+                if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
+                if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
+                if (creditCustomerIdInput) creditCustomerIdInput.value = customerId;
+                if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
+                if (addCreditPaymentForm) addCreditPaymentForm.reset();
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+                    const transactions = await response.json();
+
+                    if (!response.ok) {
+                         if (response.status === 403) {
+                            creditTransactionHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Veresiye işlem geçmişini görüntülemek için 2FA doğrulaması gerekli.</p>`;
+                            throw new Error(transactions.message || 'Veresiye işlem geçmişi görüntülemek için 2FA doğrulaması gerekli.');
+                         }
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(transactions.message || 'Veresiye işlem geçmişi çekilirken hata oluştu.');
+                    }
+
+                    if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '';
+                    if (transactions.length === 0) {
+                        creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait veresiye işlem geçmişi bulunamadı.</p>';
+                    } else {
+                        transactions.forEach(tx => {
+                            const txDate = new Date(tx.date).toLocaleDateString('tr-TR');
+                            const txType = tx.type === 'payment' ? 'Ödeme' : 'Borç Eklendi';
+                            const txAmount = tx.amount.toFixed(2);
+                            const txColor = tx.type === 'payment' ? 'text-green-400' : 'text-red-400';
+                            const txIcon = tx.type === 'payment' ? 'fa-arrow-down' : 'fa-arrow-up'; // Ödeme: para girişi, Borç: para çıkışı
+
+                            const txEntry = document.createElement('div');
+                            txEntry.className = 'bg-gray-800 p-3 rounded-md border border-gray-700 flex items-center justify-between';
+                            txEntry.innerHTML = `
+                                <div class="flex items-center">
+                                    <i class="fas ${txIcon} mr-3 ${txColor}"></i>
+                                    <div>
+                                        <p class="text-md font-semibold text-gray-200">${txType}: <span class="${txColor}">${txAmount} TL</span></p>
+                                        <p class="text-xs text-gray-400">${tx.description || 'Açıklama yok'}</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-gray-400">${txDate}</span>
+                            `;
+                            creditTransactionHistoryDiv.appendChild(txEntry);
+                        });
+                    }
+
+                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
+                    if (customerCreditTransactionsModal) {
+                        customerCreditTransactionsModal.classList.remove('hidden');
+                        customerCreditTransactionsModal.classList.add('show');
+                        console.log("[DEBUG] Customer Credit Transactions Modal gösterildi.");
+                    }
+                } catch (error) {
+                    console.error('Veresiye işlemleri modalı açılırken hata:', error);
+                    addNotification(`Veresiye işlemleri yüklenemedi: ${error.message}`, 'error');
+                }
+            }
+
+            window.closeCustomerCreditTransactionsModal = function() {
+                if (customerCreditTransactionsModal) {
+                    customerCreditTransactionsModal.classList.remove('show');
+                    // HIDDEN SINIFINI GERİ EKLE
+                    customerCreditTransactionsModal.classList.add('hidden');
+                    console.log("[DEBUG] Customer Credit Transactions Modal kapatıldı.");
+                }
+                if (addCreditPaymentForm) addCreditPaymentForm.reset();
+            };
+
+            // Veresiye Ödeme/Borç Ekleme Formu
+            if (addCreditPaymentForm) {
+                addCreditPaymentForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const customerId = creditCustomerIdInput?.value;
+                    const amount = parseFloat(creditAmountInput?.value);
+                    const type = creditTransactionTypeSelect?.value;
+                    const description = creditDescriptionInput?.value.trim() || null;
+
+                    if (isNaN(amount) || amount <= 0) {
+                        addNotification('Lütfen geçerli bir miktar girin.', 'error');
+                        return;
+                    }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/customers/${customerId}/credit-transaction`, {
+                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${jwtToken}`
+                                'Authorization': `Bearer ${getToken()}`
                             },
-                            body: JSON.stringify(transactionData)
+                            body: JSON.stringify({
+                                customerId,
+                                amount: type === 'payment' ? -amount : amount, // Ödeme ise eksi, borç ise artı
+                                type,
+                                description,
+                                userId: getUserId()
+                            })
                         });
 
+                        const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
-                            const errorData = await response.json();
-                            throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
+                            throw new Error(result.message || 'Veresiye işlemi kaydedilirken hata oluştu.');
                         }
-                        const result = await response.json();
-                        showMessage(result.message, 'success');
-                        closeCreditTransactionModal();
-                        fetchCustomers(); // Listeyi ve borçları yenile
+
+                        addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
+                        addCreditPaymentForm.reset();
+                        // Müşteri listesini ve veresiye geçmişini günceller
+                        fetchCustomers();
+                        // Sadece mevcut modalı güncellemek için, modalı kapatıp tekrar açabiliriz
+                        // openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt); // Bu biraz daha kompleks, şimdilik tam yenileme
+                        window.closeCustomerCreditTransactionsModal(); // Modalı kapat
+                        fetchCustomers(); // Müşteri listesini yenileyerek borcu güncelleyebiliriz
                     } catch (error) {
-                        console.error('Veresiye işlemi kaydedilirken hata:', error);
-                        showMessage(`Veresiye işlemi kaydedilirken hata oluştu: ${error.message}`, 'error');
+                        console.error('Veresiye işlemi kaydetme hatası:', error);
+                        addNotification(`Veresiye işlemi kaydedilirken hata: ${error.message}`, 'error');
                     }
                 });
             }
 
-            // Filtreleme Butonları
+            // Müşteri filtreleme ve temizleme
             if (applyCustomerFilterBtn) {
                 applyCustomerFilterBtn.addEventListener('click', fetchCustomers);
             }
             if (clearCustomerFilterBtn) {
                 clearCustomerFilterBtn.addEventListener('click', () => {
-                    if (searchCustomerNameInput) searchCustomerNameInput.value = '';
-                    if (searchCustomerPhoneInput) searchCustomerPhoneInput.value = '';
+                    if (searchCustomerInput) searchCustomerInput.value = '';
                     fetchCustomers();
                 });
             }
 
-            // Anasayfaya Dön Butonu
-            if (goToDashboardBtn) {
-                goToDashboardBtn.addEventListener('click', () => {
-                    window.location.href = 'index.html';
+
+            // Sidebar Fonksiyonları (Sales Management ile aynı)
+            const closeSidebar = () => {
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                    sidebar.classList.add('-translate-x-full');
+                }
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+
+                if (window.innerWidth >= 1024) {
+                    if (mainContent) mainContent.classList.remove('lg:ml-64');
+                }
+            };
+
+            const openSidebar = () => {
+                if (sidebar) {
+                    sidebar.classList.add('open');
+                    sidebar.classList.remove('-translate-x-full');
+                }
+
+                if (window.innerWidth < 1024) {
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                } else {
+                    if (mainContent) mainContent.classList.add('lg:ml-64');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                }
+            };
+
+            const initializeSidebarState = () => {
+                if (window.innerWidth >= 1024) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
 
-            // Kullanıcı Adı Bilgisi
-            if (loggedInUserSpan && decodedToken && decodedToken.email) {
-                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
             }
 
-            // Çıkış Yap Butonu
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageProductsBtn) {
+                manageProductsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/products.html';
+                    closeSidebar();
+                });
+            }
+            if (goToSalesManagementBtn) {
+                goToSalesManagementBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/sales_management.html';
+                    closeSidebar();
+                });
+            }
+            if (manageRecurringTransactionsBtn) {
+                manageRecurringTransactionsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/recurring_transactions.html';
+                    closeSidebar();
+                });
+            }
+            if (viewReportsBtn) {
+                viewReportsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/reports.html';
+                    closeSidebar();
+                });
+            }
+            if (exportCsvBtn) {
+                exportCsvBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showMessage('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    closeSidebar();
+                });
+            }
+            if (importCsvBtn) {
+                importCsvBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showMessage('Veri içe aktarma özelliği geliştiriliyor...', 'info');
+                    closeSidebar();
+                });
+            }
+
+            // Logout Button
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
@@ -922,8 +1338,21 @@
                 });
             }
 
-            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            // handleAuthError fonksiyonu
+            function handleAuthError() {
+                addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                window.location.href = 'auth.html';
+            }
+
+
+            // Initial calls on page load
             fetchCustomers();
+            loadNotifications();
+            initializeSidebarState();
         });
     </script>
 </body>
