@@ -879,10 +879,18 @@
             }
 
             function addCustomerActionListeners() {
+                console.log("[DEBUG] addCustomerActionListeners çağrıldı."); // Debug log
+
                 // Edit Button
                 document.querySelectorAll('.edit-customer-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
-                        const customerId = e.target.dataset.customerId;
+                        const clickedButton = e.target.closest('button'); // Tıklanan buton elementini al
+                        if (!clickedButton) {
+                            console.warn("[DEBUG] Tıklanan element bir buton değil veya bulunamadı.");
+                            return; // Buton değilse işlem yapma
+                        }
+                        console.log("[DEBUG] 'Düzenle' butonuna tıklandı."); // Debug log
+                        const customerId = clickedButton.dataset.customerId; // Veriyi buton elementinden al
                         await openEditCustomerModal(customerId);
                     });
                 });
@@ -890,8 +898,14 @@
                 // View History Button
                 document.querySelectorAll('.view-history-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
-                        const customerId = e.target.dataset.customerId;
-                        const customerName = e.target.dataset.customerName;
+                        const clickedButton = e.target.closest('button'); // Tıklanan buton elementini al
+                        if (!clickedButton) {
+                            console.warn("[DEBUG] Tıklanan element bir buton değil veya bulunamadı.");
+                            return; // Buton değilse işlem yapma
+                        }
+                        console.log("[DEBUG] 'Geçmiş' butonuna tıklandı."); // Debug log
+                        const customerId = clickedButton.dataset.customerId; // Veriyi buton elementinden al
+                        const customerName = clickedButton.dataset.customerName; // Veriyi buton elementinden al
                         await openCustomerHistoryModal(customerId, customerName);
                     });
                 });
@@ -899,19 +913,28 @@
                 // View Credit Transactions Button
                 document.querySelectorAll('.view-credit-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
-                        const customerId = e.target.dataset.customerId;
-                        const customerName = e.target.dataset.customerName;
-                        const currentDebt = parseFloat(e.target.dataset.currentDebt);
+                        const clickedButton = e.target.closest('button'); // Tıklanan buton elementini al
+                        if (!clickedButton) {
+                            console.warn("[DEBUG] Tıklanan element bir buton değil veya bulunamadı.");
+                            return; // Buton değilse işlem yapma
+                        }
+                        console.log("[DEBUG] 'Veresiye İşlemleri' butonuna tıklandı."); // Debug log
+                        const customerId = clickedButton.dataset.customerId; // Veriyi buton elementinden al
+                        const customerName = clickedButton.dataset.customerName; // Veriyi buton elementinden al
+                        const currentDebt = parseFloat(clickedButton.dataset.currentDebt); // Veriyi buton elementinden al
                         await openCreditTransactionsModal(customerId, customerName, currentDebt);
                     });
                 });
 
-                // Delete Button (Works, so keeping its original logic)
+                // Delete Button
                 document.querySelectorAll('.delete-customer-btn').forEach(button => {
                     button.addEventListener('click', (e) => {
-                        const customerId = e.target.dataset.customerId;
-                        const customerName = e.target.dataset.customerName;
-                        showConfirmBox(`Are you sure you want to delete customer '${customerName}'?`, async () => {
+                        const clickedButton = e.target.closest('button'); // Tıklanan buton elementini al
+                        if (!clickedButton) return; // Safety check
+                        console.log("[DEBUG] 'Sil' butonuna tıklandı."); // Debug log
+                        const customerId = clickedButton.dataset.customerId;
+                        const customerName = clickedButton.dataset.customerName;
+                        showConfirmBox(`'${customerName}' adlı müşteriyi silmek istediğinizden emin misiniz?`, async () => {
                             try {
                                 const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
                                     method: 'DELETE',
@@ -953,7 +976,6 @@
                     if (editCustomerAddressInput) editCustomerAddressInput.value = customer.address || '';
                     if (editCustomerShopNameInput) editCustomerShopNameInput.value = customer.shopName || '';
 
-                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
                     if (editCustomerModal) {
                         editCustomerModal.classList.remove('hidden');
                         editCustomerModal.classList.add('show');
@@ -968,7 +990,6 @@
             window.closeEditCustomerModal = function() {
                 if (editCustomerModal) {
                     editCustomerModal.classList.remove('show');
-                    // HIDDEN SINIFINI GERİ EKLE
                     editCustomerModal.classList.add('hidden');
                     console.log("[DEBUG] Edit Customer Modal kapatıldı.");
                 }
@@ -1060,7 +1081,6 @@
                         });
                     }
 
-                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
                     if (customerHistoryModal) {
                         customerHistoryModal.classList.remove('hidden');
                         customerHistoryModal.classList.add('show');
@@ -1075,7 +1095,6 @@
             window.closeCustomerHistoryModal = function() {
                 if (customerHistoryModal) {
                     customerHistoryModal.classList.remove('show');
-                    // HIDDEN SINIFINI GERİ EKLE
                     customerHistoryModal.classList.add('hidden');
                     console.log("[DEBUG] Customer History Modal kapatıldı.");
                 }
@@ -1132,7 +1151,6 @@
                         });
                     }
 
-                    // HIDDEN SINIFINI KALDIR VE SHOW SINIFINI EKLE
                     if (customerCreditTransactionsModal) {
                         customerCreditTransactionsModal.classList.remove('hidden');
                         customerCreditTransactionsModal.classList.add('show');
@@ -1147,7 +1165,6 @@
             window.closeCustomerCreditTransactionsModal = function() {
                 if (customerCreditTransactionsModal) {
                     customerCreditTransactionsModal.classList.remove('show');
-                    // HIDDEN SINIFINI GERİ EKLE
                     customerCreditTransactionsModal.classList.add('hidden');
                     console.log("[DEBUG] Customer Credit Transactions Modal kapatıldı.");
                 }
@@ -1159,12 +1176,19 @@
                 addCreditPaymentForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const customerId = creditCustomerIdInput?.value;
-                    const amount = parseFloat(creditAmountInput?.value);
+                    const amount = parseFloat(creditAmountInput?.value || '0'); // Input boşsa 0 olarak al
                     const type = creditTransactionTypeSelect?.value;
                     const description = creditDescriptionInput?.value.trim() || null;
 
+                    console.log("[DEBUG] Veresiye işlemi gönderme girişimi.");
+                    console.log("[DEBUG] customerId:", customerId);
+                    console.log("[DEBUG] amount (parsed):", amount);
+                    console.log("[DEBUG] type:", type);
+                    console.log("[DEBUG] description:", description);
+
                     if (isNaN(amount) || amount <= 0) {
-                        addNotification('Lütfen geçerli bir miktar girin.', 'error');
+                        addNotification('Lütfen geçerli ve pozitif bir miktar girin.', 'error');
+                        console.error("[DEBUG] Geçersiz miktar algılandı (frontend):", amount);
                         return;
                     }
 
@@ -1177,7 +1201,7 @@
                             },
                             body: JSON.stringify({
                                 customerId,
-                                amount: type === 'payment' ? -amount : amount, // Ödeme ise eksi, borç ise artı
+                                amount: type === 'payment' ? amount : amount, // amount her zaman pozitif gönderilsin, backend tipi kontrol etsin
                                 type,
                                 description,
                                 userId: getUserId()
@@ -1195,9 +1219,7 @@
                         // Müşteri listesini ve veresiye geçmişini günceller
                         fetchCustomers();
                         // Sadece mevcut modalı güncellemek için, modalı kapatıp tekrar açabiliriz
-                        // openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt); // Bu biraz daha kompleks, şimdilik tam yenileme
-                        window.closeCustomerCreditTransactionsModal(); // Modalı kapat
-                        fetchCustomers(); // Müşteri listesini yenileyerek borcu güncelleyebiliriz
+                        await openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt); // Yeni borç ile tekrar aç
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
                         addNotification(`Veresiye işlemi kaydedilirken hata: ${error.message}`, 'error');
