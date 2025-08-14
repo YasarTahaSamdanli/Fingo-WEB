@@ -261,7 +261,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Video'nın üzerinde olsun */
+            z-index: 2; /* Video'nun üzerinde olsun */
         }
         /* Diğer modal elemanları için stiller */
         .barcode-scanner-content h3 {
@@ -334,7 +334,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
+            display: none; /* Varsayılan olarak gizli */
             justify-content: center;
             align-items: center;
             z-index: 500;
@@ -343,8 +343,17 @@
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
         .modal-overlay.show {
-            opacity: 1;
-            visibility: visible;
+            /* AGRESİF DÜZELTME BAŞLANGICI */
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background-color: rgba(255, 0, 0, 0.5) !important; /* Kırmızı yaparak görünürlüğünü zorla */
+            top: 0 !important; /* Ekranın en üstüne sabitle */
+            left: 0 !important; /* Ekranın en soluna sabitle */
+            width: 100vw !important; /* Ekranın tam genişliği */
+            height: 100vh !important; /* Ekranın tam yüksekliği */
+            z-index: 99999 !important; /* Her şeyin üstünde olsun */
+            /* AGRESİF DÜZELTME SONU */
         }
         .modal-content {
             background-color: #1A202C; /* Koyu modal arkaplanı */
@@ -354,12 +363,12 @@
             max-width: 90%;
             width: 500px; /* Sabit genişlik veya responsive için daha uygun değerler */
             transform: translateY(-20px);
-            opacity: 0;
+            opacity: 0; /* Başlangıçta içeriği de gizle */
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .modal-overlay.show .modal-content {
             transform: translateY(0);
-            opacity: 1;
+            opacity: 1; /* Modal gösterildiğinde içeriği de görünür yap */
         }
         .modal-close-btn {
             position: absolute;
@@ -443,7 +452,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Satış Yönetimi Ana İçerik Alanı -->
-        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-0 ease-in-out">
             <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Satış Yönetimi</h2>
             <p class="text-lg text-gray-400 text-center mb-10 font-light">Yeni satışları kaydedin ve geçmiş satışlarınızı yönetin.</p>
 
@@ -1308,7 +1317,7 @@
                     // Sepette aynı ürün varsa miktarını artır
                     if (existingItemInCart) {
                         existingItemInCart.quantity += quantity;
-                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItem.unitPrice; // Corrected: Use existingItem.unitPrice
+                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice; // Corrected: Use existingItem.unitPrice
                     } else {
                         currentSaleItems.push({
                             productId,
