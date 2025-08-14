@@ -6,7 +6,7 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Yeni işlem ekleme rotası
+// Yeni işlem ekleme rotası (genel işlemler için)
 router.post('/transactions', authenticateToken, async (req, res) => {
     const { type, amount, description, category, date } = req.body;
     const userId = req.user.userId; // JWT'den gelen kullanıcı ID'si
@@ -244,5 +244,105 @@ router.get('/transactions/export-csv', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'CSV dışa aktarılırken sunucu hatası oluştu.' });
     }
 });
+
+// YENİ ROTA: Müşteriye ait veresiye işlemlerini getirme
+// GET /api/transactions/credit/:customerId
+router.get('/transactions/credit/:customerId', authenticateToken, async (req, res) => {
+    const { customerId } = req.params;
+    const userId = req.user.userId;
+
+    // 2FA doğrulaması kontrolü, eğer yetkilendirme middleware'i bunu yapmıyorsa
+    // Bu rotta 2FA'ya gerek olmadığı varsayılıyor, çünkü müşteri detaylarında gösteriliyor
+    // Eğer 2FA kontrolü isteniyorsa buraya eklenebilir.
+
+    try {
+        const db = getDb();
+        // Belirli müşteriye ait ve 'veresiye' (creditDebt) ile ilgili tüm işlemleri getir
+        // Veresiye işlemleri 'sales' koleksiyonunda depolanıyor
+        // Ancak 'transactions' koleksiyonunda da doğrudan 'payment' veya 'debt' tipli işlemler olabilir.
+        // Müşteri yönetimi sayfasındaki 'Veresiye İşlemleri' modalı,
+        // hem satışlardan doğan veresiyeleri hem de sonradan elle yapılan ödemeleri/borçları listelemeli.
+
+        // Müşteriye ait olan ve 'transactions' koleksiyonundaki 'payment' veya 'debt' tipli işlemleri çek
+        const creditTransactions = await db.collection('transactions').find({
+            userId: new ObjectId(userId),
+            customerId: new ObjectId(customerId), // Müşteri ID'sine göre filtrele
+            type: { $in: ['payment', 'debt'] } // Sadece ödeme veya borç ekleme işlemleri
+        }).sort({ date: -1, createdAt: -1 }).toArray();
+
+        res.status(200).json(creditTransactions);
+    } catch (error) {
+        console.error('Müşteriye ait veresiye işlemleri çekilirken hata:', error);
+        res.status(500).json({ message: 'Müşteriye ait veresiye işlemleri çekilirken sunucu hatası oluştu.' });
+    }
+});
+
+// YENİ ROTA: Müşterinin veresiye borcuna yeni bir işlem (ödeme veya borç ekleme) ekleme
+// POST /api/transactions/credit
+router.post('/transactions/credit', authenticateToken, async (req, res) => {
+    const { customerId, amount, type, description } = req.body;
+    const userId = req.user.userId;
+
+    if (!customerId || amount === undefined || !type) {
+        return res.status(400).json({ message: 'Müşteri ID, miktar ve işlem tipi gereklidir.' });
+    }
+    if (isNaN(amount) || (type === 'payment' && amount <= 0) || (type === 'debt' && amount <= 0)) {
+        return res.status(400).json({ message: 'Geçerli bir miktar girilmelidir.' });
+    }
+    if (type !== 'payment' && type !== 'debt') {
+        return res.status(400).json({ message: 'Geçersiz işlem tipi. "payment" veya "debt" olmalıdır.' });
+    }
+
+    try {
+        const db = getDb();
+        const customerObjectId = new ObjectId(customerId);
+        const userObjectId = new ObjectId(userId);
+
+        // Müşteriyi bul
+        const customer = await db.collection('customers').findOne({ _id: customerObjectId, userId: userObjectId });
+        if (!customer) {
+            return res.status(404).json({ message: 'Müşteri bulunamadı.' });
+        }
+
+        let newDebtAmount = customer.currentDebt || 0;
+        const transactionAmount = parseFloat(amount);
+
+        // Borç veya ödeme miktarına göre borcu güncelle
+        if (type === 'payment') {
+            newDebtAmount -= transactionAmount; // Ödeme yapıldığında borç azalır
+        } else if (type === 'debt') {
+            newDebtAmount += transactionAmount; // Borç eklendiğinde borç artar
+        }
+
+        // Müşterinin güncel borcunu güncelle
+        await db.collection('customers').updateOne(
+            { _id: customerObjectId },
+            { $set: { currentDebt: newDebtAmount, updatedAt: new Date() } }
+        );
+
+        // İşlem kaydını 'transactions' koleksiyonuna ekle
+        const newTransaction = {
+            userId: userObjectId,
+            customerId: customerObjectId,
+            customerName: customer.name, // Raporlama kolaylığı için müşteri adını da kaydet
+            type: type, // 'payment' veya 'debt'
+            amount: transactionAmount,
+            description: description || (type === 'payment' ? 'Veresiye Ödemesi' : 'Manuel Borç Ekleme'),
+            date: new Date(), // İşlem tarihi
+            createdAt: new Date()
+        };
+        await db.collection('transactions').insertOne(newTransaction);
+
+        res.status(200).json({
+            message: 'Veresiye işlemi başarıyla kaydedildi ve borç güncellendi.',
+            newDebt: newDebtAmount
+        });
+
+    } catch (error) {
+        console.error('Veresiye işlemi kaydedilirken hata:', error);
+        res.status(500).json({ message: 'Veresiye işlemi kaydedilirken sunucu hatası oluştu. Lütfen tekrar deneyin.', error: error.message });
+    }
+});
+
 
 module.exports = router;
