@@ -831,6 +831,9 @@
                     }
 
                     const customers = await response.json();
+                    // *** YENİ DEBUG LOG: API'den dönen tüm müşterileri listele
+                    console.log("[DEBUG-API-RESPONSE] API'den dönen müşteriler:", customers);
+
                     if (customerListDiv) customerListDiv.innerHTML = ''; // Eski müşterileri temizle
 
                     if (customers.length === 0) {
@@ -842,8 +845,8 @@
                         const customerCard = document.createElement('div');
                         customerCard.className = 'bg-gray-700 p-4 rounded-lg shadow-md border border-gray-600';
 
-                        // *** YENİ DEBUG LOG: Müşteri kartı oluşturulurken ID ve İsim
-                        console.log(`[DEBUG-RENDER] Müşteri kartı oluşturuluyor - ID: ${customer._id}, Ad: ${customer.name}`);
+                        // *** YENİ DEBUG LOG: Müşteri kartı HTML'ine yazılacak ID ve İsim
+                        console.log(`[DEBUG-RENDER-HTML] Müşteri kartı HTML'ine yazılıyor - ID: ${customer._id}, Ad: ${customer.name}`);
 
                         customerCard.innerHTML = `
                             <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4>
@@ -1193,7 +1196,7 @@
                     }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, {
+                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, { // Bu kısım değişmeyecek, backend POST body bekliyor.
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1201,7 +1204,7 @@
                             },
                             body: JSON.stringify({
                                 customerId,
-                                amount: amount, // Backend tipiyle borcu ayarlasın
+                                amount: amount,
                                 type,
                                 description,
                                 userId: getUserId()
@@ -1216,10 +1219,8 @@
 
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
-                        // Müşteri listesini ve veresiye geçmişini günceller
-                        fetchCustomers();
-                        // Modalı yeni borç ile tekrar aç
-                        await openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt);
+                        fetchCustomers(); // Müşteri listesini ve veresiye geçmişini günceller
+                        await openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt); // Modalı yeni borç ile tekrar aç
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
                         addNotification(`Veresiye işlemi kaydedilirken hata: ${error.message}`, 'error');
