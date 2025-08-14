@@ -589,7 +589,7 @@
             const customerCreditTransactionsModal = document.getElementById('customerCreditTransactionsModal');
             const creditCustomerNameSpan = document.getElementById('creditCustomerName');
             const currentCreditDebtSpan = document.getElementById('currentCreditDebt');
-            const creditCustomerIdInput = document.getElementById('creditCustomerId');
+            const creditCustomerIdInput = document.getElementById('creditCustomerId'); // Hidden input for customerId
             const addCreditPaymentForm = document.getElementById('addCreditPaymentForm');
             const creditAmountInput = document.getElementById('creditAmount');
             const creditTransactionTypeSelect = document.getElementById('creditTransactionType');
@@ -620,6 +620,9 @@
             const importCsvBtn = document.getElementById('importCsvBtn');
 
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+
+            // Global değişken: Açık olan müşterinin ID'sini tutmak için
+            let currentOpenCustomerIdForCredit = null;
 
 
             // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
@@ -831,7 +834,7 @@
                     }
 
                     const customers = await response.json();
-                    // *** YENİ DEBUG LOG: API'den dönen tüm müşterileri listele
+                    // Debug logu
                     console.log("[DEBUG-API-RESPONSE] API'den dönen müşteriler:", customers);
 
                     if (customerListDiv) customerListDiv.innerHTML = ''; // Eski müşterileri temizle
@@ -845,7 +848,7 @@
                         const customerCard = document.createElement('div');
                         customerCard.className = 'bg-gray-700 p-4 rounded-lg shadow-md border border-gray-600';
 
-                        // *** YENİ DEBUG LOG: Müşteri kartı HTML'ine yazılacak ID ve İsim
+                        // Debug logu: HTML'e yazılacak ID ve İsim
                         console.log(`[DEBUG-RENDER-HTML] Müşteri kartı HTML'ine yazılıyor - ID: ${customer._id}, Ad: ${customer.name}`);
 
                         customerCard.innerHTML = `
@@ -887,35 +890,35 @@
                 console.log("[DEBUG] addCustomerActionListeners çağrıldı.");
 
                 document.querySelectorAll('.edit-customer-btn').forEach(button => {
-                    // *** YENİ DEBUG LOG: Dinleyici eklenirken butonun data-attribute'leri
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
                     console.log(`[DEBUG-LISTENER-ATTACH] 'Düzenle' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) { return; }
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
-                        // *** YENİ DEBUG LOG: Tıklandığında okunan ID ve İsim
+                        // Debug logu: Tıklandığında okunan ID ve İsim
                         console.log(`[DEBUG-CLICK] 'Düzenle' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
                         await openEditCustomerModal(customerId);
                     });
                 });
 
                 document.querySelectorAll('.view-history-btn').forEach(button => {
-                    // *** YENİ DEBUG LOG: Dinleyici eklenirken butonun data-attribute'leri
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
                     console.log(`[DEBUG-LISTENER-ATTACH] 'Geçmiş' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) { return; }
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
-                        // *** YENİ DEBUG LOG: Tıklandığında okunan ID ve İsim
+                        // Debug logu: Tıklandığında okunan ID ve İsim
                         console.log(`[DEBUG-CLICK] 'Geçmiş' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
                         await openCustomerHistoryModal(customerId, customerName);
                     });
                 });
 
                 document.querySelectorAll('.view-credit-btn').forEach(button => {
-                    // *** YENİ DEBUG LOG: Dinleyici eklenirken butonun data-attribute'leri
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
                     console.log(`[DEBUG-LISTENER-ATTACH] 'Veresiye İşlemleri' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}, Borç: ${button.dataset.currentDebt}`);
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
@@ -923,7 +926,7 @@
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
                         const currentDebt = parseFloat(clickedButton.dataset.currentDebt);
-                        // *** YENİ DEBUG LOG: Tıklandığında okunan ID, İsim ve Borç
+                        // Debug logu: Tıklandığında okunan ID, İsim ve Borç
                         console.log(`[DEBUG-CLICK] 'Veresiye İşlemleri' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}, Okunan Borç: ${currentDebt}`);
                         await openCreditTransactionsModal(customerId, customerName, currentDebt);
                     });
@@ -1106,13 +1109,19 @@
             // Veresiye İşlemleri Modalı Fonksiyonları
             async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
                 console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
+
+                // *** BURADAKİ DÜZELTME: currentOpenCustomerIdForCredit'i set ediyoruz
+                currentOpenCustomerIdForCredit = customerId;
+
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
-                if (creditCustomerIdInput) creditCustomerIdInput.value = customerId;
+                // creditCustomerIdInput artık global değişkenden okunacak, buraya gerek kalmıyor
+                // if (creditCustomerIdInput) creditCustomerIdInput.value = customerId;
                 if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
 
                 try {
+                    // *** BURADAKİ DÜZELTME: Veresiye geçmişini çekmek için doğru endpoint'i kullanıyoruz
                     const response = await fetch(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
@@ -1172,23 +1181,34 @@
                     console.log("[DEBUG] Customer Credit Transactions Modal kapatıldı.");
                 }
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
+                currentOpenCustomerIdForCredit = null; // Modalı kapatırken global değişkeni temizle
             };
 
             // Veresiye Ödeme/Borç Ekleme Formu
             if (addCreditPaymentForm) {
                 addCreditPaymentForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const customerId = creditCustomerIdInput?.value;
+                    // customerId artık global değişkenden alınıyor
+                    const customerId = currentOpenCustomerIdForCredit;
                     const amount = parseFloat(creditAmountInput?.value || '0');
                     const type = creditTransactionTypeSelect?.value;
                     const description = creditDescriptionInput?.value.trim() || null;
 
                     console.log("[DEBUG] Veresiye işlemi gönderme girişimi.");
-                    console.log("[DEBUG] customerId:", customerId);
-                    console.log("[DEBUG] amount (parsed):", amount);
-                    console.log("[DEBUG] type:", type);
-                    console.log("[DEBUG] description:", description);
+                    const requestBody = {
+                        customerId, // Global değişkenden gelen customerId'yi kullan
+                        amount: amount,
+                        type,
+                        description,
+                        userId: getUserId()
+                    };
+                    console.log("[DEBUG-FRONTEND-PAYLOAD] API'ye gönderilecek veri:", requestBody);
 
+                    if (!customerId) {
+                        addNotification('Müşteri ID bulunamadı. Lütfen modalı kapatıp tekrar açın.', 'error');
+                        console.error("[DEBUG] customerId boş veya null.");
+                        return;
+                    }
                     if (isNaN(amount) || amount <= 0) {
                         addNotification('Lütfen geçerli ve pozitif bir miktar girin.', 'error');
                         console.error("[DEBUG] Geçersiz miktar algılandı (frontend):", amount);
@@ -1196,19 +1216,14 @@
                     }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, { // Bu kısım değişmeyecek, backend POST body bekliyor.
+                        // *** BURADAKİ DÜZELTME: Veresiye işlemi POST için doğru endpoint'i kullanıyoruz
+                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${getToken()}`
                             },
-                            body: JSON.stringify({
-                                customerId,
-                                amount: amount,
-                                type,
-                                description,
-                                userId: getUserId()
-                            })
+                            body: JSON.stringify(requestBody)
                         });
 
                         const result = await response.json();
@@ -1220,7 +1235,8 @@
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
                         fetchCustomers(); // Müşteri listesini ve veresiye geçmişini günceller
-                        await openCreditTransactionsModal(customerId, creditCustomerNameSpan.textContent, result.newDebt); // Modalı yeni borç ile tekrar aç
+                        // Modalı yeni borç ile tekrar aç, currentOpenCustomerIdForCredit kullanılıyor
+                        await openCreditTransactionsModal(currentOpenCustomerIdForCredit, creditCustomerNameSpan.textContent, result.newDebt);
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
                         addNotification(`Veresiye işlemi kaydedilirken hata: ${error.message}`, 'error');
