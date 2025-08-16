@@ -1790,7 +1790,7 @@
 
             // Logged In User Info
             if (loggedInUserSpan && decodedToken && decodedToken.email) {
-                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}`.substring(0,20) + "...";
+                
             }
             if (loggedInUserMainSpan && decodedToken && decodedToken.email) {
                 loggedInUserMainSpan.textContent = `${decodedToken.email.split('@')[0]}`;
