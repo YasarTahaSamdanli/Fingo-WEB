@@ -377,44 +377,41 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-    <!-- Sol Kısım: Menü Butonu -->
-    <div class="flex-none">
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Sol Kısım: Menü Butonu -->
         <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
             <i class="fas fa-bars text-white text-xl"></i>
         </button>
-    </div>
 
-    <!-- Orta Kısım: Başlık -->
-    <div class="flex-1 text-center">
-        <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">
+        <!-- Orta Kısım: Başlık (Esnek ve Ortalanmış) -->
+        <!-- flex-grow ile kalan tüm yatay alanı doldurur, text-center ile kendi içinde ortalar -->
+        <h1 class="flex-grow text-center text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">
             Fingo Finans Takip
         </h1>
-    </div>
 
-    <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
-    <div class="flex-none flex items-center space-x-3 md:space-x-4">
-        <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
-            <i class="fas fa-bell text-white text-xl"></i>
-            <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
-        </button>
-        <div class="relative inline-block text-left">
-            <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
-                <span id="loggedInUserName">Ayarlar</span>
-                <i class="fas fa-chevron-down ml-2 text-xs"></i>
+        <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
+        <div class="flex items-center space-x-3 md:space-x-4">
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-white text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
-            <div id="userDropdownMenu" class="dropdown-menu">
-                <a href="/Fingo-WEB/profile.html" class="dropdown-item flex items-center">
-                    <i class="fas fa-user-circle mr-2"></i> Profil Yönetimi
-                </a>
-                <button id="logoutBtn" class="dropdown-item flex items-center">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
+            <!-- Yeni Dropdown Menü -->
+            <div class="relative inline-block text-left">
+                <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
+                    <span id="loggedInUserName">Ayarlar</span>
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
                 </button>
+                <div id="userDropdownMenu" class="dropdown-menu">
+                    <a href="/Fingo-WEB/profile.html" class="dropdown-item flex items-center">
+                        <i class="fas fa-user-circle mr-2"></i> Profil Yönetimi
+                    </a>
+                    <button id="logoutBtn" class="dropdown-item flex items-center">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-</header>
-
+    </header>
 
     <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
@@ -703,7 +700,7 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
             const mainContent = document.getElementById('mainContent');
-            const appHeader = document.getElementById('appHeader');
+            const appHeader = document.getElementById('appHeader'); // Header'ın kendisi
 
             // Header butonları (Dropdown ve Bildirim)
             const userDropdownBtn = document.getElementById('userDropdownBtn');
@@ -1710,10 +1707,10 @@
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
-                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
+                // Büyük ekranlarda (lg ve üzeri) mainContent ve appHeader'ın margin/padding'ini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+                    if (appHeader) appHeader.classList.remove('lg:pl-64');
                 }
                 // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
@@ -1725,14 +1722,14 @@
                     sidebar.classList.remove('-translate-x-full');
                 }
 
+                // Küçük ekranlarda overlay'i aktifleştir
                 if (window.innerWidth < 1024) {
-                    // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
-                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
+                    // Büyük ekranlarda mainContent'i kaydır ve appHeader'a padding ekle
                     if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
-                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                    if (appHeader) appHeader.classList.add('lg:pl-64');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Büyük ekranda overlay'e gerek yok
                 }
                 // Sidebar açılırken menü tuşunu gizle
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
