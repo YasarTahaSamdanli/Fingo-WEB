@@ -323,12 +323,12 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header -->
-    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <div class="flex items-center">
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-xl md:text-2xl font-bold text-blue-300">Fingo Müşteri Yönetimi</h1> <!-- Başlık boyutu küçültüldü -->
+            <h1 class="text-xl md:text-2xl font-bold text-blue-300">Fingo Müşteri Yönetimi</h1>
         </div>
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
@@ -344,36 +344,36 @@
     <div class="flex flex-1 pt-16">
 
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4"> <!-- pt-20'den pt-4'e düşürüldü -->
-            <div class="flex items-center justify-between mb-4 mt-4"> <!-- mb-8'den mb-4'e düşürüldü, mt-4 eklendi -->
-                <h2 class="text-xl font-bold text-blue-300">Fingo</h2> <!-- Sidebar başlık boyutu küçültüldü -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
+            <div class="flex items-center justify-between mb-4 mt-4">
+                <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <nav class="space-y-3"> <!-- Sidebar menü öğeleri arası boşluk ayarlandı -->
-                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
                 </a>
-                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium">
                     <i class="fas fa-users"></i> <span class="text-gray-100">Müşteri Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
                 </a>
-                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
                 </a>
-                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
                 </a>
-                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
                 </a>
             </nav>
@@ -383,17 +383,17 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Müşteri Yönetimi Ana İçerik Alanı -->
-        <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out"> <!-- padding ve max-width artırıldı/değiştirildi -->
-            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Müşteri Yönetimi</h2> <!-- Başlık boyutu küçültüldü -->
-            <p class="text-base text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve geçmişlerini görüntüleyin.</p> <!-- Yazı boyutu küçültüldü -->
+        <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
+            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Müşteri Yönetimi</h2>
+            <p class="text-base text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve geçmişlerini görüntüleyin.</p>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10"> <!-- Gap artırıldı -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
                 <!-- Left Column (Yeni Müşteri Ekle) -->
                 <div class="lg:col-span-1">
-                    <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col"> <!-- Padding artırıldı -->
-                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h3> <!-- Başlık boyutu küçültüldü -->
-                        <form id="newCustomerForm" class="space-y-6"> <!-- Space-y artırıldı -->
+                    <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
+                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h3>
+                        <form id="newCustomerForm" class="space-y-6">
                             <div>
                                 <label for="customerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adı:</label>
                                 <input type="text" id="customerName" placeholder="Müşteri Adı Soyadı" class="form-input w-full p-3 text-base shadow-sm" required>
@@ -420,11 +420,11 @@
                 </div> <!-- Left Column End -->
 
                 <!-- Right Column (Müşteri Listesi) -->
-                <div class="lg:col-span-1 space-y-10"> <!-- Space-y artırıldı -->
+                <div class="lg:col-span-1 space-y-10">
 
                     <!-- Müşteri Ara -->
-                    <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg"> <!-- Padding artırıldı -->
-                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşteri Ara</h3> <!-- Başlık boyutu küçültüldü -->
+                    <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşteri Ara</h3>
                         <div class="relative">
                             <input type="text" id="searchCustomerInput" placeholder="Müşteri adı veya telefon numarası" class="form-input w-full p-3 text-base shadow-sm">
                             <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -436,9 +436,9 @@
                     </div>
 
                     <!-- Müşteri Listesi -->
-                    <div id="customerListContainer" class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative"> <!-- Padding artırıldı -->
-                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşterileriniz</h3> <!-- Başlık boyutu küçültüldü -->
-                        <div id="customerList" class="space-y-5 max-h-[500px] overflow-y-auto pr-3"> <!-- Space-y ve pr artırıldı -->
+                    <div id="customerListContainer" class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
+                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşterileriniz</h3>
+                        <div id="customerList" class="space-y-5 max-h-[500px] overflow-y-auto pr-3">
                             <p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>
                         </div>
                         <!-- Loading Overlay -->
@@ -511,7 +511,7 @@
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerHistoryModal()">&times;</button>
             <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Müşteri Geçmişi: <span id="historyCustomerName" class="text-blue-200"></span></h3>
-            <div id="customerSalesHistory" class="max-h-96 overflow-y-auto space-y-4 p-4 bg-gray-900 rounded-md border border-gray-700"> <!-- Padding ve space-y artırıldı -->
+            <div id="customerSalesHistory" class="max-h-96 overflow-y-auto space-y-4 p-4 bg-gray-900 rounded-md border border-gray-700">
                 <p class="text-center text-gray-400 py-2">Yükleniyor veya geçmiş bulunamadı...</p>
             </div>
         </div>
@@ -521,10 +521,10 @@
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerCreditTransactionsModal()">&times;</button>
             <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veresiye İşlemleri: <span id="creditCustomerName" class="text-blue-200"></span></h3>
-            <div class="mb-5 p-4 bg-gray-700 rounded-md shadow-inner"> <!-- Margin ve padding artırıldı -->
+            <div class="mb-5 p-4 bg-gray-700 rounded-md shadow-inner">
                 <p class="text-lg font-semibold text-gray-200">Mevcut Veresiye Borcu: <span id="currentCreditDebt" class="text-red-400 ml-2">0.00 TL</span></p>
             </div>
-            <form id="addCreditPaymentForm" class="space-y-4 mb-6 p-4 bg-gray-800 rounded-md border border-gray-700"> <!-- Padding ve space-y artırıldı -->
+            <form id="addCreditPaymentForm" class="space-y-4 mb-6 p-4 bg-gray-800 rounded-md border border-gray-700">
                 <h4 class="text-lg font-semibold text-gray-200 mb-3">Yeni Ödeme/Borç Ekle</h4>
                 <input type="hidden" id="creditCustomerId">
                 <div>
@@ -545,7 +545,7 @@
                 <button type="submit" class="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition-colors font-semibold">İşlemi Kaydet</button>
             </form>
             <h4 class="text-lg font-bold text-blue-300 mb-3">Veresiye İşlem Geçmişi</h4>
-            <div id="creditTransactionHistory" class="max-h-60 overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-md border border-gray-700"> <!-- Padding ve space-y artırıldı -->
+            <div id="creditTransactionHistory" class="max-h-60 overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-md border border-gray-700">
                 <p class="text-center text-gray-400 py-2">Yükleniyor veya işlem geçmişi bulunamadı...</p>
             </div>
         </div>
@@ -598,6 +598,7 @@
             const loggedInUserSpan = document.getElementById('loggedInUser');
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
+            const appHeader = document.getElementById('appHeader'); // Yeni eklenen header ID'si
 
             // Customer Form Elements
             const newCustomerForm = document.getElementById('newCustomerForm');
@@ -894,7 +895,7 @@
                         console.log(`[DEBUG-RENDER-HTML] Müşteri kartı HTML'ine yazılıyor - ID: ${customer._id}, Ad: ${customer.name}`);
 
                         customerCard.innerHTML = `
-                            <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4> <!-- Müşteri kartı başlık boyutu ayarlandı -->
+                            <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4>
                             <p class="text-gray-300 text-sm">Telefon: ${customer.phoneNumber}</p>
                             ${customer.email ? `<p class="text-gray-300 text-sm">E-posta: ${customer.email}</p>` : ''}
                             ${customer.address ? `<p class="text-gray-300 text-sm">Adres: ${customer.address}</p>` : ''}
@@ -1117,7 +1118,7 @@
                                 <li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
                             `).join('');
                             const saleEntry = document.createElement('div');
-                            saleEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 space-y-2'; // Padding ve space-y artırıldı
+                            saleEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 space-y-2';
                             saleEntry.innerHTML = `
                                 <p class="text-md font-semibold text-blue-300 mb-1">Tarih: ${saleDate} - Toplam: ${sale.totalAmount.toFixed(2)} TL</p>
                                 <p class="text-sm text-gray-400 mb-1">Ödeme Tipi: ${sale.paymentMethod || 'Belirtilmemiş'}</p>
@@ -1189,7 +1190,7 @@
                             const txIcon = tx.type === 'payment' ? 'fa-arrow-down' : 'fa-arrow-up'; // Ödeme: para girişi, Borç: para çıkışı
 
                             const txEntry = document.createElement('div');
-                            txEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 flex items-center justify-between'; // Padding artırıldı
+                            txEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 flex items-center justify-between';
                             txEntry.innerHTML = `
                                 <div class="flex items-center">
                                     <i class="fas ${txIcon} mr-3 ${txColor}"></i>
@@ -1306,6 +1307,7 @@
                 // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
                 }
             };
 
@@ -1318,9 +1320,11 @@
                 if (window.innerWidth < 1024) {
                     // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                    // Küçük ekranlarda header'a özel bir şey yapmamıza gerek yok, sidebar zaten üstüne gelir.
                 } else {
                     // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
+                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
             };
@@ -1330,6 +1334,8 @@
                     openSidebar();
                 } else {
                     closeSidebar();
+                    // Ek olarak, küçük ekranlarda header'da lg:pl-64 kalmadığından emin ol
+                    if (appHeader) appHeader.classList.remove('lg:pl-64');
                 }
             };
 
