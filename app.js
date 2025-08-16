@@ -5,7 +5,6 @@ const cors = require('cors');
 
 // Yeni oluşturduğumuz modülleri içe aktarıyoruz
 const { connectDB } = require('./db'); // db.js dosyasından connectDB fonksiyonunu al
-// const { sendVerificationEmail } = require('./utils/emailSender'); // emailSender'ı dahil ettik (app.js'de doğrudan kullanılmadığı için burada yorum satırı kalsın)
 
 // Rota modüllerini içe aktarıyoruz
 const authRoutes = require('./routes/auth');
@@ -16,7 +15,7 @@ const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const twoFARoutes = require('./routes/2fa');
 const userRoutes = require('./routes/users');
-const transactionRoutes = require('./routes/transactions'); // << Burası önemli: transactions rotaları
+const transactionRoutes = require('./routes/transactions');
 const categoryRoutes = require('./routes/categories');
 const reportsRoutes = require('./routes/reports');
 const customerRoutes = require('./routes/customerRoutes');
@@ -47,20 +46,17 @@ app.use('/api', supplierRoutes);
 app.use('/api', purchaseOrderRoutes);
 app.use('/api', twoFARoutes);
 app.use('/api', userRoutes);
-app.use('/api', transactionRoutes); // << Burası önemli: transactions rotaları
+app.use('/api', transactionRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api', customerRoutes);
 console.log('Tüm API rotaları /api altında kaydedildi.');
 
 // Debug: Express tarafından kaydedilen tüm rotaları listele
-// Bu kısım sunucu başlatıldığında veya routes yeniden yüklendiğinde çalışacaktır.
-// app.js'in en altında, app.listen'dan hemen önce ekliyoruz.
 app._router.stack.forEach(function(r){
     if (r.route && r.route.path){
         console.log(`[ROUTE-DEBUG] Yol: ${r.route.path}, Metot: ${Object.keys(r.route.methods)[0].toUpperCase()}`);
     } else if (r.name === 'router' && r.handle.stack) {
-        // Alt-router'ları (middleware.js'den gelenler gibi) da kontrol et
         r.handle.stack.forEach(function(hr) {
             if (hr.route && hr.route.path) {
                 const fullPath = r.regexp.source.replace(/\\\//g, '/').replace(/\/\(\?\:\/\.\*\)/g, '').slice(0, -1) + hr.route.path;
@@ -85,7 +81,8 @@ app.use((req, res) => {
 });
 
 // Veritabanı bağlantısını başlat ve sonra sunucuyu dinlemeye başla
-connectDB().then(() => {
+// BURADAKİ DÜZELTME: connectDB'ye MONGODB_URI'yi parametre olarak geçiyoruz
+connectDB(process.env.MONGODB_URI).then(() => {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Sunucu ${PORT} portunda çalışıyor.`);
