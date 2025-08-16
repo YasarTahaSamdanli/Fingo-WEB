@@ -1047,6 +1047,7 @@
             async function openCustomerHistoryModal(customerId, customerName) {
                 console.log(`[DEBUG] openCustomerHistoryModal çağrıldı, ID: ${customerId}, Ad: ${customerName}`);
                 if (historyCustomerNameSpan) historyCustomerNameSpan.textContent = customerName;
+                // Mevcut içeriği temizle ve yükleniyor mesajı göster
                 if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
 
                 try {
@@ -1110,18 +1111,16 @@
             async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
                 console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
 
-                // *** BURADAKİ DÜZELTME: currentOpenCustomerIdForCredit'i set ediyoruz
+                // currentOpenCustomerIdForCredit'i set ediyoruz
                 currentOpenCustomerIdForCredit = customerId;
 
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
-                // creditCustomerIdInput artık global değişkenden okunacak, buraya gerek kalmıyor
-                // if (creditCustomerIdInput) creditCustomerIdInput.value = customerId;
                 if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
 
                 try {
-                    // *** BURADAKİ DÜZELTME: Veresiye geçmişini çekmek için doğru endpoint'i kullanıyoruz
+                    // Veresiye geçmişini çekmek için doğru endpoint'i kullanıyoruz
                     const response = await fetch(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
@@ -1216,7 +1215,6 @@
                     }
 
                     try {
-                        // *** BURADAKİ DÜZELTME: Veresiye işlemi POST için doğru endpoint'i kullanıyoruz
                         const response = await fetch(`${API_BASE_URL}/transactions/credit`, {
                             method: 'POST',
                             headers: {
@@ -1235,7 +1233,6 @@
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
                         fetchCustomers(); // Müşteri listesini ve veresiye geçmişini günceller
-                        // Modalı yeni borç ile tekrar aç, currentOpenCustomerIdForCredit kullanılıyor
                         await openCreditTransactionsModal(currentOpenCustomerIdForCredit, creditCustomerNameSpan.textContent, result.newDebt);
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
@@ -1385,6 +1382,39 @@
                 localStorage.removeItem('userEmail');
                 localStorage.removeItem('fingoNotifications');
                 window.location.href = 'auth.html';
+            }
+
+            // Bildirim Çanı tıklama olayı
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    notificationCenter.classList.toggle('active');
+                    if (notificationCenter.classList.contains('active')) {
+                        // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
+                        notifications.forEach(n => n.isRead = true);
+                        saveNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            // Bildirim merkezini kapatma butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    notificationCenter.classList.remove('active');
+                });
+            }
+
+            // Tüm bildirimleri temizle butonu
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
+                        notifications = [];
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                        addNotification('Tüm bildirimler temizlendi.', 'info');
+                    });
+                });
             }
 
 
