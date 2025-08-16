@@ -325,6 +325,7 @@
     <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <div class="flex items-center">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
@@ -347,6 +348,7 @@
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -598,7 +600,7 @@
             const loggedInUserSpan = document.getElementById('loggedInUser');
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
-            const appHeader = document.getElementById('appHeader'); // Yeni eklenen header ID'si
+            const appHeader = document.getElementById('appHeader');
 
             // Customer Form Elements
             const newCustomerForm = document.getElementById('newCustomerForm');
@@ -1309,6 +1311,8 @@
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
                 }
+                // Sidebar kapanırken menü tuşunu tekrar göster
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
             const openSidebar = () => {
@@ -1320,22 +1324,24 @@
                 if (window.innerWidth < 1024) {
                     // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
-                    // Küçük ekranlarda header'a özel bir şey yapmamıza gerek yok, sidebar zaten üstüne gelir.
                 } else {
                     // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
                     if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
+                // Sidebar açılırken menü tuşunu gizle
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar();
+                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
+                    if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden'); // Açma tuşunu gizle
                 } else {
-                    closeSidebar();
-                    // Ek olarak, küçük ekranlarda header'da lg:pl-64 kalmadığından emin ol
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
+                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
+                    if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden'); // Açma tuşunu göster
                 }
             };
 
