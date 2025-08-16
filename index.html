@@ -377,13 +377,11 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out relative">
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <!-- Sol Kısım: Menü Butonu -->
-        <div class="z-10">
-            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-                <i class="fas fa-bars text-white text-xl"></i>
-            </button>
-        </div>
+        <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+            <i class="fas fa-bars text-white text-xl"></i>
+        </button>
 
         <!-- Orta Kısım: Başlık (Dinamik olarak konumlanacak) -->
         <h1 id="headerTitle" class="absolute text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap top-1/2 -translate-y-1/2">
@@ -391,7 +389,7 @@
         </h1>
 
         <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
-        <div class="flex items-center space-x-3 md:space-x-4 z-10">
+        <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
@@ -1716,9 +1714,20 @@
                 // Başlığın merkez noktası: İçerik alanının sol başlangıcı + (içerik alanının genişliği / 2)
                 const newCenterX = contentLeftEdge + ((contentRightEdge - contentLeftEdge) / 2);
 
+                // Debugging logs (konsolda görmek istersen aktif edebilirsin)
+                // console.log(`[DEBUG] updateHeaderTitlePosition called:`);
+                // console.log(`  isSidebarOpen: ${isSidebarOpen}`);
+                // console.log(`  window.innerWidth: ${window.innerWidth}`);
+                // console.log(`  contentLeftEdge: ${contentLeftEdge}`);
+                // console.log(`  contentRightEdge: ${contentRightEdge}`);
+                // console.log(`  newCenterX (calculated left): ${newCenterX}px`);
+                // console.log(`  Current headerTitle.style.left: ${headerTitle.style.left}`);
+
                 // Başlığı bu merkez noktasına göre konumlandır (kendi genişliğinin yarısı kadar sola kaydırarak)
+                // ve dikeyde de ortala
                 headerTitle.style.left = `${newCenterX}px`;
-                headerTitle.style.transform = `translateX(-50%) translateY(-50%)`; // translateY zaten CSS'te var, ama emin olmak için burada da tutalım.
+                headerTitle.style.top = `50%`; // Explicitly set top to 50%
+                headerTitle.style.transform = `translate(-50%, -50%)`; // Center both horizontally and vertically
             };
 
             // Sidebar Fonksiyonları
