@@ -56,7 +56,7 @@
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
         }
 
-        /* Mesaj Kutusu Stillleri */
+        /* Message Box Stillleri */
         .message-box {
             position: fixed;
             top: 20px;
@@ -1716,7 +1716,7 @@
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64');
                 }
-                // Sidebar menü tuşunu her zaman göster
+                // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
@@ -1735,8 +1735,8 @@
                     if (appHeader) appHeader.classList.add('lg:pl-64');
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Büyük ekranda overlay'e gerek yok
                 }
-                // Sidebar menü tuşunu her zaman göster
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
+                // Sidebar açılırken menü tuşunu gizle
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
