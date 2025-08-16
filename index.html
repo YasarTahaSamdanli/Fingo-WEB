@@ -56,7 +56,7 @@
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
         }
 
-        /* Message Box Stillleri */
+        /* Mesaj Kutusu Stillleri */
         .message-box {
             position: fixed;
             top: 20px;
@@ -378,15 +378,15 @@
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <!-- Sol Kısım: Menü Butonu -->
-        <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-            <i class="fas fa-bars text-white text-xl"></i>
-        </button>
-
-        <!-- Orta Kısım: Başlık (Dinamik olarak konumlanacak) -->
-        <h1 id="headerTitle" class="absolute text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap top-1/2 -translate-y-1/2">
-            Fingo Finans Takip
-        </h1>
+        <!-- Sol Kısım: Menü Butonu ve Başlık -->
+        <div class="flex items-center">
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
+            </button>
+            <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">
+                Fingo Finans Takip
+            </h1>
+        </div>
 
         <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
         <div class="flex items-center space-x-3 md:space-x-4">
@@ -1697,37 +1697,10 @@
                 }
             }
 
-            // Başlık konumunu güncelleyen fonksiyon
+            // Başlık konumunu güncelleyen fonksiyon (bu fonksiyon artık kullanılmayacak, ama boş bırakalım ki hata vermesin)
             const updateHeaderTitlePosition = () => {
-                if (!headerTitle || !sidebar) return;
-
-                const sidebarWidth = 256; // Sidebar'ın genişliği
-                const isSidebarOpen = sidebar.classList.contains('open') && window.innerWidth >= 1024;
-
-                let contentLeftEdge = 0; // İçerik alanının sol başlangıç noktası
-                let contentRightEdge = window.innerWidth; // İçerik alanının sağ bitiş noktası
-
-                if (isSidebarOpen) {
-                    contentLeftEdge = sidebarWidth;
-                }
-
-                // Başlığın merkez noktası: İçerik alanının sol başlangıcı + (içerik alanının genişliği / 2)
-                const newCenterX = contentLeftEdge + ((contentRightEdge - contentLeftEdge) / 2);
-
-                // Debugging logs (konsolda görmek istersen aktif edebilirsin)
-                // console.log(`[DEBUG] updateHeaderTitlePosition called:`);
-                // console.log(`  isSidebarOpen: ${isSidebarOpen}`);
-                // console.log(`  window.innerWidth: ${window.innerWidth}`);
-                // console.log(`  contentLeftEdge: ${contentLeftEdge}`);
-                // console.log(`  contentRightEdge: ${contentRightEdge}`);
-                // console.log(`  newCenterX (calculated left): ${newCenterX}px`);
-                // console.log(`  Current headerTitle.style.left: ${headerTitle.style.left}`);
-
-                // Başlığı bu merkez noktasına göre konumlandır (kendi genişliğinin yarısı kadar sola kaydırarak)
-                // ve dikeyde de ortala
-                headerTitle.style.left = `${newCenterX}px`;
-                headerTitle.style.top = `50%`; // Explicitly set top to 50%
-                headerTitle.style.transform = `translate(-50%, -50%)`; // Center both horizontally and vertically
+                // Bu fonksiyon artık başlığı dinamik olarak konumlandırmayacak.
+                // Başlık, flexbox yapısı içinde doğal olarak konumlanacak.
             };
 
             // Sidebar Fonksiyonları
@@ -1743,9 +1716,8 @@
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64');
                 }
-                // Sidebar kapanırken menü tuşunu tekrar göster
+                // Sidebar menü tuşunu her zaman göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
-                updateHeaderTitlePosition(); // Başlık konumunu güncelle
             };
 
             const openSidebar = () => {
@@ -1763,9 +1735,8 @@
                     if (appHeader) appHeader.classList.add('lg:pl-64');
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active'); // Büyük ekranda overlay'e gerek yok
                 }
-                // Sidebar açılırken menü tuşunu gizle
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
-                updateHeaderTitlePosition(); // Başlık konumunu güncelle
+                // Sidebar menü tuşunu her zaman göster
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
             const initializeSidebarState = () => {
@@ -1774,7 +1745,6 @@
                 } else {
                     closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
                 }
-                updateHeaderTitlePosition(); // Başlangıçta da başlık konumunu ayarla
             };
 
             window.addEventListener('resize', () => {
