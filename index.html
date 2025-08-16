@@ -377,20 +377,21 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out relative">
         <!-- Sol Kısım: Menü Butonu -->
-        <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-            <i class="fas fa-bars text-white text-xl"></i>
-        </button>
+        <div class="z-10">
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
+            </button>
+        </div>
 
-        <!-- Orta Kısım: Başlık (Esnek ve Ortalanmış) -->
-        <!-- flex-grow ile kalan tüm yatay alanı doldurur, text-center ile kendi içinde ortalar -->
-        <h1 class="flex-grow text-center text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">
+        <!-- Orta Kısım: Başlık (Dinamik olarak konumlanacak) -->
+        <h1 id="headerTitle" class="absolute text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap top-1/2 -translate-y-1/2">
             Fingo Finans Takip
         </h1>
 
         <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
-        <div class="flex items-center space-x-3 md:space-x-4">
+        <div class="flex items-center space-x-3 md:space-x-4 z-10">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
@@ -701,6 +702,7 @@
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
             const mainContent = document.getElementById('mainContent');
             const appHeader = document.getElementById('appHeader'); // Header'ın kendisi
+            const headerTitle = document.getElementById('headerTitle'); // Başlık elementi
 
             // Header butonları (Dropdown ve Bildirim)
             const userDropdownBtn = document.getElementById('userDropdownBtn');
@@ -1360,7 +1362,6 @@
                     return;
                 }
                 try {
-                    // API'ye gönderirken ay değeri 1-tabanlı olmalı, JavaScript'te 0-tabanlı olduğu için +1 ekliyoruz.
                     const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month + 1}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1698,6 +1699,27 @@
                 }
             }
 
+            // Başlık konumunu güncelleyen fonksiyon
+            const updateHeaderTitlePosition = () => {
+                if (!headerTitle || !sidebar) return;
+
+                const sidebarWidth = 256; // Sidebar'ın genişliği
+                const isSidebarOpen = sidebar.classList.contains('open') && window.innerWidth >= 1024;
+
+                let contentLeftEdge = 0; // İçerik alanının sol başlangıç noktası
+                let contentRightEdge = window.innerWidth; // İçerik alanının sağ bitiş noktası
+
+                if (isSidebarOpen) {
+                    contentLeftEdge = sidebarWidth;
+                }
+
+                // Başlığın merkez noktası: İçerik alanının sol başlangıcı + (içerik alanının genişliği / 2)
+                const newCenterX = contentLeftEdge + ((contentRightEdge - contentLeftEdge) / 2);
+
+                // Başlığı bu merkez noktasına göre konumlandır (kendi genişliğinin yarısı kadar sola kaydırarak)
+                headerTitle.style.left = `${newCenterX}px`;
+                headerTitle.style.transform = `translateX(-50%) translateY(-50%)`; // translateY zaten CSS'te var, ama emin olmak için burada da tutalım.
+            };
 
             // Sidebar Fonksiyonları
             const closeSidebar = () => {
@@ -1714,6 +1736,7 @@
                 }
                 // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
+                updateHeaderTitlePosition(); // Başlık konumunu güncelle
             };
 
             const openSidebar = () => {
@@ -1733,6 +1756,7 @@
                 }
                 // Sidebar açılırken menü tuşunu gizle
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
+                updateHeaderTitlePosition(); // Başlık konumunu güncelle
             };
 
             const initializeSidebarState = () => {
@@ -1741,9 +1765,12 @@
                 } else {
                     closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
                 }
+                updateHeaderTitlePosition(); // Başlangıçta da başlık konumunu ayarla
             };
 
-            window.addEventListener('resize', initializeSidebarState);
+            window.addEventListener('resize', () => {
+                initializeSidebarState(); // Boyut değiştiğinde sidebar durumunu ve başlık konumunu güncelle
+            });
 
             if (sidebarToggleBtn) {
                 sidebarToggleBtn.addEventListener('click', () => {
