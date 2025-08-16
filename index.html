@@ -372,33 +372,37 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
-            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-                <i class="fas fa-bars text-white text-xl"></i>
+    <div id="headerLeft" class="flex items-center">
+        <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+            <i class="fas fa-bars text-white text-xl"></i>
+        </button>
+    </div>
+
+    <div class="flex-grow flex justify-center items-center">
+        <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Finans Takip</h1>
+    </div>
+
+    <div id="headerRight" class="flex items-center space-x-3 md:space-x-4">
+        <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
+            <i class="fas fa-bell text-white text-xl"></i>
+            <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+        </button>
+        <div class="relative inline-block text-left">
+            <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
+                <span id="loggedInUserName"></span>
+                <i class="fas fa-chevron-down ml-2 text-xs"></i>
             </button>
-            <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Finans Takip</h1>
-        </div>
-        <div class="flex items-center space-x-3 md:space-x-4">
-            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
-                <i class="fas fa-bell text-white text-xl"></i>
-                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
-            </button>
-            <div class="relative inline-block text-left">
-                <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
-                    <span id="loggedInUserName"></span>
-                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+            <div id="userDropdownMenu" class="dropdown-menu">
+                <a href="/Fingo-WEB/profile.html" class="dropdown-item flex items-center">
+                    <i class="fas fa-user-circle mr-2"></i> Profil Yönetimi
+                </a>
+                <button id="logoutBtn" class="dropdown-item flex items-center">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
                 </button>
-                <div id="userDropdownMenu" class="dropdown-menu">
-                    <a href="/Fingo-WEB/profile.html" class="dropdown-item flex items-center">
-                        <i class="fas fa-user-circle mr-2"></i> Profil Yönetimi
-                    </a>
-                    <button id="logoutBtn" class="dropdown-item flex items-center">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
-                    </button>
-                </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
     <div class="flex flex-1 pt-16">
 
@@ -1673,51 +1677,39 @@
 
             // Sidebar Fonksiyonları
             const closeSidebar = () => {
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                    sidebar.classList.add('-translate-x-full');
-                }
-                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    if (sidebar) {
+        sidebar.classList.remove('open');
+        sidebar.classList.add('-translate-x-full');
+    }
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
-                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
-                if (window.innerWidth >= 1024) {
-                    if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+    // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
+    if (window.innerWidth >= 1024) {
+        if (mainContent) mainContent.classList.remove('lg:ml-64');
+        if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+    }
+    // Sidebar kapanırken menü tuşunu tekrar göster
+    if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
+};
 
-                    // Başlığı tekrar sola hizala
-                    if (headerLeftGroup) {
-                        headerLeftGroup.classList.remove('lg:justify-center');
-                        headerLeftGroup.classList.add('lg:justify-start');
-                    }
-                }
-                // Sidebar kapanırken menü tuşunu tekrar göster
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
-            };
+const openSidebar = () => {
+    if (sidebar) {
+        sidebar.classList.add('open');
+        sidebar.classList.remove('-translate-x-full');
+    }
 
-            const openSidebar = () => {
-                if (sidebar) {
-                    sidebar.classList.add('open');
-                    sidebar.classList.remove('-translate-x-full');
-                }
-
-                if (window.innerWidth < 1024) {
-                    // Küçük ekranlarda overlay'i aktifleştir
-                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
-                } else {
-                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
-                    if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
-
-                    // Başlığı ortala
-                    if (headerLeftGroup) {
-                        headerLeftGroup.classList.remove('lg:justify-start');
-                        headerLeftGroup.classList.add('lg:justify-center');
-                    }
-                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-                }
-                // Sidebar açılırken menü tuşunu gizle
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
-            };
+    if (window.innerWidth < 1024) {
+        // Küçük ekranlarda overlay'i aktifleştir
+        if (sidebarOverlay) sidebarOverlay.classList.add('active');
+    } else {
+        // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
+        if (mainContent) mainContent.classList.add('lg:ml-64');
+        if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
+        if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+    }
+    // Sidebar açılırken menü tuşunu gizle
+    if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
+};
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
