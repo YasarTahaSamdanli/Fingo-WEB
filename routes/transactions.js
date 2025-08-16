@@ -246,7 +246,7 @@ router.get('/transactions/export-csv', authenticateToken, async (req, res) => {
 });
 
 // Müşterinin veresiye borcuna yeni bir işlem (ödeme veya borç ekleme) ekleme
-// POST /api/transactions/credit -> DİKKAT: Bu rota daha önce yoktu veya sorunluydu.
+// POST /api/transactions/credit -> Bu rota daha önce yoktu veya sorunluydu.
 // Şimdi olması gerektiği gibi tanımlanıyor ve mevcutmüşteriyi bulmak için userId de kullanılıyor
 router.post('/transactions/credit', authenticateToken, async (req, res) => {
     const { customerId, amount, type, description } = req.body;

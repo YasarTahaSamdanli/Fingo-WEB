@@ -16,7 +16,7 @@ const supplierRoutes = require('./routes/suppliers');
 const purchaseOrderRoutes = require('./routes/purchaseOrders');
 const twoFARoutes = require('./routes/2fa');
 const userRoutes = require('./routes/users');
-const transactionRoutes = require('./routes/transactions');
+const transactionRoutes = require('./routes/transactions'); // << Burası önemli: transactions rotaları
 const categoryRoutes = require('./routes/categories');
 const reportsRoutes = require('./routes/reports');
 const customerRoutes = require('./routes/customerRoutes');
@@ -31,74 +31,67 @@ console.log('Uygulama başlatılıyor...');
 const corsOptions = {
     origin: '*', // Tüm kaynaklardan gelen isteklere izin ver
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // İzin verilen HTTP metotları
-    allowedHeaders: ['Content-Type', 'Authorization'], // İzin verilen HTTP başlıkları
-    credentials: true, // Eğer kimlik bilgileri (çerezler, yetkilendirme başlıkları) gönderilecekse bu gerekli
-    optionsSuccessStatus: 200 // Bazı eski tarayıcılar 204 yerine 200 bekler
+    allowedHeaders: ['Content-Type', 'Authorization'], // İzin verilen başlıklar
+    credentials: true // Kimlik bilgileriyle (örneğin çerezler, HTTP kimlik doğrulaması) gelen isteklere izin ver
 };
 
-// Tüm isteklere CORS başlıklarını ekleyen custom middleware
-// Bu middleware, herhangi bir isteğin (preflight dahil) başında çalışır ve CORS başlıklarını ekler.
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Tüm kaynaklara izin ver
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true'); // Kimlik bilgileri için
-    // Preflight isteği ise, hemen yanıt ver
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
-console.log('Manuel CORS başlıkları ve OPTIONS preflight handler uygulandı.');
-
-// express-cors middleware'ini de kullanalım, çakışma olursa bu daha spesifik olabilir
 app.use(cors(corsOptions));
-console.log('express-cors middleware uygulandı.');
+app.use(express.json()); // JSON body parsing için
 
-// JSON istek gövdelerini ayrıştırmak için middleware
-app.use(express.json({ limit: '50mb' }));
-console.log('express.json middleware uygulandı.');
+// API rotalarını kullan
+app.use('/api', authRoutes);
+app.use('/api', productRoutes);
+app.use('/api', salesRoutes);
+app.use('/api', financialSummaryRoutes);
+app.use('/api', supplierRoutes);
+app.use('/api', purchaseOrderRoutes);
+app.use('/api', twoFARoutes);
+app.use('/api', userRoutes);
+app.use('/api', transactionRoutes); // << Burası önemli: transactions rotaları
+app.use('/api', categoryRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api', customerRoutes);
+console.log('Tüm API rotaları /api altında kaydedildi.');
 
-
-// Veritabanı bağlantısını başlat
-connectDB(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('MongoDB bağlantısı başarılı.');
-
-        // Rotaları tanımla
-        app.use('/api', authRoutes);
-        app.use('/api', productRoutes);
-        app.use('/api', salesRoutes);
-        app.use('/api', financialSummaryRoutes);
-        app.use('/api', supplierRoutes);
-        app.use('/api', purchaseOrderRoutes);
-        app.use('/api', twoFARoutes);
-        app.use('/api', userRoutes);
-        app.use('/api', transactionRoutes);
-        app.use('/api', categoryRoutes);
-        app.use('/api/reports', reportsRoutes);
-        app.use('/api', customerRoutes);
-        console.log('Tüm API rotaları /api altında kaydedildi.');
-
-        // Tanımlanmamış API rotaları için 404 JSON yanıtı döndür
-        app.use('/api/*', (req, res) => {
-            console.warn(`404 API Rotası Bulunamadı: ${req.method} ${req.originalUrl}`);
-            res.status(404).json({ message: 'API Rotası Bulunamadı.' });
+// Debug: Express tarafından kaydedilen tüm rotaları listele
+// Bu kısım sunucu başlatıldığında veya routes yeniden yüklendiğinde çalışacaktır.
+// app.js'in en altında, app.listen'dan hemen önce ekliyoruz.
+app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+        console.log(`[ROUTE-DEBUG] Yol: ${r.route.path}, Metot: ${Object.keys(r.route.methods)[0].toUpperCase()}`);
+    } else if (r.name === 'router' && r.handle.stack) {
+        // Alt-router'ları (middleware.js'den gelenler gibi) da kontrol et
+        r.handle.stack.forEach(function(hr) {
+            if (hr.route && hr.route.path) {
+                const fullPath = r.regexp.source.replace(/\\\//g, '/').replace(/\/\(\?\:\/\.\*\)/g, '').slice(0, -1) + hr.route.path;
+                console.log(`[ROUTE-DEBUG] Alt Yol: ${fullPath}, Metot: ${Object.keys(hr.route.methods)[0].toUpperCase()}`);
+            }
         });
+    }
+});
+console.log('[ROUTE-DEBUG] Rota listeleme tamamlandı.');
 
-        // Diğer tüm tanımlanmamış rotalar için genel 404 yanıtı (HTML)
-        app.use((req, res) => {
-            console.warn(`404 Sayfa Bulunamadı: ${req.method} ${req.originalUrl}`);
-            res.status(404).send('Sayfa Bulunamadı.');
-        });
 
-        // Sunucuyu başlat
-        const PORT = process.env.PORT || 3000;
-        app.listen(PORT, () => {
-            console.log(`Sunucu http://localhost:${PORT} adresinde çalışıyor.`);
-        });
-    })
-    .catch(error => {
-        console.error("Uygulama başlatılırken veya veritabanına bağlanırken kritik hata oluştu:", error);
-        process.exit(1); // Hata durumunda uygulamayı sonlandır
+// Tanımlanmamış API rotaları için 404 JSON yanıtı döndür
+app.use('/api/*', (req, res) => {
+    console.warn(`404 API Rotası Bulunamadı: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ message: 'API Rotası Bulunamadı.' });
+});
+
+// Diğer tüm tanımlanmamış rotalar için genel 404 yanıtı (HTML)
+app.use((req, res) => {
+    console.warn(`404 Sayfa Bulunamadı: ${req.method} ${req.originalUrl}`);
+    res.status(404).send('Sayfa Bulunamadı.');
+});
+
+// Veritabanı bağlantısını başlat ve sonra sunucuyu dinlemeye başla
+connectDB().then(() => {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Sunucu ${PORT} portunda çalışıyor.`);
+        console.log(`Veritabanı bağlantısı başarılı.`);
     });
+}).catch(err => {
+    console.error('Veritabanı bağlantı hatası:', err);
+    process.exit(1); // Uygulamayı sonlandır
+});
