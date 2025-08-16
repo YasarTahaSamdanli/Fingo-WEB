@@ -143,59 +143,6 @@
             overflow-y: auto;
             padding: 10px 15px;
         }
-        .notification-item {
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            word-wrap: break-word;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            display: flex;
-            align-items: flex-start;
-        }
-        .notification-item.unread {
-            background-color: #1A202C; /* Koyu mavi-gri */
-            border-left: 4px solid #6366F1; /* Tailwind indigo-500 */
-            color: #E2E8F0;
-        }
-        .notification-item.read {
-            background-color: #2D3748; /* Biraz daha açık koyu gri */
-            border-left: 4px solid #4A5568; /* Koyu gri border */
-            color: #A0AEC0; /* Biraz daha açık metin */
-        }
-        .notification-item.success { border-left-color: #34D399; }
-        .notification-item.error { border-left-color: #F87171; }
-        .notification-item.warning { border-left-color: #FBBF24; }
-        .notification-item.info { border-left-color: #60A5FA; }
-
-        .notification-item-icon {
-            margin-right: 10px;
-            font-size: 1.2rem;
-            color: #A0AEC0; /* Açık gri ikon */
-        }
-        .notification-item.success .notification-item-icon { color: #34D399; }
-        .notification-item.error .notification-item-icon { color: #F87171; }
-        .notification-item.warning .notification-item-icon { color: #FBBF24; }
-        .notification-item.info .notification-item-icon { color: #60A5FA; }
-
-        .notification-footer {
-            padding: 10px 15px;
-            border-top: 1px solid #4A5568; /* Koyu border */
-            text-align: center;
-        }
-        .notification-count-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #EF4444; /* Tailwind red-500 */
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            min-width: 20px;
-            text-align: center;
-        }
         /* Yeni Stil: Düşük Stok Uyarısı */
         .low-stock-warning {
             color: #ef4444; /* Tailwind red-500 */
@@ -248,19 +195,22 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <!-- Menü Aç/Kapa Butonu -->
-        <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-            <i class="fas fa-bars text-white text-xl"></i>
-        </button>
-        <!-- Başlık -->
-        <!-- flex-grow: Başlığın kalan alanı doldurmasını sağlar -->
-        <!-- text-center: Metni kendi içinde ortalar -->
-        <!-- lg:ml-auto lg:mr-auto: Büyük ekranlarda sol ve sağ marjı otomatik yaparak ortalar -->
-        <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap flex-grow text-center lg:ml-auto lg:mr-auto">Fingo Finans Takip</h1>
-        <!-- Sağ Grup: Bildirim, Kullanıcı, Çıkış -->
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Sol Kısım: Menü Butonu -->
+        <div class="flex items-center">
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Orta Kısım: Başlık -->
+        <!-- flex-grow ile kalan alanı doldurur, text-center ile kendi içinde ortalar -->
+        <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap flex-grow text-center">
+            Fingo Finans Takip
+        </h1>
+
+        <!-- Sağ Kısım: Bildirimler, Profil, Çıkış -->
         <div class="flex items-center space-x-3 md:space-x-4">
-            <!-- Bildirim Zili ve Sayacı -->
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
@@ -1571,7 +1521,8 @@
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
-                    // Header başlığını tekrar sola hizala
+
+                    // Başlığı tekrar sola hizala
                     if (headerTitle) {
                         headerTitle.classList.remove('lg:ml-auto', 'lg:mr-auto'); // Ortalamayı kaldır
                         headerTitle.classList.remove('text-center'); // Metin hizalamasını kaldır
@@ -1595,7 +1546,8 @@
                     // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
                     if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
-                    // Header başlığını ortala
+
+                    // Başlığı ortala
                     if (headerTitle) {
                         headerTitle.classList.add('lg:ml-auto', 'lg:mr-auto'); // Ortalamak için auto margin
                         headerTitle.classList.add('text-center'); // Metni ortala
@@ -1699,7 +1651,7 @@
 
             // Logged In User Info
             if (loggedInUserSpan && decodedToken && decodedToken.email) {
-
+                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}`.substring(0,20) + "...";
             }
             if (loggedInUserMainSpan && decodedToken && decodedToken.email) {
                 loggedInUserMainSpan.textContent = `${decodedToken.email.split('@')[0]}`;
