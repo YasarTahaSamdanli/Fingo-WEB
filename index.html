@@ -325,6 +325,48 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Dropdown Menü Stillleri */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px); /* Butonun hemen altı */
+            right: 0;
+            background-color: #2D3748; /* Koyu gri */
+            border: 1px solid #4A5568;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-width: 180px;
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out, visibility 0.2s ease-out;
+        }
+        .dropdown-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            color: #E2E8F0;
+            text-align: left;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .dropdown-item:hover {
+            background-color: #4A5568;
+        }
+        .dropdown-item:first-child {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        .dropdown-item:last-child {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -341,9 +383,20 @@
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
-            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
-            <button id="profileManagementBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm">Profil Yönetimi</button>
-            <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
+            <div class="relative inline-block text-left">
+                <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
+                    <span id="loggedInUserName"></span>
+                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                </button>
+                <div id="userDropdownMenu" class="dropdown-menu">
+                    <a href="/Fingo-WEB/profile.html" class="dropdown-item flex items-center">
+                        <i class="fas fa-user-circle mr-2"></i> Profil Yönetimi
+                    </a>
+                    <button id="logoutBtn" class="dropdown-item flex items-center">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Çıkış Yap
+                    </button>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -387,7 +440,7 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
-            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Hoş Geldin, <span id="loggedInUserMain"></span>!</h2>
+            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Hoş Geldin!</h2>
             <p class="text-base text-gray-400 text-center mb-10 font-light">Finansal işlemlerinizi kolayca yönetin ve takip edin. (v1.5.8)</p>
 
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
@@ -622,10 +675,10 @@
             const headerLeftGroup = document.getElementById('headerLeftGroup');
 
             // Header butonları
-            const loggedInUserSpan = document.getElementById('loggedInUser');
+            const userDropdownBtn = document.getElementById('userDropdownBtn');
+            const userDropdownMenu = document.getElementById('userDropdownMenu');
+            const loggedInUserNameSpan = document.getElementById('loggedInUserName');
             const logoutBtn = document.getElementById('logoutBtn');
-            const profileManagementBtn = document.getElementById('profileManagementBtn');
-            const loggedInUserMainSpan = document.getElementById('loggedInUserMain');
 
             // Yan menü butonları
             const goToDashboardBtn = document.getElementById('goToDashboardBtn');
@@ -1594,7 +1647,6 @@
                 });
             }
 
-
             // Kullanıcının 2FA durumunu çek (artık profil sayfasında detaylı yönetilecek)
             async function fetchUser2FAStatus() {
                 const token = getToken();
@@ -1757,12 +1809,24 @@
                 });
             }
 
-            // Logged In User Info
-            if (loggedInUserSpan && decodedToken && decodedToken.email) {
-                 loggedInUserSpan.textContent = decodedToken.email.split('@')[0];
+            // Dropdown Menü Fonksiyonları
+            if (userDropdownBtn) {
+                userDropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Butona tıklanınca document click olayını tetiklemesini engelle
+                    userDropdownMenu.classList.toggle('active');
+                });
             }
-            if (loggedInUserMainSpan && decodedToken && decodedToken.email) {
-                loggedInUserMainSpan.textContent = `${decodedToken.email.split('@')[0]}`;
+
+            // Sayfanın herhangi bir yerine tıklayınca menüyü kapat
+            document.addEventListener('click', (e) => {
+                if (userDropdownMenu && !userDropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                    userDropdownMenu.classList.remove('active');
+                }
+            });
+
+            // Kullanıcı Adını Header'a ekle
+            if (loggedInUserNameSpan && decodedToken && decodedToken.email) {
+                loggedInUserNameSpan.textContent = decodedToken.email.split('@')[0];
             }
 
             // Logout Button
@@ -1775,14 +1839,6 @@
                     window.location.href = '/Fingo-WEB/auth.html';
                 });
             }
-
-            // Profil Yönetimi Butonu
-            if (profileManagementBtn) {
-                profileManagementBtn.addEventListener('click', () => {
-                    window.location.href = '/Fingo-WEB/profile.html';
-                });
-            }
-
 
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
             initializeSidebarState();
