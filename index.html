@@ -216,6 +216,93 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Sidebar Geçiş Animasyonu */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%); /* Başlangıçta gizli */
+            width: 256px; /* Sidebar genişliği */
+            z-index: 50; /* Diğer her şeyden üstte */
+            overflow-y: auto; /* Sidebar'a scrollbar ekle */
+        }
+        #sidebar.open {
+            transform: translateX(0); /* Açıkken görünür */
+        }
+        #sidebarOverlay {
+            position: fixed;
+            inset: 0; /* Tüm ekranı kapla */
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40; /* Sidebar'ın altında, içeriğin üstünde */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* mainContent'in sidebar açıldığında kayması için */
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out; /* margin-left için geçiş */
+            flex-grow: 1; /* Esnek kutuda alanı doldur */
+        }
+
+        /* Modal Stilleri (Ortak) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+        }
+        .modal-content {
+            background-color: #1A202C; /* Koyu modal arkaplanı */
+            padding: 2.5rem; /* Padding artırıldı */
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: clamp(300px, 80vw, 600px); /* Daha dinamik genişlik */
+            max-height: 90vh; /* Modalın yüksekliğini ekranın %90'ı ile sınırla */
+            overflow-y: auto; /* İçerik taşarsa modalın kendisi kaydırılabilir olsun */
+            transform: translateY(-20px);
+            opacity: 0; /* Başlangıçta içeriği de gizle */
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+            opacity: 1; /* Modal gösterildiğinde içeriği de görünür yap */
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #A0AEC0; /* Kapatma butonu rengi */
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .modal-close-btn:hover {
+            color: #E2E8F0;
+        }
+
         /* Yeni Eklenen Scrollbar Stilleri - Tüm uygulama genelinde */
         /* Webkit tabanlı tarayıcılar için (Chrome, Safari, Edge) */
         ::-webkit-scrollbar {
@@ -274,37 +361,37 @@
     <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
 
         <!-- Yan Menü (Sidebar) -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transition-transform duration-300 ease-in-out shadow-lg pt-4"> <!-- pt-20'den pt-4'e düşürüldü -->
-            <div class="flex items-center justify-between mb-4 mt-4"> <!-- mb-8'den mb-4'e düşürüldü, mt-4 eklendi -->
-                <h2 class="text-xl font-bold text-blue-300">Fingo</h2> <!-- Sidebar başlık boyutu küçültüldü -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transition-transform duration-300 ease-in-out shadow-lg pt-4">
+            <div class="flex items-center justify-between mb-4 mt-4">
+                <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
                 <!-- Sidebar Kapatma Butonu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <nav class="space-y-3"> <!-- Sidebar menü öğeleri arası boşluk ayarlandı -->
-                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium"> <!-- Font küçültüldü -->
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium">
                     <i class="fas fa-home"></i> <span class="text-gray-100">Ana Sayfa</span>
                 </a>
-                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
                 </a>
-                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
                 </a>
-                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
                 </a>
-                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
+                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
                 </a>
             </nav>
@@ -1250,7 +1337,6 @@
                     if (canvasElement) {
                         monthlySummaryChartCtx = canvasElement.getContext('2d');
                     } else {
-                        // Canvas elementinin kendisi yoksa yeniden oluştur (bu genellikle sayfa yapısı değiştiğinde olur)
                         const chartContainer = document.querySelector('section.mb-10 canvas#monthlySummaryChart')?.parentElement;
                         if (chartContainer) {
                             chartContainer.innerHTML = '<canvas id="monthlySummaryChart"></canvas>';
@@ -1499,36 +1585,30 @@
                 const currentYear = new Date().getFullYear();
                 const currentMonth = new Date().getMonth(); // 0-11 arası
 
+                if (monthSelect) monthSelect.innerHTML = '';
+                const months = [
+                    "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
+                    "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
+                ];
+                months.forEach((month, index) => {
+                    const option = document.createElement('option');
+                    option.value = index; // Ay 0-tabanlı olduğu için index değerini kullan
+                    option.textContent = month;
+                    if (monthSelect) monthSelect.appendChild(option);
+                });
+                if (monthSelect) monthSelect.value = currentMonth;
+
                 if (yearSelect) yearSelect.innerHTML = '';
                 if (annualYearSelect) annualYearSelect.innerHTML = '';
-
                 for (let i = currentYear - 5; i <= currentYear + 1; i++) {
                     const optionYear = document.createElement('option');
                     optionYear.value = i;
                     optionYear.textContent = i;
                     if (yearSelect) yearSelect.appendChild(optionYear);
-
-                    const optionYearAnnual = document.createElement('option');
-                    optionYearAnnual.value = i;
-                    optionYearAnnual.textContent = i;
-                    if (annualYearSelect) annualYearSelect.appendChild(optionYearAnnual);
+                    if (annualYearSelect) annualYearSelect.appendChild(optionYear.cloneNode(true)); // Kopyasını annualYearSelect'e de ekle
                 }
-
                 if (yearSelect) yearSelect.value = currentYear;
                 if (annualYearSelect) annualYearSelect.value = currentYear;
-
-                const months = [
-                    "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-                    "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
-                ];
-                if (monthSelect) monthSelect.innerHTML = '';
-                months.forEach((month, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = month;
-                    if (monthSelect) monthSelect.appendChild(option);
-                });
-                if (monthSelect) monthSelect.value = currentMonth;
             }
 
             // Yıllık ve Aylık Özet için Uygula butonlarına olay dinleyicileri ekle
@@ -1580,14 +1660,16 @@
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
+                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+                    if (headerLeftGroup) { // Header sol grubunu sola hizala
                         headerLeftGroup.classList.remove('lg:justify-center');
                         headerLeftGroup.classList.add('lg:justify-start');
                     }
                 }
+                // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
@@ -1598,25 +1680,27 @@
                 }
 
                 if (window.innerWidth < 1024) {
+                    // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
+                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
+                    if (headerLeftGroup) { // Header sol grubunu ortala
                         headerLeftGroup.classList.remove('lg:justify-start');
                         headerLeftGroup.classList.add('lg:justify-center');
                     }
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
+                // Sidebar açılırken menü tuşunu gizle
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar();
+                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
                 } else {
-                    closeSidebar();
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
+                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
                 }
             };
 
