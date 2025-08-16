@@ -324,13 +324,18 @@
 
     <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <div class="flex items-center">
+        <!-- Left group: menu button and title -->
+        <!-- flex-1 ekleyerek bu div'in kullanılabilir tüm yatay alanı doldurmasını sağlıyoruz -->
+        <!-- lg:justify-start varsayılan hizalama, JavaScript ile lg:justify-center'a geçecek -->
+        <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
             <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-xl md:text-2xl font-bold text-blue-300">Fingo Müşteri Yönetimi</h1>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
+            <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Müşteri Yönetimi</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
@@ -601,6 +606,7 @@
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
             const appHeader = document.getElementById('appHeader');
+            const headerLeftGroup = document.getElementById('headerLeftGroup'); // Yeni: header sol grubu
 
             // Customer Form Elements
             const newCustomerForm = document.getElementById('newCustomerForm');
@@ -1310,6 +1316,10 @@
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+                    if (headerLeftGroup) { // Header sol grubunu sola hizala
+                        headerLeftGroup.classList.remove('lg:justify-center');
+                        headerLeftGroup.classList.add('lg:justify-start');
+                    }
                 }
                 // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
@@ -1328,6 +1338,10 @@
                     // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
                     if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
+                    if (headerLeftGroup) { // Header sol grubunu ortala
+                        headerLeftGroup.classList.remove('lg:justify-start');
+                        headerLeftGroup.classList.add('lg:justify-center');
+                    }
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
                 // Sidebar açılırken menü tuşunu gizle
@@ -1337,11 +1351,11 @@
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
                     openSidebar(); // Büyük ekranlarda sidebar açık başlasın
-                    if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden'); // Açma tuşunu gizle
+                    // openSidebar zaten tuşu gizleyecek ve başlığı ortalayacak
                 } else {
                     closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
                     if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
-                    if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden'); // Açma tuşunu göster
+                    // closeSidebar zaten tuşu gösterecek ve başlığı sola hizalayacak
                 }
             };
 
@@ -1483,3 +1497,4 @@
     </script>
 </body>
 </html>
+
