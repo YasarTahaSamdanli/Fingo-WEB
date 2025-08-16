@@ -201,6 +201,7 @@
             transform: translateX(-100%);
             width: 256px;
             z-index: 50;
+            overflow-y: auto; /* Sidebar'a scrollbar ekle */
         }
         #sidebar.open {
             transform: translateX(0);
@@ -254,6 +255,8 @@
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
             max-width: 90%;
             width: 500px; /* Sabit genişlik veya responsive için daha uygun değerler */
+            max-height: 90vh; /* Modalın yüksekliğini ekranın %90'ı ile sınırla */
+            overflow-y: auto; /* İçerik taşarsa modalın kendisi kaydırılabilir olsun */
             transform: translateY(-20px);
             opacity: 0; /* Başlangıçta içeriği de gizle */
             transition: transform 0.3s ease, opacity 0.3s ease;
@@ -277,7 +280,7 @@
             color: #E2E8F0;
         }
 
-        /* Yeni Eklenen Scrollbar Stilleri */
+        /* Yeni Eklenen Scrollbar Stilleri - Tüm uygulama genelinde */
         /* Webkit tabanlı tarayıcılar için (Chrome, Safari, Edge) */
         ::-webkit-scrollbar {
             width: 8px; /* Dikey scrollbar genişliği */
@@ -299,18 +302,12 @@
         }
 
         /* Firefox için (deneme amaçlı - biraz farklı çalışır) */
-        /* Firefox'ta `scrollbar-width` ve `scrollbar-color` kullanırız */
         html {
             scrollbar-width: thin; /* "auto" veya "none" da olabilir */
             scrollbar-color: #6366F1 #2D3748; /* thumb rengi track rengi */
         }
 
-        /* Sidebar özel scrollbar */
-        #sidebar {
-            overflow-y: auto; /* Sidebar'a scrollbar ekle */
-        }
-
-        /* Müşteri Listesi scrollbar */
+        /* Müşteri Listesi için daha belirgin scrollbar (zaten vardı, kontrol için burada) */
         #customerList {
             overflow-y: auto; /* Müşteri listesine scrollbar ekle */
         }
