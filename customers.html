@@ -344,14 +344,14 @@
     <div class="flex flex-1 pt-16">
 
         <!-- Sidebar -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
-            <div class="flex items-center justify-between mb-8">
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4"> <!-- pt-20'den pt-4'e düşürüldü -->
+            <div class="flex items-center justify-between mb-4 mt-4"> <!-- mb-8'den mb-4'e düşürüldü, mt-4 eklendi -->
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2> <!-- Sidebar başlık boyutu küçültüldü -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <nav class="space-y-4"> <!-- Sidebar menü öğeleri arası boşluk artırıldı -->
+            <nav class="space-y-3"> <!-- Sidebar menü öğeleri arası boşluk ayarlandı -->
                 <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium"> <!-- Font küçültüldü -->
                     <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
                 </a>
@@ -408,7 +408,7 @@
                             </div>
                             <div>
                                 <label for="customerAddress" class="block text-gray-300 text-sm font-semibold mb-2">Adres (Opsiyonel):</label>
-                                <textarea id="customerAddress" rows="3" placeholder="Müşteri Adresi" class="form-input w-full p-3 text-base shadow-sm"></textarea>
+                                <textarea id="customerAddress" rows="3" class="form-input w-full p-3 text-base shadow-sm"></textarea>
                             </div>
                             <div>
                                 <label for="customerShopName" class="block text-gray-300 text-sm font-semibold mb-2">İşletme Adı (Opsiyonel):</label>
