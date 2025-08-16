@@ -276,6 +276,45 @@
         .modal-close-btn:hover {
             color: #E2E8F0;
         }
+
+        /* Yeni Eklenen Scrollbar Stilleri */
+        /* Webkit tabanlı tarayıcılar için (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 8px; /* Dikey scrollbar genişliği */
+            height: 8px; /* Yatay scrollbar yüksekliği */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2D3748; /* Track arkaplan rengi (koyu gri) */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6366F1; /* Thumb rengi (mor tonu - indigo-500) */
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4F46E5; /* Hover'da daha koyu mor */
+        }
+
+        /* Firefox için (deneme amaçlı - biraz farklı çalışır) */
+        /* Firefox'ta `scrollbar-width` ve `scrollbar-color` kullanırız */
+        html {
+            scrollbar-width: thin; /* "auto" veya "none" da olabilir */
+            scrollbar-color: #6366F1 #2D3748; /* thumb rengi track rengi */
+        }
+
+        /* Sidebar özel scrollbar */
+        #sidebar {
+            overflow-y: auto; /* Sidebar'a scrollbar ekle */
+        }
+
+        /* Müşteri Listesi scrollbar */
+        #customerList {
+            overflow-y: auto; /* Müşteri listesine scrollbar ekle */
+        }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -1261,6 +1300,7 @@
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
+                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                 }
@@ -1273,8 +1313,10 @@
                 }
 
                 if (window.innerWidth < 1024) {
+                    // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
+                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
