@@ -195,6 +195,7 @@
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
     <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
+    <!-- justify-between ile 3 ana grup birbirinden ayrılacak -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <!-- Sol Kısım: Menü Butonu -->
         <div class="flex items-center">
@@ -204,12 +205,14 @@
         </div>
 
         <!-- Orta Kısım: Başlık -->
-        <!-- flex-grow ile kalan alanı doldurur, text-center ile kendi içinde ortalar -->
-        <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap flex-grow text-center">
+        <!-- flex-grow ile kalan tüm yatay alanı doldurur, text-center ile kendi içinde ortalar -->
+        <!-- lg:absolute lg:left-1/2 lg:-translate-x-1/2: Büyük ekranlarda mutlak ortalama için -->
+        <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap flex-grow text-center lg:absolute lg:left-1/2 lg:-translate-x-1/2">
             Fingo Finans Takip
         </h1>
 
         <!-- Sağ Kısım: Bildirimler, Profil, Çıkış -->
+        <!-- flex-none ile sabit kalır, sağa hizalanır -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
@@ -1112,7 +1115,7 @@
 
             async function deleteCategory(id) {
                 // Özel mesaj kutusu ile onay iste
-                showConfirmBox("Bu kategoriyi silmek istediğinizden emin misiniz? Bu kategoriye ait tüm işlemler de etkilenecektir.", async () => {
+                showConfirmBox("Bu kategoriyi silmek istediğinizden emin misiniz?", async () => {
                     const token = getToken();
                     if (!token) {
                         handleAuthError();
@@ -1524,7 +1527,7 @@
 
                     // Başlığı tekrar sola hizala
                     if (headerTitle) {
-                        headerTitle.classList.remove('lg:ml-auto', 'lg:mr-auto'); // Ortalamayı kaldır
+                        headerTitle.classList.remove('lg:absolute', 'lg:left-1/2', 'lg:-translate-x-1/2'); // Mutlak ortalamayı kaldır
                         headerTitle.classList.remove('text-center'); // Metin hizalamasını kaldır
                         headerTitle.classList.add('text-left'); // Sola hizala
                     }
@@ -1549,7 +1552,7 @@
 
                     // Başlığı ortala
                     if (headerTitle) {
-                        headerTitle.classList.add('lg:ml-auto', 'lg:mr-auto'); // Ortalamak için auto margin
+                        headerTitle.classList.add('lg:absolute', 'lg:left-1/2', 'lg:-translate-x-1/2'); // Mutlak ortalama
                         headerTitle.classList.add('text-center'); // Metni ortala
                         headerTitle.classList.remove('text-left'); // Sola hizalamayı kaldır
                     }
