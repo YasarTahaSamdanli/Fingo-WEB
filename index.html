@@ -649,7 +649,7 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const closeSidebarBtn = document.getElementById('closeSidebarBtn');
             const mainContent = document.getElementById('mainContent');
-            const appHeader = document.getElementById('appHeader'); // Header elementi
+            const appHeader = document.getElementById('appHeader');
             const headerLeftGroup = document.getElementById('headerLeftGroup'); // Header sol grup elementi
 
             // Header butonları
@@ -1605,7 +1605,7 @@
                     optionYear.value = i;
                     optionYear.textContent = i;
                     if (yearSelect) yearSelect.appendChild(optionYear);
-                    if (annualYearSelect) annualYearSelect.appendChild(optionYear.cloneNode(true)); // Kopyasını annualYearSelect'e de ekle
+                    if (annualYearSelect) annualYearSelect.appendChild(optionYear.cloneNode(true));
                 }
                 if (yearSelect) yearSelect.value = currentYear;
                 if (annualYearSelect) annualYearSelect.value = currentYear;
@@ -1667,6 +1667,7 @@
                     if (headerLeftGroup) { // Header sol grubunu sola hizala
                         headerLeftGroup.classList.remove('lg:justify-center');
                         headerLeftGroup.classList.add('lg:justify-start');
+                        headerLeftGroup.classList.remove('flex-grow'); // flex-grow'u kaldır
                     }
                 }
                 // Sidebar kapanırken menü tuşunu tekrar göster
@@ -1689,6 +1690,7 @@
                     if (headerLeftGroup) { // Header sol grubunu ortala
                         headerLeftGroup.classList.remove('lg:justify-start');
                         headerLeftGroup.classList.add('lg:justify-center');
+                        headerLeftGroup.classList.add('flex-grow'); // flex-grow'u ekle
                     }
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
@@ -1788,6 +1790,7 @@
 
             // Logged In User Info
             if (loggedInUserSpan && decodedToken && decodedToken.email) {
+                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}`.substring(0,20) + "...";
             }
             if (loggedInUserMainSpan && decodedToken && decodedToken.email) {
                 loggedInUserMainSpan.textContent = `${decodedToken.email.split('@')[0]}`;
