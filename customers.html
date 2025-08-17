@@ -5,21 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Müşteri Yönetimi</title>
     <!-- Tailwind CSS CDN -->
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts - Inter -->
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117;
-            color: #e2e8f0;
+            background-color: #0d1117; /* Ana koyu ton */
+            color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
 
+            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
             background-image:
+                /* Büyük, yumuşak, mavimsi bulutsu */
                 radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
+                /* Büyük, yumuşak, morumsu bulutsu */
                 radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
+                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
                 radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
+
+                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
                 radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
                 radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
                 radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
@@ -27,24 +33,27 @@
                 radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
                 radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
 
-            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
-            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-            background-attachment: fixed;
-            overflow-x: hidden;
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
+            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
         }
 
-        .form-input, .form-select, .w-full.p-3.border {
-            background-color: #1A202C;
-            color: #E2E8F0;
-            border-color: #4A5568;
+        /* Input ve Select Elementleri için Tema Uyumu */
+        .form-input, .form-select, .w-full.p-3.border { /* Genel input ve select stilleri */
+            background-color: #1A202C; /* Koyu input arkaplanı */
+            color: #E2E8F0; /* Açık metin rengi */
+            border-color: #4A5568; /* Koyu border */
         }
         .form-input::placeholder {
-            color: #A0AEC0;
+            color: #A0AEC0; /* Açık placeholder */
         }
         .form-input:focus, .form-select:focus, .w-full.p-3.border:focus {
-            border-color: #60A5FA;
-            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+            border-color: #60A5FA; /* Mavi odaklama rengi */
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
         }
+
+        /* Message Box Stillleri */
         .message-box {
             position: fixed;
             top: 20px;
@@ -69,14 +78,14 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .message-box.success { background-color: #10B981; }
-        .message-box.error { background-color: #EF4444; }
-        .message-box.info { background-color: #3B82F6; }
-        .message-box.warning { background-color: #F59E0B; }
+        .message-box.success { background-color: #10B981; } /* Tailwind green-500 */
+        .message-box.error { background-color: #EF4444; } /* Tailwind red-500 */
+        .message-box.info { background-color: #3B82F6; } /* Tailwind blue-500 */
+        .message-box.warning { background-color: #F59E0B; } /* Tailwind amber-500 */
         .message-box.confirm {
-            background-color: #607D8B;
+            background-color: #607D8B; /* Tailwind blue-gray-500 */
             min-width: 300px;
-            flex-direction: column;
+            flex-direction: column; /* Butonları alt alta sırala */
             align-items: center;
         }
         .message-box-close {
@@ -93,18 +102,20 @@
             top: 5px;
             right: 10px;
         }
+
+        /* Bildirim Merkezi Stillleri */
         .notification-center {
             position: fixed;
-            top: 70px;
+            top: 70px; /* Header'ın altında başla */
             right: 20px;
             width: 320px;
             max-height: 80vh;
-            background-color: #2D3748;
-            color: #e2e8f0;
+            background-color: #2D3748; /* Koyu tema için koyu gri */
+            color: #e2e8f0; /* Açık gri metin */
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            z-index: 900;
-            transform: translateX(110%);
+            z-index: 900; /* Mesaj kutusunun altında olsun */
+            transform: translateX(110%); /* Başlangıçta ekran dışı */
             opacity: 0;
             visibility: hidden;
             transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
@@ -118,12 +129,12 @@
         }
         .notification-header {
             padding: 15px;
-            border-bottom: 1px solid #4A5568;
+            border-bottom: 1px solid #4A5568; /* Koyu border */
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
-            color: #e2e8f0;
+            color: #e2e8f0; /* Açık metin */
         }
         .notification-list {
             flex-grow: 1;
@@ -141,38 +152,40 @@
             align-items: flex-start;
         }
         .notification-item.unread {
-            background-color: #1A202C;
-            border-left: 4px solid #6366F1;
+            background-color: #1A202C; /* Koyu mavi-gri */
+            border-left: 4px solid #6366F1; /* Tailwind indigo-500 */
             color: #E2E8F0;
         }
         .notification-item.read {
-            background-color: #2D3748;
-            border-left: 4px solid #4A5568;
-            color: #A0AEC0;
+            background-color: #2D3748; /* Biraz daha açık koyu gri */
+            border-left: 4px solid #4A5568; /* Koyu gri border */
+            color: #A0AEC0; /* Biraz daha açık metin */
         }
         .notification-item.success { border-left-color: #34D399; }
         .notification-item.error { border-left-color: #F87171; }
         .notification-item.warning { border-left-color: #FBBF24; }
         .notification-item.info { border-left-color: #60A5FA; }
+
         .notification-item-icon {
             margin-right: 10px;
             font-size: 1.2rem;
-            color: #A0AEC0;
+            color: #A0AEC0; /* Açık gri ikon */
         }
         .notification-item.success .notification-item-icon { color: #34D399; }
         .notification-item.error .notification-item-icon { color: #F87171; }
         .notification-item.warning .notification-item-icon { color: #FBBF24; }
         .notification-item.info .notification-item-icon { color: #60A5FA; }
+
         .notification-footer {
             padding: 10px 15px;
-            border-top: 1px solid #4A5568;
+            border-top: 1px solid #4A5568; /* Koyu border */
             text-align: center;
         }
         .notification-count-badge {
             position: absolute;
             top: -5px;
             right: -5px;
-            background-color: #EF4444;
+            background-color: #EF4444; /* Tailwind red-500 */
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
@@ -181,12 +194,14 @@
             min-width: 20px;
             text-align: center;
         }
+
+        /* Sidebar Geçiş Animasyonu */
         #sidebar {
             transition: transform 0.3s ease-in-out;
             transform: translateX(-100%);
             width: 256px;
             z-index: 50;
-            overflow-y: auto;
+            overflow-y: auto; /* Sidebar'a scrollbar ekle */
         }
         #sidebar.open {
             transform: translateX(0);
@@ -205,8 +220,10 @@
         #mainContent {
             transition: margin-left 0.3s ease-in-out;
             flex-grow: 1;
-            padding-top: 16px;
+            padding-top: 16px; /* Header yüksekliği kadar padding-top (pt-16 tailwind sınıfına karşılık gelir) */
         }
+
+        /* Modal Stilleri (Ortak) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -232,21 +249,21 @@
             z-index: 99999;
         }
         .modal-content {
-            background-color: #1A202C;
-            padding: 2.5rem;
+            background-color: #1A202C; /* Koyu modal arkaplanı */
+            padding: 2.5rem; /* Padding artırıldı */
             border-radius: 0.75rem;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
             max-width: 90%;
-            width: clamp(300px, 80vw, 600px);
-            max-height: 90vh;
-            overflow-y: auto;
+            width: clamp(300px, 80vw, 600px); /* Daha dinamik genişlik */
+            max-height: 90vh; /* Modalın yüksekliğini ekranın %90'ı ile sınırla */
+            overflow-y: auto; /* İçerik taşarsa modalın kendisi kaydırılabilir olsun */
             transform: translateY(-20px);
-            opacity: 0;
+            opacity: 0; /* Başlangıçta içeriği de gizle */
             transition: transform 0.3s ease, opacity 0.3s ease;
         }
         .modal-overlay.show .modal-content {
             transform: translateY(0);
-            opacity: 1;
+            opacity: 1; /* Modal gösterildiğinde içeriği de görünür yap */
         }
         .modal-close-btn {
             position: absolute;
@@ -255,38 +272,52 @@
             background: none;
             border: none;
             font-size: 1.5rem;
-            color: #A0AEC0;
+            color: #A0AEC0; /* Kapatma butonu rengi */
             cursor: pointer;
             transition: color 0.2s ease;
         }
         .modal-close-btn:hover {
             color: #E2E8F0;
         }
+
+        /* Yeni Eklenen Scrollbar Stilleri - Tüm uygulama genelinde */
+        /* Webkit tabanlı tarayıcılar için (Chrome, Safari, Edge) */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 8px; /* Dikey scrollbar genişliği */
+            height: 8px; /* Yatay scrollbar yüksekliği */
         }
+
         ::-webkit-scrollbar-track {
-            background: #2D3748;
+            background: #2D3748; /* Track arkaplan rengi (koyu gri) */
             border-radius: 10px;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #6366F1;
+            background: #6366F1; /* Thumb rengi (mor tonu - indigo-500) */
             border-radius: 10px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #4F46E5;
+            background: #4F46E5; /* Hover'da daha koyu mor */
         }
+
+        /* Firefox için (deneme amaçlı - biraz farklı çalışır) */
         html {
-            scrollbar-width: thin;
-            scrollbar-color: #6366F1 #2D3748;
+            scrollbar-width: thin; /* "auto" veya "none" da olabilir */
+            scrollbar-color: #6366F1 #2D3748; /* thumb rengi track rengi */
         }
+
+        /* Müşteri Listesi için daha belirgin scrollbar (zaten vardı, kontrol için burada) */
         #customerList {
-            overflow-y: auto;
+            overflow-y: auto; /* Müşteri listesine scrollbar ekle */
         }
+
+        /* Geçmiş ve Veresiye İşlem Geçmişi panelleri için özel scrollbar */
         #customerSalesHistory, #creditTransactionHistory {
-            padding: 1rem;
+            /* max-height ve overflow-y-auto zaten vardı, şimdi boşluğu da artırıyoruz */
+            padding: 1rem; /* İç boşluğu artırıldı */
         }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -294,10 +325,14 @@
     <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <!-- Left group: menu button and title -->
+        <!-- flex-1 ekleyerek bu div'in kullanılabilir tüm yatay alanı doldurmasını sağlıyoruz -->
+        <!-- lg:justify-start varsayılan hizalama, JavaScript ile lg:justify-center'a geçecek -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
             <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Müşteri Yönetimi</h1>
         </div>
         <!-- Right group: notifications and logout -->
@@ -528,7 +563,7 @@
         // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
         const initialJwtToken = localStorage.getItem('jwtToken');
         const initialUserId = localStorage.getItem('userId');
-        const API_BASE_URL = '[https://fingo-web.onrender.com/api](https://fingo-web.onrender.com/api)';
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
 
         // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
         async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
@@ -874,6 +909,8 @@
                     }
 
                     const customers = await response.json();
+                    // Debug logu
+                    console.log("[DEBUG-API-RESPONSE] API'den dönen müşteriler:", customers);
 
                     if (customerListDiv) customerListDiv.innerHTML = ''; // Eski müşterileri temizle
 
@@ -885,6 +922,9 @@
                     customers.forEach(customer => {
                         const customerCard = document.createElement('div');
                         customerCard.className = 'bg-gray-700 p-4 rounded-lg shadow-md border border-gray-600';
+
+                        // Debug logu: HTML'e yazılacak ID ve İsim
+                        console.log(`[DEBUG-RENDER-HTML] Müşteri kartı HTML'ine yazılıyor - ID: ${customer._id}, Ad: ${customer.name}`);
 
                         customerCard.innerHTML = `
                             <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4>
@@ -922,45 +962,62 @@
             }
 
             function addCustomerActionListeners() {
-                document.querySelectorAll('.edit-customer-btn').forEach(button => {
-                    button.addEventListener('click', async (e) => {
-                        const clickedButton = e.target.closest('button');
-                        if (!clickedButton) { return; }
-                        const customerId = clickedButton.dataset.customerId;
-                        await openEditCustomerModal(customerId);
-                    });
-                });
+                console.log("[DEBUG] addCustomerActionListeners çağrıldı.");
 
-                document.querySelectorAll('.view-history-btn').forEach(button => {
+                document.querySelectorAll('.edit-customer-btn').forEach(button => {
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
+                    console.log(`[DEBUG-LISTENER-ATTACH] 'Düzenle' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) { return; }
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
+                        // Debug logu: Tıklandığında okunan ID ve İsim
+                        console.log(`[DEBUG-CLICK] 'Düzenle' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
+                        await openEditCustomerModal(customerId);
+                    });
+                });
+
+                document.querySelectorAll('.view-history-btn').forEach(button => {
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
+                    console.log(`[DEBUG-LISTENER-ATTACH] 'Geçmiş' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
+                    button.addEventListener('click', async (e) => {
+                        const clickedButton = e.target.closest('button');
+                        if (!clickedButton) { return; }
+                        const customerId = clickedButton.dataset.customerId;
+                        const customerName = clickedButton.dataset.customerName;
+                        // Debug logu: Tıklandığında okunan ID ve İsim
+                        console.log(`[DEBUG-CLICK] 'Geçmiş' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
                         await openCustomerHistoryModal(customerId, customerName);
                     });
                 });
 
                 document.querySelectorAll('.view-credit-btn').forEach(button => {
+                    // Debug logu: Dinleyici eklenirken butonun data-attribute'leri
+                    console.log(`[DEBUG-LISTENER-ATTACH] 'Veresiye İşlemleri' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}, Borç: ${button.dataset.currentDebt}`);
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) { return; }
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
                         const currentDebt = parseFloat(clickedButton.dataset.currentDebt);
+                        // Debug logu: Tıklandığında okunan ID, İsim ve Borç
+                        console.log(`[DEBUG-CLICK] 'Veresiye İşlemleri' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}, Okunan Borç: ${currentDebt}`);
                         await openCreditTransactionsModal(customerId, customerName, currentDebt);
                     });
                 });
 
                 document.querySelectorAll('.delete-customer-btn').forEach(button => {
-                    button.addEventListener('click', async (e) => {
+                    console.log(`[DEBUG-LISTENER-ATTACH] 'Sil' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
+                    button.addEventListener('click', async (e) => { // async eklendi
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) return;
                         const customerId = clickedButton.dataset.customerId;
                         const customerName = clickedButton.dataset.customerName;
+                        console.log(`[DEBUG-CLICK] 'Sil' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
                         showConfirmBox(`'${customerName}' adlı müşteriyi silmek istediğinizden emin misiniz?`, async () => {
                             try {
-                                const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, {
+                                const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, { // fetchWithRetry kullanıldı
                                     method: 'DELETE',
                                     headers: { 'Authorization': `Bearer ${getToken()}` }
                                 });
@@ -982,8 +1039,9 @@
 
             // Müşteri Düzenleme Modalı Fonksiyonları
             async function openEditCustomerModal(customerId) {
+                console.log(`[DEBUG] openEditCustomerModal çağrıldı, ID: ${customerId}`);
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const customer = await response.json();
@@ -1002,6 +1060,7 @@
                     if (editCustomerModal) {
                         editCustomerModal.classList.remove('hidden');
                         editCustomerModal.classList.add('show');
+                        console.log("[DEBUG] Edit Customer Modal gösterildi.");
                     }
                 } catch (error) {
                     console.error('Müşteri düzenleme modalı açılırken hata:', error);
@@ -1013,6 +1072,7 @@
                 if (editCustomerModal) {
                     editCustomerModal.classList.remove('show');
                     editCustomerModal.classList.add('hidden');
+                    console.log("[DEBUG] Edit Customer Modal kapatıldı.");
                 }
                 if (editCustomerForm) editCustomerForm.reset();
             };
@@ -1033,7 +1093,7 @@
                     }
 
                     try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, { // fetchWithRetry kullanıldı
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1060,11 +1120,13 @@
 
             // Müşteri Geçmişi Modalı Fonksiyonları
             async function openCustomerHistoryModal(customerId, customerName) {
+                console.log(`[DEBUG] openCustomerHistoryModal çağrıldı, ID: ${customerId}, Ad: ${customerName}`);
                 if (historyCustomerNameSpan) historyCustomerNameSpan.textContent = customerName;
+                // Mevcut içeriği temizle ve yükleniyor mesajı göster
                 if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
 
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const salesHistory = await response.json();
@@ -1083,6 +1145,7 @@
                         customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait geçmiş satış bulunamadı.</p>';
                     } else {
                         salesHistory.forEach(sale => {
+                            // DÜZELTME: saleDate'i UTC olarak kaydettiğimizi varsayarsak, toLocaleDateString ile doğru formatta gösteririz.
                             const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
                             const itemsHtml = sale.saleItems.map(item => `
                                 <li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
@@ -1104,6 +1167,7 @@
                     if (customerHistoryModal) {
                         customerHistoryModal.classList.remove('hidden');
                         customerHistoryModal.classList.add('show');
+                        console.log("[DEBUG] Customer History Modal gösterildi.");
                     }
                 } catch (error) {
                     console.error('Müşteri geçmişi modalı açılırken hata:', error);
@@ -1115,19 +1179,24 @@
                 if (customerHistoryModal) {
                     customerHistoryModal.classList.remove('show');
                     customerHistoryModal.classList.add('hidden');
+                    console.log("[DEBUG] Customer History Modal kapatıldı.");
                 }
             };
 
             // Veresiye İşlemleri Modalı Fonksiyonları
             async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
-                currentOpenCustomerIdForCredit = customerId;
+                console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
+
+                currentOpenCustomerIdForCredit = customerId; // Global değişkeni set ediyoruz
+
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
                 if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
 
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
+                    // Veresiye geçmişini çekmek için doğru endpoint'i kullanıyoruz
+                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const transactions = await response.json();
@@ -1146,6 +1215,7 @@
                         creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait veresiye işlem geçmişi bulunamadı.</p>';
                     } else {
                         transactions.forEach(tx => {
+                            // DÜZELTME: tx.date'i UTC olarak kaydettiğimizi varsayarsak, toLocaleDateString ile doğru formatta gösteririz.
                             const txDate = new Date(tx.date).toLocaleDateString('tr-TR');
                             const txType = tx.type === 'payment' ? 'Ödeme' : 'Borç Eklendi';
                             const txAmount = tx.amount.toFixed(2);
@@ -1171,6 +1241,7 @@
                     if (customerCreditTransactionsModal) {
                         customerCreditTransactionsModal.classList.remove('hidden');
                         customerCreditTransactionsModal.classList.add('show');
+                        console.log("[DEBUG] Customer Credit Transactions Modal gösterildi.");
                     }
                 } catch (error) {
                     console.error('Veresiye işlemleri modalı açılırken hata:', error);
@@ -1182,6 +1253,7 @@
                 if (customerCreditTransactionsModal) {
                     customerCreditTransactionsModal.classList.remove('show');
                     customerCreditTransactionsModal.classList.add('hidden');
+                    console.log("[DEBUG] Customer Credit Transactions Modal kapatıldı.");
                 }
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
                 currentOpenCustomerIdForCredit = null;
@@ -1196,6 +1268,7 @@
                     const type = creditTransactionTypeSelect?.value;
                     const description = creditDescriptionInput?.value.trim() || null;
 
+                    console.log("[DEBUG] Veresiye işlemi gönderme girişimi.");
                     const requestBody = {
                         customerId,
                         amount: amount,
@@ -1203,18 +1276,21 @@
                         description,
                         userId: getUserId()
                     };
+                    console.log("[DEBUG-FRONTEND-PAYLOAD] API'ye gönderilecek veri:", requestBody);
 
                     if (!customerId) {
                         addNotification('Müşteri ID bulunamadı. Lütfen modalı kapatıp tekrar açın.', 'error');
+                        console.error("[DEBUG] customerId boş veya null.");
                         return;
                     }
                     if (isNaN(amount) || amount <= 0) {
                         addNotification('Lütfen geçerli ve pozitif bir miktar girin.', 'error');
+                        console.error("[DEBUG] Geçersiz miktar algılandı (frontend):", amount);
                         return;
                     }
 
                     try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, { // fetchWithRetry kullanıldı
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1231,10 +1307,8 @@
 
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
-                        // Güncel veresiye borcunu alıp tekrar modalı açıyoruz
+                        fetchCustomers(); // Müşteri listesini ve veresiye geçmişini günceller
                         await openCreditTransactionsModal(currentOpenCustomerIdForCredit, creditCustomerNameSpan.textContent, result.newDebt);
-                        // Ana sayfadaki müşteri listesini de güncelliyoruz
-                        fetchCustomers();
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
                         addNotification(`Veresiye işlemi kaydedilirken hata: ${error.message}`, 'error');
@@ -1254,7 +1328,7 @@
             }
 
 
-            // Sidebar Fonksiyonları
+            // Sidebar Fonksiyonları (Sales Management ile aynı)
             const closeSidebar = () => {
                 if (sidebar) {
                     sidebar.classList.remove('open');
@@ -1262,14 +1336,16 @@
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
+                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+                    if (headerLeftGroup) { // Header sol grubunu sola hizala
                         headerLeftGroup.classList.remove('lg:justify-center');
                         headerLeftGroup.classList.add('lg:justify-start');
                     }
                 }
+                // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
@@ -1280,25 +1356,30 @@
                 }
 
                 if (window.innerWidth < 1024) {
+                    // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
+                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
+                    if (headerLeftGroup) { // Header sol grubunu ortala
                         headerLeftGroup.classList.remove('lg:justify-start');
                         headerLeftGroup.classList.add('lg:justify-center');
                     }
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
+                // Sidebar açılırken menü tuşunu gizle
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar();
+                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
+                    // openSidebar zaten tuşu gizleyecek ve başlığı ortalayacak
                 } else {
-                    closeSidebar();
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
+                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
+                    // closeSidebar zaten tuşu gösterecek ve başlığı sola hizalayacak
                 }
             };
 
@@ -1365,14 +1446,14 @@
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    showMessage('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
             if (importCsvBtn) {
                 importCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
+                    showMessage('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
@@ -1403,6 +1484,7 @@
                 notificationBellBtn.addEventListener('click', () => {
                     notificationCenter.classList.toggle('active');
                     if (notificationCenter.classList.contains('active')) {
+                        // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
                         notifications.forEach(n => n.isRead = true);
                         saveNotifications();
                         updateNotificationCount();
@@ -1429,25 +1511,6 @@
                     });
                 });
             }
-
-
-            // --- BURADAKİ KOD YENİ EKLENİYOR ---
-            // Periyodik olarak localStorage'ı kontrol et ve müşteri listesini güncelle
-            function checkAndRefreshCustomers() {
-                const updateNeeded = localStorage.getItem('fingoCustomersUpdateNeeded');
-                if (updateNeeded === 'true') {
-                    console.log("LocalStorage'da güncelleme işareti bulundu, müşteri listesi yenileniyor...");
-                    localStorage.removeItem('fingoCustomersUpdateNeeded'); // İşareti kaldır
-                    fetchCustomers(); // Listeyi yenile
-                }
-            }
-
-            // Her 2 saniyede bir kontrol et
-            setInterval(checkAndRefreshCustomers, 2000);
-
-            // İlk yüklemede de kontrol et (sadece ihtiyat amaçlı)
-            checkAndRefreshCustomers();
-            // --- YENİ KOD BİTTİ ---\
 
 
             // Initial calls on page load

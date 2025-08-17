@@ -507,7 +507,7 @@
                                 <!-- Product Selection for Sale -->
                                 <div>
                                     <div class="pt-2 pb-2 mb-2 -mx-6 px-6 rounded-lg"> <!-- bg-gray-900 ve shadow-inner kaldırıldı -->
-                                        <h4 class="text-xl font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
+                                        <h4 class="text-base font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
                                         <div class="relative mb-2">
                                             <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-1">Ürün Adı veya Barkod:</label>
                                             <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-1.5 text-sm shadow-sm">
@@ -531,7 +531,7 @@
 
                                 <!-- Sale Items List -->
                                 <div>
-                                    <h4 class="text-xl font-bold text-gray-200 mb-10 text-center">Satış Sepeti</h4>
+                                    <h4 class="text-xl font-bold text-gray-200 mb-3 text-center">Satış Sepeti</h4>
                                     <div id="saleItemsList" class="space-y-1 max-h-28 overflow-y-auto p-1.5 bg-gray-900 rounded-md border border-gray-700 shadow-sm">
                                         <p class="text-center text-gray-400 py-1 text-sm">Henüz ürün eklenmedi.</p>
                                     </div>
@@ -722,7 +722,7 @@
             // Header and Sidebar Elements
             const appHeader = document.getElementById('appHeader');
             const headerLeftGroup = document.getElementById('headerLeftGroup');
-            const headerTitle = document.getElementById('headerTitle');
+            const headerTitle = document.getElementById('headerTitle'); // Header başlığı
             const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -760,7 +760,7 @@
             const selectedCustomerDisplay = document.getElementById('selectedCustomerDisplay');
             const selectedCustomerNameSpan = document.getElementById('selectedCustomerName');
             const clearCustomerSelectionBtn = document.getElementById('clearCustomerSelectionBtn');
-            let selectedCustomer = null;
+            let selectedCustomer = null; // Seçili müşterinin bilgisini tutacak değişken
 
             // Ürün arama ve öneri elemanları
             const productSearchInput = document.getElementById('productSearchInput');
@@ -772,7 +772,7 @@
             const totalSaleAmountSpan = document.getElementById('totalSaleAmount');
 
             // Yeni Ödeme Finalizasyon Modalı Elemanları
-            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn');
+            const openPaymentModalBtn = document.getElementById('openPaymentModalBtn'); // Satışı Tamamla butonu
             const paymentFinalizationModal = document.getElementById('paymentFinalizationModal');
             const modalTotalSaleAmountSpan = document.getElementById('modalTotalSaleAmount');
             const modalSelectedCustomerInfoSpan = document.getElementById('modalSelectedCustomerInfo');
@@ -781,15 +781,15 @@
             const remainingCreditAmountSpan = document.getElementById('remainingCreditAmount');
             const creditRequiredMessage = document.getElementById('creditRequiredMessage');
             const finalizePaymentForm = document.getElementById('paymentFinalizationForm');
-            const finalizePaymentBtn = document.getElementById('finalizePaymentBtn');
+            const finalizePaymentBtn = document.getElementById('finalizePaymentBtn'); // Modaldaki tamamla butonu
 
-            const clearSaleFormBtn = document.getElementById('clearSaleFormBtn');
+            const clearSaleFormBtn = document.getElementById('clearSaleFormBtn'); // Formu temizle butonu
 
 
-            // Past Sales Filter & List Elements
+            // Past Sales Filter & List Elements (Yeni Collapsible Yapı)
             const pastSalesToggleHeader = document.getElementById('pastSalesToggleHeader');
             const pastSalesToggleIcon = document.getElementById('pastSalesToggleIcon');
-            const pastSalesContent = document.getElementById('pastSalesContent');
+            const pastSalesContent = document.getElementById('pastSalesContent'); // Gizlenecek/Gösterilecek içerik div'i
 
             const filterCustomerNameInput = document.getElementById('filterCustomerName');
             const filterSaleStartDateInput = document.getElementById('filterSaleStartDate');
@@ -808,13 +808,13 @@
             const stopScanBtn = document.getElementById('stopScanBtn');
 
 
-            let currentSaleItems = [];
+            let currentSaleItems = []; // Satış sepetindeki ürünleri tutacak dizi
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
-            let allProducts = [];
-            let selectedProductForSale = null;
-            let scannerRunning = false;
-            let allCustomers = [];
-            let totalSaleAmount = 0;
+            let allProducts = []; // Tüm ürünleri saklayacak dizi (orijinal stokları tutacak)
+            let selectedProductForSale = null; // Arama ile seçilen ürünü tutacak
+            let scannerRunning = false; // Tarayıcının çalışıp çalışmadığını takip et
+            let allCustomers = []; // Tüm müşterileri saklayacak dizi (müşteri arama için)
+            let totalSaleAmount = 0; // Sepet toplamını tutacak global değişken (Modal için)
 
 
             // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
@@ -831,10 +831,12 @@
             // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
             function addNotification(message, type = 'info', isRead = false) {
                 const timestamp = new Date().toLocaleString('tr-TR');
-                notifications.unshift({ message, type, timestamp, isRead });
+                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
                 saveNotifications();
                 renderNotifications();
                 updateNotificationCount();
+
+                // Anlık mesaj kutusunu da göster
                 showMessageBox(message, type);
             }
 
@@ -876,12 +878,14 @@
                     onConfirm();
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
                     messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
 
                 document.getElementById('confirmNo').onclick = () => {
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
                     messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
             }
@@ -898,7 +902,7 @@
                 notifications.forEach((notif, index) => {
                     const notificationItem = document.createElement('div');
                     notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
-                    notificationItem.dataset.index = index;
+                    notificationItem.dataset.index = index; // Index'i sakla
 
                     let iconClass = '';
                     if (notif.type === 'success') iconClass = 'fa-check-circle';
@@ -915,6 +919,7 @@
                     `;
                     notificationList.appendChild(notificationItem);
 
+                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
                     if (!notif.isRead) {
                         notificationItem.addEventListener('click', () => markNotificationAsRead(index));
                     }
@@ -946,18 +951,21 @@
             // Formu sıfırlama fonksiyonu
             function resetSaleForm() {
                 if (newSaleForm) newSaleForm.reset();
+                // Sepet listesini temizle
                 currentSaleItems = [];
                 renderSaleItems();
                 updateTotalSaleAmount();
-                if (saleDateInput) saleDateInput.valueAsDate = new Date();
-                if (productSearchInput) productSearchInput.value = '';
-                if (productSuggestions) productSuggestions.classList.add('hidden');
-                selectedProductForSale = null;
-                clearCustomerSelection();
-                fetchAllProducts();
+                if (saleDateInput) saleDateInput.valueAsDate = new Date(); // Bugünün tarihini varsayılan yap
+                if (productSearchInput) productSearchInput.value = ''; // Arama inputunu temizle
+                if (productSuggestions) productSuggestions.classList.add('hidden'); // Önerileri gizle
+                selectedProductForSale = null; // Seçili ürünü sıfırla
+                clearCustomerSelection(); // Müşteri seçimini de temizle
+                // Ürünler yeniden çekilmeli ki, sepete eklenen ürünlerin stok düşüşü sıfırlansın
+                fetchAllProducts(); // Orjinal stokları tekrar yükle (önceki durumda sanal düşüşler sıfırlanır)
             }
 
             // Tüm ürünleri API'den çekme (arama ve barkod için kullanılacak)
+            // Bu fonksiyon, veritabanındaki orijinal stokları çeker ve allProducts dizisini doldurur.
             async function fetchAllProducts() {
                 try {
                     const response = await fetch(`${API_BASE_URL}/products?userId=${getUserId()}`, {
@@ -968,6 +976,7 @@
                         throw new Error(`HTTP hata! Durum: ${response.status}`);
                     }
                     allProducts = await response.json();
+                    console.log("Tüm ürünler yüklendi (orijinal stoklar dahil):", allProducts); // Debug
                 } catch (error) {
                     console.error('Ürünler çekilirken hata:', error);
                     addNotification('Ürün listesi yüklenemedi.', 'error');
@@ -985,6 +994,7 @@
                         throw new Error(`HTTP hata! Durum: ${response.status}`);
                     }
                     allCustomers = await response.json();
+                    console.log("Tüm müşteriler yüklendi:", allCustomers); // Debug
                 } catch (error) {
                     console.error('Müşteriler çekilirken hata:', error);
                     addNotification('Müşteri listesi yüklenemedi.', 'error');
@@ -1054,6 +1064,7 @@
 
             // Yeni Modal Yönetim Fonksiyonları
             function openPaymentFinalizationModal() {
+                console.log("[DEBUG] openPaymentFinalizationModal fonksiyonu çağrıldı.");
                 if (currentSaleItems.length === 0) {
                     addNotification('Satışı tamamlamak için sepete ürün eklemelisiniz.', 'error');
                     return;
@@ -1062,41 +1073,50 @@
                 totalSaleAmount = currentSaleItems.reduce((sum, item) => sum + item.totalPrice, 0);
                 if (modalTotalSaleAmountSpan) modalTotalSaleAmountSpan.textContent = `${totalSaleAmount.toFixed(2)} TL`;
 
+                // Müşteri seçili ise bilgilerini göster, değilse "Yok" yazsın
                 if (selectedCustomer) {
                     if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${selectedCustomer.name} (${selectedCustomer.phoneNumber})</span>`;
                 } else {
                     if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`;
                 }
 
-                if (cashPaidAmountInput) cashPaidAmountInput.value = totalSaleAmount.toFixed(2);
+                // Ödeme miktarlarını sıfırla ve kalan borcu güncelle
+                if (cashPaidAmountInput) cashPaidAmountInput.value = '0.00';
                 if (cardPaidAmountInput) cardPaidAmountInput.value = '0.00';
-                updateRemainingCreditAmount();
+                updateRemainingCreditAmount(); // Başlangıçta kalan borç tüm toplam tutar olacak
 
                 if (paymentFinalizationModal) {
                     paymentFinalizationModal.classList.remove('hidden');
                     paymentFinalizationModal.classList.add('show');
+                    console.log("[DEBUG] Ödeme modalı gösterildi.");
+                } else {
+                    console.error("HATA: paymentFinalizationModal DOM'da bulunamadı.");
                 }
             }
 
+            // Bu fonksiyonu global scope'ta tanımlıyoruz ki HTML'deki onclick eventi onu çağırabilsin
             window.closePaymentFinalizationModal = function() {
                 if (paymentFinalizationModal) {
                     paymentFinalizationModal.classList.remove('show');
                     paymentFinalizationModal.classList.add('hidden');
                 }
                 if (finalizePaymentForm) finalizePaymentForm.reset();
-                if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden');
+                if (creditRequiredMessage) creditRequiredMessage.classList.add('hidden'); // Mesajı gizle
+                console.log("[DEBUG] Ödeme modalı kapatıldı.");
             };
 
+            // Kalan veresiye borcunu dinamik olarak güncelleme
             function updateRemainingCreditAmount() {
                 const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
                 const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
                 const paidTotal = cashPaid + cardPaid;
                 let remaining = totalSaleAmount - paidTotal;
 
-                if (remaining < 0) remaining = 0;
+                if (remaining < 0) remaining = 0; // Ödenen miktar toplamı aşarsa sıfıra çek
 
                 if (remainingCreditAmountSpan) remainingCreditAmountSpan.textContent = `${remaining.toFixed(2)} TL`;
 
+                // Eğer kalan borç varsa ve müşteri seçili değilse uyarı göster
                 if (remaining > 0 && !selectedCustomer) {
                     if (creditRequiredMessage) creditRequiredMessage.classList.remove('hidden');
                 } else {
@@ -1104,15 +1124,17 @@
                 }
             }
 
+            // Ürün arama inputuna yazıldığında önerileri göster
             if (productSearchInput) {
                 productSearchInput.addEventListener('input', () => {
                     const searchTerm = productSearchInput.value.toLowerCase();
                     if (productSuggestions) productSuggestions.innerHTML = '';
                     if (productSuggestions) productSuggestions.classList.add('hidden');
-                    selectedProductForSale = null;
+                    selectedProductForSale = null; // Yeni arama başladığında seçili ürünü sıfırla
 
-                    if (searchTerm.length < 2) return;
+                    if (searchTerm.length < 2) return; // En az 2 karakter girilince ara
 
+                    // allProducts listesi üzerinde filtreleme yap (bu allProducts, fetchAllProducts'tan gelen orijinal stokları içerir)
                     const filteredProducts = allProducts.filter(product =>
                         product.name.toLowerCase().includes(searchTerm) ||
                         (product.barcode && product.barcode.toLowerCase().includes(searchTerm))
@@ -1123,23 +1145,24 @@
                             const li = document.createElement('li');
                             li.className = 'p-1 cursor-pointer hover:bg-gray-700 transition-colors border-b border-gray-700 last:border-b-0 text-gray-200 text-xs';
                             li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`;
+                            // Ürün bilgilerini dataset'e ekle
                             li.dataset.productId = product._id;
                             li.dataset.productName = product.name;
                             li.dataset.unitPrice = product.price;
                             li.dataset.unit = product.unit;
                             li.dataset.category = product.category;
-                            li.dataset.currentQuantity = product.quantity;
+                            li.dataset.currentQuantity = product.quantity; // Mevcut anlık stoğu
                             li.dataset.barcode = product.barcode || '';
 
                             li.addEventListener('click', () => {
                                 if (productSearchInput) productSearchInput.value = product.name;
-                                selectedProductForSale = {
+                                selectedProductForSale = { // allProducts'taki objeyi direkt kullan
                                     _id: product._id,
                                     name: product.name,
                                     price: product.price,
                                     unit: product.unit,
                                     category: product.category,
-                                    quantity: product.quantity,
+                                    quantity: product.quantity, // allProducts'taki anlık kullanılabilir stok
                                     barcode: product.barcode
                                 };
                                 if (productSuggestions) productSuggestions.classList.add('hidden');
@@ -1165,6 +1188,9 @@
                                     if (productSearchInput) productSearchInput.value = foundProduct.name;
                                     selectedProductForSale = foundProduct;
                                     addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete ekleniyor...`, 'info');
+                                    if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                                    // Otomatik olarak sepete eklemek için, miktarı 1 yapıp addProductToSaleBtn'e tıklayabiliriz.
+                                    // Bu, kullanıcının ENTER'a basınca otomatik eklemesini sağlar.
                                     if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
                                     if (addProductToSaleBtn) addProductToSaleBtn.click();
                                 } else {
@@ -1184,6 +1210,7 @@
                 });
             }
 
+            // Barkod Tara butonu
             if (scanBarcodeBtn) {
                 scanBarcodeBtn.addEventListener('click', () => {
                     if (barcodeScannerModal) barcodeScannerModal.classList.add('active');
@@ -1212,12 +1239,15 @@
                             if (barcodeScannerModal) barcodeScannerModal.classList.remove('active');
                             return;
                         }
+                        console.log("Quagga başlatıldı, tarama başlıyor.");
+                        if (barcodeScannerResult) barcodeScannerResult.textContent = 'Barkod bekleniyor...';
                         Quagga.start();
                         scannerRunning = true;
                     });
 
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
+                        console.log("Barkod algılandı:", code);
                         if (barcodeScannerResult) barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
                         addNotification(`Barkod algılandı: ${code}`, 'success');
 
@@ -1227,8 +1257,10 @@
                         const foundProduct = allProducts.find(p => p.barcode === code);
                         if (foundProduct) {
                             if (productSearchInput) productSearchInput.value = foundProduct.name;
-                            selectedProductForSale = foundProduct;
+                            selectedProductForSale = foundProduct; // Seçili ürünü ayarla
                             addNotification(`Barkod ile ürün bulundu: "${foundProduct.name}". Otomatik olarak sepete ekleniyor...`, 'info');
+                            if (productQuantityForSaleInput) productQuantityForSaleInput.focus();
+                            // Otomatik olarak sepete ekle
                             if (productQuantityForSaleInput) productQuantityForSaleInput.value = '1';
                             if (addProductToSaleBtn) addProductToSaleBtn.click();
                         } else {
@@ -1240,19 +1272,24 @@
                     Quagga.onProcessed(function (result) {
                         const drawingCtx = Quagga.canvas.ctx.overlay;
                         const drawingCanvas = Quagga.canvas.dom.overlay;
-                        if (result && result.boxes) {
-                            drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
-                            result.boxes.filter(function (box) {
-                                return box !== result.box;
-                            }).forEach(function (box) {
-                                Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
-                            });
-                        }
-                        if (result && result.box) {
-                            Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
-                        }
-                        if (result && result.codeResult && result.codeResult.code) {
-                            Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+
+                        if (result) {
+                            if (result.boxes) {
+                                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.width), parseInt(drawingCanvas.height));
+                                result.boxes.filter(function (box) {
+                                    return box !== result.box;
+                                }).forEach(function (box) {
+                                    Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                                });
+                            }
+
+                            if (result.box) {
+                                Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+                            }
+
+                            if (result.codeResult && result.codeResult.code) {
+                                Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: "red", lineWidth: 3 });
+                            }
                         }
                     });
                 });
@@ -1262,6 +1299,7 @@
                 if (scannerRunning) {
                     Quagga.stop();
                     scannerRunning = false;
+                    console.log("Barkod tarayıcı durduruldu.");
                 }
             }
 
@@ -1278,6 +1316,7 @@
                 });
             }
 
+            // Sepete ürün ekleme (Stok düşüşü burada frontend'de simüle edilecek, backend'de satış tamamlandığında gerçek stok düşecek)
             if (addProductToSaleBtn) {
                 addProductToSaleBtn.addEventListener('click', () => {
                     if (!selectedProductForSale) {
@@ -1290,10 +1329,16 @@
                     const unitPrice = parseFloat(selectedProductForSale.price);
                     const unit = selectedProductForSale.unit;
                     const category = selectedProductForSale.category;
+
+                    // allProducts listesindeki gerçek stok miktarı
                     const productInAllProducts = allProducts.find(p => p._id === productId);
+                    // Burada, sepetteki ürün miktarını da düşerek kullanılabilir stok hesaplanmalı.
+                    // Sepetteki mevcut miktarını bulalım (eğer varsa)
                     const existingItemInCart = currentSaleItems.find(item => item.productId === productId);
                     const currentQuantityInCart = existingItemInCart ? existingItemInCart.quantity : 0;
+
                     let availableStock = productInAllProducts ? parseInt(productInAllProducts.quantity) : 0;
+
                     let quantity = parseInt(productQuantityForSaleInput?.value);
 
                     if (isNaN(quantity) || quantity <= 0) {
@@ -1301,11 +1346,13 @@
                         return;
                     }
 
+                    // Yeni eklenmek istenen miktar + sepetteki mevcut miktar, toplam stoktan fazla mı?
                     if ((quantity + currentQuantityInCart) > availableStock) {
                         addNotification(`"${productName}" için yeterli stok yok. Mevcut stok: ${availableStock} ${unit}. Sepette ${currentQuantityInCart} ${unit} var. Maksimum ${availableStock - currentQuantityInCart} ${unit} daha ekleyebilirsiniz.`, 'error');
                         return;
                     }
 
+                    // Sepette aynı ürün varsa miktarını artır
                     if (existingItemInCart) {
                         existingItemInCart.quantity += quantity;
                         existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice;
@@ -1321,6 +1368,7 @@
                         });
                     }
 
+                    // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK azalt (veri tabanına yazma yok)
                     if (productInAllProducts) {
                         productInAllProducts.quantity -= quantity;
                     }
@@ -1334,6 +1382,7 @@
                 });
             }
 
+            // Satış sepetindeki ürünleri render etme
             function renderSaleItems() {
                 if (!saleItemsList) return;
                 saleItemsList.innerHTML = '';
@@ -1359,10 +1408,13 @@
                     button.addEventListener('click', (event) => {
                         const indexToRemove = parseInt(event.target.closest('button').dataset.index);
                         const removedItem = currentSaleItems.splice(indexToRemove, 1)[0];
+
+                        // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK geri getir
                         const productInAllProducts = allProducts.find(p => p._id === removedItem.productId);
                         if (productInAllProducts) {
                             productInAllProducts.quantity += removedItem.quantity;
                         }
+
                         renderSaleItems();
                         updateTotalSaleAmount();
                         addNotification(`"${removedItem.productName}" sepetten çıkarıldı.`, 'info');
@@ -1370,6 +1422,7 @@
                 });
             }
 
+            // Toplam satış tutarını güncelleme
             function updateTotalSaleAmount() {
                 let total = 0;
                 currentSaleItems.forEach(item => {
@@ -1383,24 +1436,31 @@
                 }
             }
 
+            // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
+                console.log("[DEBUG] finalizePayment fonksiyonu çağrıldı.");
+
                 const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
                 const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
-                const creditAmount = totalSaleAmount - (cashPaid + cardPaid);
+                const creditAmount = totalSaleAmount - (cashPaid + cardPaid); // Kalan tutar veresiye olacak
                 const saleDate = saleDateInput?.value;
 
                 if (currentSaleItems.length === 0) {
                     addNotification('Sepetiniz boş.', 'error');
+                    console.log("[DEBUG] Sepet boş, satış işlemi iptal edildi.");
                     return;
                 }
 
                 if (creditAmount > 0 && !selectedCustomer) {
                     addNotification('Veresiye işlemi için bir müşteri seçmelisiniz.', 'error');
+                    console.log("[DEBUG] Veresiye var ama müşteri seçili değil, satış işlemi iptal edildi.");
                     return;
                 }
 
+                // Ödenen miktar toplam sepeti aşamaz (kalan borç negatif olmamalı)
                 if ((cashPaid + cardPaid) > totalSaleAmount && totalSaleAmount > 0) {
                     addNotification(`Ödenen miktar (${(cashPaid + cardPaid).toFixed(2)} TL) sepet toplamından (${totalSaleAmount.toFixed(2)} TL) fazla olamaz. Lütfen miktarları kontrol edin.`, 'error');
+                    console.log(`[DEBUG] Ödenen miktar sepet toplamından fazla. Ödenen: ${(cashPaid + cardPaid).toFixed(2)}, Toplam: ${totalSaleAmount.toFixed(2)}. Satış iptal edildi.`);
                     return;
                 }
 
@@ -1414,6 +1474,7 @@
                     if (cashPaid > 0 && cardPaid > 0) paymentMethodDescription = 'Nakit+Kart';
                     else if (cashPaid > 0) paymentMethodDescription = 'Nakit';
                     else if (cardPaid > 0) paymentMethodDescription = 'Kart';
+
                     if (creditAmount > 0) {
                         paymentMethodDescription += (paymentMethodDescription ? '+' : '') + 'Veresiye';
                     } else if (!paymentMethodDescription && totalSaleAmount === 0) {
@@ -1440,6 +1501,8 @@
                         creditDebt: creditAmount > 0 ? creditAmount : 0
                     };
 
+                    console.log("[DEBUG] API'ye gönderilecek satış verisi (Payload):", JSON.stringify(salePayload, null, 2));
+
                     const saleResponse = await fetch(`${API_BASE_URL}/sales`, {
                         method: 'POST',
                         headers: {
@@ -1450,40 +1513,12 @@
                     });
 
                     const saleResult = await saleResponse.json();
+                    console.log("[DEBUG] API'den gelen satış cevabı:", saleResult);
+
                     if (!saleResponse.ok) {
                         if (saleResponse.status === 401 || saleResponse.status === 403) { handleAuthError(); return; }
                         throw new Error(saleResult.message || `Satış kaydı sırasında hata oluştu. Durum Kodu: ${saleResponse.status}`);
                     }
-
-                    // Eğer veresiye borcu varsa, müşteri veritabanındaki toplam borcunu güncelle
-                    if (creditAmount > 0 && selectedCustomer) {
-                        const creditUpdatePayload = {
-                            customerId: selectedCustomer._id,
-                            amount: creditAmount,
-                            type: 'debt', // Borç eklendiği için 'debt'
-                            description: `Satıştan kaynaklanan veresiye borcu: ${saleResult.saleId}`, // Satış ID'si ile açıklama
-                            userId: getUserId()
-                        };
-                        const creditResponse = await fetch(`${API_BASE_URL}/transactions/credit`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getToken()}`
-                            },
-                            body: JSON.stringify(creditUpdatePayload)
-                        });
-
-                        if (!creditResponse.ok) {
-                            const creditErrorResult = await creditResponse.json();
-                            console.error('Veresiye borcu güncellenirken hata:', creditErrorResult);
-                            addNotification(`Veresiye borcu güncellenemedi: ${creditErrorResult.message}`, 'warning');
-                        } else {
-                            addNotification('Müşteri veresiye borcu başarıyla güncellendi.', 'success');
-                        }
-                    }
-
-                    // Satış başarıyla tamamlandığında customers.html için bir flag ayarla
-                    localStorage.setItem('fingoCustomersUpdateNeeded', 'true');
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
                     closePaymentFinalizationModal();
@@ -1491,7 +1526,7 @@
                     fetchPastSales();
 
                 } catch (error) {
-                    console.error('Satış işlemi sırasında hata:', error);
+                    console.error('[DEBUG] Satış işlemi sırasında hata:', error);
                     addNotification(`Satış işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
                 } finally {
                     if (finalizePaymentBtn) {
@@ -1503,7 +1538,13 @@
 
 
             // --- Olay Dinleyicileri ---
-            if (clearSaleFormBtn) { clearSaleFormBtn.addEventListener('click', resetSaleForm); }
+
+            // Formu temizle butonu
+            if (clearSaleFormBtn) {
+                clearSaleFormBtn.addEventListener('click', resetSaleForm);
+            }
+
+            // Müşteri arama girişi
             if (customerSearchInput) {
                 customerSearchInput.addEventListener('input', (event) => {
                     const query = event.target.value.trim();
@@ -1515,6 +1556,7 @@
                 });
             }
 
+            // Arama sonuçları dışına tıklayınca listeyi kapatma
             document.addEventListener('click', (event) => {
                 if (customerSearchInput && customerSearchResults && !customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
                     customerSearchResults.classList.add('hidden');
@@ -1522,15 +1564,32 @@
                 if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
                     productSuggestions.classList.add('hidden');
                 }
+                // Bildirim merkezini kapatma mantığı burada
                 if (notificationCenter && notificationBellBtn && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
                     notificationCenter.classList.remove('active');
                 }
             });
 
-            if (clearCustomerSelectionBtn) { clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection); }
-            if (openPaymentModalBtn) { openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal); }
-            if (cashPaidAmountInput) { cashPaidAmountInput.addEventListener('input', updateRemainingCreditAmount); }
-            if (cardPaidAmountInput) { cardPaidAmountInput.addEventListener('input', updateRemainingCreditAmount); }
+            // Seçili müşteriyi temizleme butonu
+            if (clearCustomerSelectionBtn) {
+                clearCustomerSelectionBtn.addEventListener('click', clearCustomerSelection);
+            }
+
+            // Open Payment Modal Button (Satışı Tamamla butonu)
+            if (openPaymentModalBtn) {
+                openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
+            }
+
+
+            // Update remaining credit amount on input change
+            if (cashPaidAmountInput) {
+                cashPaidAmountInput.addEventListener('input', updateRemainingCreditAmount);
+            }
+            if (cardPaidAmountInput) {
+                cardPaidAmountInput.addEventListener('input', updateRemainingCreditAmount);
+            }
+
+            // Finalize Payment Form Submission
             if (finalizePaymentForm) {
                 finalizePaymentForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
@@ -1538,25 +1597,19 @@
                 });
             }
 
+
+            // Geçmiş satışlar dropdown toggle
             if (pastSalesToggleHeader && pastSalesContent && pastSalesToggleIcon) {
                 pastSalesToggleHeader.addEventListener('click', () => {
                     pastSalesContent.classList.toggle('hidden');
                     pastSalesToggleIcon.classList.toggle('rotate-180');
                     if (!pastSalesContent.classList.contains('hidden')) {
-                        fetchPastSales();
+                        fetchPastSales(); // Sadece açıldığında geçmiş satışları çek
                     }
                 });
             }
-            if (applySaleFilterBtn) { applySaleFilterBtn.addEventListener('click', () => { fetchPastSales(); }); }
-            if (clearSaleFilterBtn) {
-                clearSaleFilterBtn.addEventListener('click', () => {
-                    if (filterCustomerNameInput) filterCustomerNameInput.value = '';
-                    if (filterSaleStartDateInput) filterSaleStartDateInput.value = '';
-                    if (filterSaleEndDateInput) filterSaleEndDateInput.value = '';
-                    fetchPastSales();
-                });
-            }
 
+            // Geçmiş satışları çekme ve listeleme
             async function fetchPastSales() {
                 if (salesLoadingOverlay) salesLoadingOverlay.classList.remove('hidden');
                 if (pastSalesListDiv) pastSalesListDiv.innerHTML = '';
@@ -1611,6 +1664,7 @@
                     sales.forEach(sale => {
                         const saleItemDiv = document.createElement('div');
                         saleItemDiv.className = `p-2 bg-gray-700 rounded-lg shadow-md border border-gray-600`;
+
                         const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
                         const customerInfo = sale.customerName ? `Müşteri: <span class="font-medium text-gray-200">${sale.customerName}</span>` : 'Müşteri: <span class="font-medium text-gray-200">Anonim</span>';
                         const paymentMethodInfo = sale.paymentMethod ? `Ödeme Tipi: <span class="font-medium text-gray-200">${sale.paymentMethod}</span>` : '';
@@ -1649,6 +1703,7 @@
                         button.addEventListener('click', (e) => {
                             const saleId = e.target.dataset.saleId;
                             addNotification(`Satış ID: ${saleId} detayları görüntülenecek (geliştirilecek).`, 'info');
+                            console.log(`Satış ID: ${saleId} detayları görüntülenecek.`);
                         });
                     });
 
@@ -1661,6 +1716,22 @@
                 }
             }
 
+            // Filtreleme Butonları
+            if (applySaleFilterBtn) {
+                applySaleFilterBtn.addEventListener('click', () => {
+                    fetchPastSales();
+                });
+            }
+
+            if (clearSaleFilterBtn) {
+                clearSaleFilterBtn.addEventListener('click', () => {
+                    if (filterCustomerNameInput) filterCustomerNameInput.value = '';
+                    if (filterSaleStartDateInput) filterSaleStartDateInput.value = '';
+                    if (filterSaleEndDateInput) filterSaleEndDateInput.value = '';
+                    fetchPastSales();
+                });
+            }
+
             // Sidebar Fonksiyonları
             const closeSidebar = () => {
                 if (sidebar) {
@@ -1668,6 +1739,7 @@
                     sidebar.classList.add('-translate-x-full');
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64');
@@ -1685,6 +1757,7 @@
                     sidebar.classList.add('open');
                     sidebar.classList.remove('-translate-x-full');
                 }
+
                 if (window.innerWidth < 1024) {
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
@@ -1720,17 +1793,29 @@
                 });
             }
 
-            if (closeSidebarBtn) { closeSidebarBtn.addEventListener('click', () => { closeSidebar(); }); }
-            if (sidebarOverlay) { sidebarOverlay.addEventListener('click', () => { closeSidebar(); }); }
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
 
-            if (goToDashboardBtn) { goToDashboardBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); }); }
-            if (manageCustomersBtn) { manageCustomersBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); }); }
-            if (manageProductsBtn) { manageProductsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); }); }
-            if (goToSalesManagementBtn) { goToSalesManagementBtn.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); }); }
-            if (manageRecurringTransactionsBtn) { manageRecurringTransactionsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); }); }
-            if (viewReportsBtn) { viewReportsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); }); }
-            if (exportCsvBtn) { exportCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); }); }
-            if (importCsvBtn) { importCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); }); }
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları
+            document.querySelector('a[href="/Fingo-WEB/index.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/customers.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/products.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/sales_management.html"]')?.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/reports.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); });
+            document.querySelector('a[id="exportCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
+            document.querySelector('a[id="importCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
+
+            // Logout Button
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
@@ -1750,10 +1835,12 @@
                 window.location.href = 'auth.html';
             }
 
+            // Bildirim Çanı tıklama olayı
             if (notificationBellBtn) {
                 notificationBellBtn.addEventListener('click', () => {
                     if (notificationCenter) notificationCenter.classList.toggle('active');
                     if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
                         notifications.forEach(n => n.isRead = true);
                         saveNotifications();
                         updateNotificationCount();
@@ -1761,7 +1848,14 @@
                 });
             }
 
-            if (closeNotificationsBtn) { closeNotificationsBtn.addEventListener('click', () => { if (notificationCenter) notificationCenter.classList.remove('active'); }); }
+            // Bildirim merkezini kapatma butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
+
+            // Tüm bildirimleri temizle butonu
             if (clearNotificationsBtn) {
                 clearNotificationsBtn.addEventListener('click', () => {
                     showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
@@ -1778,6 +1872,7 @@
             // Initial calls on page load
             fetchAllProducts();
             fetchAllCustomers();
+            // fetchPastSales(); // Geçmiş satışlar artık sadece dropdown açıldığında çekilecek
             loadNotifications();
             if (saleDateInput) saleDateInput.valueAsDate = new Date();
             if (productSearchInput) productSearchInput.focus();
