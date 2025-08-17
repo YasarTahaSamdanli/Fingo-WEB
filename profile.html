@@ -74,6 +74,7 @@
             background-color: #1A202C;
             color: #E2E8F0;
             border-color: #4A5568;
+            border-radius: 0.5rem; /* rounded-lg */
         }
         .form-input::placeholder {
             color: #A0AEC0;
@@ -114,14 +115,14 @@
         </button>
     </header>
 
-    <main class="bg-gray-900 bg-opacity-70 p-8 rounded-lg shadow-xl w-full max-w-6xl border border-gray-700">
+    <main class="bg-gray-900 bg-opacity-70 p-8 rounded-2xl shadow-xl w-full max-w-6xl border border-gray-700">
         <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Hesap Ayarları</h2>
         <p class="text-lg text-gray-400 text-center mb-8">Burada hesabınızla ilgili ayarları yönetebilirsiniz.</p>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             <div class="lg:col-span-1 space-y-8">
-                <section class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-sm">
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
                     <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
                         <i class="fas fa-user-circle mr-3"></i> Kullanıcı Bilgileri
                     </h3>
@@ -131,7 +132,7 @@
                     </div>
                 </section>
 
-                <section class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-sm">
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
                     <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
                         <i class="fas fa-key mr-3"></i> Şifre Değiştir
                     </h3>
@@ -154,7 +155,7 @@
             </div>
 
             <div class="lg:col-span-1">
-                <section class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-sm h-full flex flex-col">
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
                     <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
                         <i class="fas fa-shield-alt mr-3"></i> İki Faktörlü Kimlik Doğrulama (2FA)
                     </h3>
@@ -168,7 +169,7 @@
                                 <div id="qrcodeCanvas" class="p-2 bg-gray-700 border border-gray-600 rounded-md flex items-center justify-center">
                                     </div>
                                 <p class="text-gray-300 text-center">Veya manuel olarak şu gizli anahtarı girin:</p>
-                                <p id="secretKeyDisplay" class="font-bold text-lg text-blue-400 break-all bg-gray-700 p-2 rounded-md select-all"></p>
+                                <p id="secretKeyDisplay" class="font-bold text-lg text-blue-400 break-all bg-gray-700 p-2 rounded-md select-all font-mono"></p>
                                 <p class="text-gray-300 text-center font-medium">Uygulamadaki 6 haneli kodu aşağıya girerek 2FA'yı etkinleştirin:</p>
                                 <div>
                                     <input type="text" id="2faCodeInput" placeholder="######" maxlength="6" class="form-input w-full p-2 text-sm text-center tracking-widest text-lg">
@@ -194,7 +195,6 @@
                     </div>
                 </section>
             </div>
-
         </div> </main>
 
     <div id="messageBox" class="message-box hidden">
