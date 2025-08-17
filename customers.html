@@ -642,7 +642,7 @@
 
             // Customer List and Search Elements
             const searchCustomerInput = document.getElementById('searchCustomerInput');
-            const applyCustomerFilterBtn = document.getElementById('applyCustomerFilterBtn');
+            const applyCustomerFilterBtn = document.getElementById('applyCustomerBtn'); // Düzeltildi
             const clearCustomerFilterBtn = document.getElementById('clearCustomerFilterBtn');
             const customerListDiv = document.getElementById('customerList');
             const customerLoadingOverlay = document.getElementById('customerLoadingOverlay');
@@ -761,11 +761,15 @@
                     onConfirm();
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
 
                 document.getElementById('confirmNo').onclick = () => {
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
             }
 
@@ -932,7 +936,7 @@
                             ${customer.email ? `<p class="text-gray-300 text-sm">E-posta: ${customer.email}</p>` : ''}
                             ${customer.address ? `<p class="text-gray-300 text-sm">Adres: ${customer.address}</p>` : ''}
                             ${customer.shopName ? `<p class="text-gray-300 text-sm">İşletme: ${customer.shopName}</p>` : ''}
-                            <p class="text-gray-300 text-sm font-semibold mt-2">Veresiye Borcu: <span class="text-red-400">${(customer.currentDebt || 0).toFixed(2)} TL</span></p>
+                            <p class="text-gray-300 text-sm font-semibold mt-2">Veresiye Borcu: <span class="text-red-400" data-customer-id="${customer._id}" data-type="current-debt">${(customer.currentDebt || 0).toFixed(2)} TL</span></p>
                             <div class="flex flex-wrap gap-2 mt-4">
                                 <button class="edit-customer-btn bg-yellow-600 text-white px-3 py-1 rounded-md hover:bg-yellow-700 text-sm transition-colors" data-customer-id="${customer._id}" data-customer-name="${customer.name}">
                                     <i class="fas fa-edit mr-1"></i> Düzenle
@@ -1263,7 +1267,7 @@
             if (addCreditPaymentForm) {
                 addCreditPaymentForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const customerId = currentOpenCustomerIdForCredit;
+                    const customerId = creditCustomerIdInput?.value;
                     const amount = parseFloat(creditAmountInput?.value || '0');
                     const type = creditTransactionTypeSelect?.value;
                     const description = creditDescriptionInput?.value.trim() || null;
@@ -1290,7 +1294,7 @@
                     }
 
                     try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, { // fetchWithRetry kullanıldı
+                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1308,6 +1312,7 @@
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
                         fetchCustomers(); // Müşteri listesini ve veresiye geçmişini günceller
+                        // Modalı açık tut ve güncel verileri çek
                         await openCreditTransactionsModal(currentOpenCustomerIdForCredit, creditCustomerNameSpan.textContent, result.newDebt);
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
@@ -1446,14 +1451,14 @@
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessage('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
             if (importCsvBtn) {
                 importCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessage('Veri içe aktarma özelliği geliştiriliyor...', 'info');
+                    showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
@@ -1482,8 +1487,8 @@
             // Bildirim Çanı tıklama olayı
             if (notificationBellBtn) {
                 notificationBellBtn.addEventListener('click', () => {
-                    notificationCenter.classList.toggle('active');
-                    if (notificationCenter.classList.contains('active')) {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
                         // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
                         notifications.forEach(n => n.isRead = true);
                         saveNotifications();
@@ -1495,7 +1500,7 @@
             // Bildirim merkezini kapatma butonu
             if (closeNotificationsBtn) {
                 closeNotificationsBtn.addEventListener('click', () => {
-                    notificationCenter.classList.remove('active');
+                    if (notificationCenter) notificationCenter.classList.remove('active');
                 });
             }
 
