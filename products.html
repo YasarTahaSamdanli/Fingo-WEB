@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Ürün Yönetimi</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -275,28 +278,36 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
+    <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Left group: menu button and title -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Ürün Yönetimi</h1>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
+            <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Ürün Yönetimi</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
-            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
+            <!-- Hoş Geldin metni kaldırıldı -->
             <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
+    <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
+        <!-- Sidebar -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -329,18 +340,21 @@
             </nav>
         </aside>
 
+        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-10 mx-auto bg-gray-900 bg-opacity-70 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-7xl transition-all duration-300 ease-in-out">
+        <!-- Main Content -->
+        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-8 mx-auto bg-gray-900 bg-opacity-70 rounded-2xl shadow-2xl border border-gray-700 w-full max-w-7xl transition-all duration-300 ease-in-out">
             <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Ürün Yönetimi</h2>
-            <p class="text-lg text-gray-400 text-center mb-10 font-light">Envanterinizdeki ürünleri kolayca yönetin ve takip edin.</p>
+            <p class="text-lg text-gray-400 text-center mb-8 font-light">Envanterinizdeki ürünleri kolayca yönetin ve takip edin.</p>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
+                <!-- Sol Sütun (Ürün Ekle/Güncelle Kartı) -->
                 <div class="lg:col-span-1">
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h2 id="productFormTitle" class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Ürün Ekle</h2>
-                        <form id="productForm" class="space-y-5">
+                        <form id="productForm" class="space-y-4"> <!-- space-y-5 -> space-y-4 -->
                             <div class="grid grid-cols-1 gap-4 mb-4">
                                 <div>
                                     <label for="productName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı:</label>
@@ -351,6 +365,7 @@
                                     <input type="number" id="productQuantity" placeholder="Örn: 100" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
                                 </div>
 
+                                <!-- Fiyat Hesaplama Bölümü -->
                                 <div class="border-t-2 border-b-2 border-blue-700 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
                                     <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Fiyat Hesaplama</h3>
                                     <div>
@@ -370,12 +385,15 @@
                                     </div>
                                     <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
                                 </div>
+                                <!-- End Price Calculation Section -->
+
                                 <div>
                                     <label for="productPrice" class="block text-gray-300 text-sm font-semibold mb-2">Birim Satış Fiyatı (₺):</label>
                                     <input type="number" id="productPrice" placeholder="Örn: 15.50" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
                                     <p class="text-xs text-gray-400 mt-1">Bu alan otomatik doldurulabilir veya manuel girilebilir.</p>
                                 </div>
 
+                                <!-- Barkod Bölümü -->
                                 <div class="border-t-2 border-blue-700 pt-5 mt-5 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
                                     <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Barkod Bilgisi</h3>
                                     <div>
@@ -387,6 +405,8 @@
                                         <i class="fas fa-barcode mr-2"></i> Barkod Tara
                                     </button>
                                 </div>
+                                <!-- End Barcode Section -->
+
                                 <div>
                                     <label for="productUnit" class="block text-gray-300 text-sm font-semibold mb-2">Birim Tipi:</label>
                                     <select id="productUnit" class="form-select w-full p-3 text-base shadow-sm">
@@ -410,11 +430,13 @@
                                         <option value="">Kategori Seçin</option>
                                     </select>
                                 </div>
+                                <!-- Minimum Stok Seviyesi -->
                                 <div>
                                     <label for="minStockLevel" class="block text-gray-300 text-sm font-semibold mb-2">Minimum Stok Seviyesi:</label>
                                     <input type="number" id="minStockLevel" placeholder="Örn: 10" step="1" min="0" class="form-input w-full p-3 text-base shadow-sm">
                                     <p class="text-xs text-gray-400 mt-1">Bu seviyenin altına düştüğünde uyarı alacaksınız.</p>
                                 </div>
+                                <!-- Resim Yükleme Alanı -->
                                 <div>
                                     <label for="imageUpload" class="block text-gray-300 text-sm font-semibold mb-2">Resim Yükle (Opsiyonel):</label>
                                     <input type="file" id="imageUpload" accept="image/*" class="form-input w-full p-3 text-base shadow-sm">
@@ -435,8 +457,10 @@
                     </div>
                 </div>
 
-                <div class="lg:col-span-1 space-y-8">
+                <!-- Sağ Sütun (Filtreler ve Ürün Listesi Kartı) -->
+                <div class="lg:col-span-1 space-y-6"> <!-- space-y-8 -> space-y-6 -->
 
+                    <!-- Filtre Kartı -->
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
                         <h2 class="text-2xl font-bold text-purple-300 mb-6 text-center">Ürünleri Filtrele</h2>
                         <div class="grid grid-cols-1 gap-4 mb-4">
@@ -457,6 +481,7 @@
                         </div>
                     </div>
 
+                    <!-- Ürün Listesi Kartı -->
                     <div id="productsListContainer" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg relative">
                         <h2 class="text-2xl font-bold text-gray-200 mb-6 text-center">Mevcut Ürünler</h2>
                         <div id="productsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
@@ -479,6 +504,7 @@
         </main>
     </div>
 
+    <!-- Barcode Scanner Modal -->
     <div id="barcodeScannerModal" class="barcode-scanner-modal">
         <div class="barcode-scanner-content">
             <h3 class="text-xl font-bold text-gray-200 mb-4">Barkod Tara</h3>
@@ -488,11 +514,13 @@
         </div>
     </div>
 
+    <!-- Message Box -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
+    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -506,6 +534,7 @@
         </div>
     </div>
 
+    <!-- QuaggaJS Kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 
     <script type="module">
@@ -554,6 +583,7 @@
             const mainContent = document.getElementById('mainContent');
             const appHeader = document.getElementById('appHeader');
             const headerLeftGroup = document.getElementById('headerLeftGroup');
+            const headerTitle = document.getElementById('headerTitle'); // Yeni eklenen başlık ID'si
 
             const goToDashboardBtn = document.getElementById('goToDashboardBtn');
             const manageCustomersBtn = document.getElementById('manageCustomersBtn');
@@ -564,7 +594,7 @@
             const exportCsvBtn = document.getElementById('exportCsvBtn');
             const importCsvBtn = document.getElementById('importCsvBtn');
             const logoutBtn = document.getElementById('logoutBtn');
-            const loggedInUserSpan = document.getElementById('loggedInUser');
+            // const loggedInUserSpan = document.getElementById('loggedInUser'); // Kaldırıldı
 
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
@@ -1257,20 +1287,25 @@
                 });
             }
 
+            // Sidebar Fonksiyonları
             const closeSidebar = () => {
                 if (sidebar) {
                     sidebar.classList.remove('open');
                     sidebar.classList.add('-translate-x-full');
                 }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+
+                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
+                    if (headerLeftGroup) { // Header sol grubunu sola hizala
                         headerLeftGroup.classList.remove('lg:justify-center');
                         headerLeftGroup.classList.add('lg:justify-start');
                     }
+                    if (headerTitle) headerTitle.classList.remove('lg:hidden'); // Başlığı göster
                 }
+                // Sidebar kapanırken menü tuşunu tekrar göster
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
@@ -1279,25 +1314,31 @@
                     sidebar.classList.add('open');
                     sidebar.classList.remove('-translate-x-full');
                 }
+
                 if (window.innerWidth < 1024) {
+                    // Küçük ekranlarda overlay'i aktifleştir
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
+                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
                     if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64');
-                    if (headerLeftGroup) {
+                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
+                    if (headerLeftGroup) { // Header sol grubunu ortala
                         headerLeftGroup.classList.remove('lg:justify-start');
                         headerLeftGroup.classList.add('lg:justify-center');
                     }
+                    if (headerTitle) headerTitle.classList.add('lg:hidden'); // Başlığı gizle
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
+                // Sidebar açılırken menü tuşunu gizle
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar();
+                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
                 } else {
-                    closeSidebar();
+                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
+                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
                 }
             };
 
@@ -1325,9 +1366,10 @@
                 });
             }
 
-            if (loggedInUserSpan && decodedToken && decodedToken.email) {
-                
-            }
+            // Kullanıcı Adı Bilgisi kısmı tamamen kaldırıldı.
+            // if (loggedInUserSpan && decodedToken && decodedToken.email) {
+            //     loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
+            // }
 
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
