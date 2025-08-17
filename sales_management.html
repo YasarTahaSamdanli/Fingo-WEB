@@ -387,11 +387,21 @@
             scrollbar-width: thin;
             scrollbar-color: #6366F1 #2D3748;
         }
+
+        /* Yeni eklendi: Dropdown ikon animasyonu */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .transition-transform {
+            transition-property: transform;
+            transition-duration: 300ms;
+            transition-timing-function: ease-in-out;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header -->
+    <!-- Header (customers.html'den kopyalandı) -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <!-- Left group: menu button and title -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
@@ -416,7 +426,7 @@
     <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
-        <!-- Sidebar -->
+        <!-- Sidebar (customers.html'den kopyalandı) -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
@@ -453,7 +463,7 @@
             </nav>
         </aside>
 
-        <!-- Sidebar Overlay -->
+        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Satış Yönetimi Ana İçerik Alanı -->
@@ -467,14 +477,14 @@
                 <div class="lg:col-span-1">
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Satış Oluştur</h3>
-                        <form id="newSaleForm" class="space-y-4"> <!-- space-y-5 -> space-y-4 -->
+                        <form id="newSaleForm" class="space-y-4">
                             <div>
                                 <label for="saleDate" class="block text-gray-300 text-sm font-semibold mb-2">Satış Tarihi:</label>
                                 <input type="date" id="saleDate" class="form-input w-full p-3 text-base shadow-sm" value="">
                             </div>
 
                             <!-- Müşteri Seçme Alanı (Veresiye için Gerekli) -->
-                            <div class="mb-4 bg-gray-700 p-4 rounded-lg shadow-inner"> <!-- mb-6 -> mb-4 -->
+                            <div class="mb-4 bg-gray-700 p-4 rounded-lg shadow-inner">
                                 <h3 class="text-lg font-semibold text-gray-200 mb-3 flex items-center">
                                     <i class="fas fa-user-tag text-blue-400 mr-2"></i> Müşteri Seçimi (Veresiye İşlemi İçin)
                                 </h3>
@@ -483,7 +493,6 @@
                                     <i class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 <div id="customerSearchResults" class="absolute z-10 w-full mt-2 bg-gray-800 rounded-md shadow-lg max-h-48 overflow-y-auto hidden">
-                                    <!-- Arama sonuçları buraya JS ile yüklenecek -->
                                     <div class="p-3 text-gray-400 text-center">Müşteri bulunamadı.</div>
                                 </div>
                                 <div id="selectedCustomerDisplay" class="mt-3 p-3 bg-blue-800 text-white rounded-md shadow-sm hidden">
@@ -500,7 +509,6 @@
                                     <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı veya Barkod:</label>
                                     <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-3 text-base shadow-sm">
                                     <ul id="productSuggestions" class="absolute z-10 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg mt-1 max-h-48 overflow-y-auto hidden">
-                                        <!-- Arama önerileri buraya gelecek -->
                                     </ul>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -520,7 +528,7 @@
                             <!-- Sale Items List -->
                             <div>
                                 <h4 class="text-xl font-bold text-gray-200 mb-4 text-center">Satış Sepeti</h4>
-                                <div id="saleItemsList" class="space-y-3 max-h-60 overflow-y-auto p-3 bg-gray-900 rounded-md border border-gray-700 shadow-sm">
+                                <div id="saleItemsList" class="space-y-3 max-h-40 overflow-y-auto p-3 bg-gray-900 rounded-md border border-gray-700 shadow-sm"> <!-- max-h-60 -> max-h-40 -->
                                     <p class="text-center text-gray-400 py-2">Henüz ürün eklenmedi.</p>
                                 </div>
                                 <p class="text-right text-2xl font-bold text-gray-100 mt-4">Toplam Tutar: <span id="totalSaleAmount" class="text-green-400">0.00 TL</span></p>
@@ -539,48 +547,54 @@
                     </div>
                 </div> <!-- Left Column End -->
 
-                <!-- Right Column (Past Sales List) -->
-                <div class="lg:col-span-1 space-y-6"> <!-- space-y-8 -> space-y-6 -->
-
-                    <!-- Filter Past Sales -->
+                <!-- Right Column (Geçmiş Satışlar - Collapsible) -->
+                <div class="lg:col-span-1">
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
-                        <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Geçmiş Satışları Filtrele</h3>
-                        <div class="grid grid-cols-1 gap-4 mb-4">
-                            <div>
-                                <label for="filterCustomerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adına Göre Ara:</label>
-                                <input type="text" id="filterCustomerName" placeholder="Müşteri adı" class="form-input w-full p-3 text-base shadow-sm">
-                            </div>
-                            <div>
-                                <label for="filterSaleStartDate" class="block text-gray-300 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
-                                <input type="date" id="filterSaleStartDate" class="form-input w-full p-3 text-base shadow-sm">
-                            </div>
-                            <div>
-                                <label for="filterSaleEndDate" class="block text-gray-300 text-sm font-semibold mb-2">Bitiş Tarihi:</label>
-                                <input type="date" id="filterSaleEndDate" class="form-input w-full p-3 text-base shadow-sm">
-                            </div>
+                        <div id="pastSalesToggleHeader" class="flex justify-between items-center cursor-pointer mb-4">
+                            <h3 class="text-2xl font-bold text-blue-300">Geçmiş Satışlar</h3>
+                            <i id="pastSalesToggleIcon" class="fas fa-chevron-down text-xl text-gray-400 transition-transform duration-300 ease-in-out"></i>
                         </div>
-                        <div class="flex space-x-3 mt-6">
-                            <button id="applySaleFilterBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Filtrele</button>
-                            <button id="clearSaleFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Filtreleri Temizle</button>
+
+                        <div id="pastSalesContent" class="hidden"> <!-- Başlangıçta gizli -->
+                            <!-- Filter Past Sales -->
+                            <div class="p-4 bg-gray-700 rounded-xl border border-gray-600 shadow-inner mb-4"> <!-- p-6 -> p-4 -->
+                                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Filtrele</h3> <!-- mb-6 -> mb-4 -->
+                                <div class="grid grid-cols-1 gap-3 mb-4"> <!-- gap-4 -> gap-3 -->
+                                    <div>
+                                        <label for="filterCustomerName" class="block text-gray-300 text-sm font-semibold mb-2">Müşteri Adına Göre Ara:</label>
+                                        <input type="text" id="filterCustomerName" placeholder="Müşteri adı" class="form-input w-full p-3 text-base shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="filterSaleStartDate" class="block text-gray-300 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
+                                        <input type="date" id="filterSaleStartDate" class="form-input w-full p-3 text-base shadow-sm">
+                                    </div>
+                                    <div>
+                                        <label for="filterSaleEndDate" class="block text-gray-300 text-sm font-semibold mb-2">Bitiş Tarihi:</label>
+                                        <input type="date" id="filterSaleEndDate" class="form-input w-full p-3 text-base shadow-sm">
+                                    </div>
+                                </div>
+                                <div class="flex space-x-3 mt-4"> <!-- mt-6 -> mt-4 -->
+                                    <button id="applySaleFilterBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Filtrele</button>
+                                    <button id="clearSaleFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Temizle</button>
+                                </div>
+                            </div>
+
+                            <!-- Past Sales List -->
+                            <div id="pastSalesListContainer" class="p-4 bg-gray-700 rounded-xl border border-gray-600 shadow-inner relative"> <!-- p-6 -> p-4 -->
+                                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Geçmiş Satışlar Listesi</h3> <!-- mb-6 -> mb-4 -->
+                                <div id="pastSalesList" class="space-y-3 max-h-[300px] overflow-y-auto pr-2"> <!-- max-h-[500px] -> max-h-[300px] -->
+                                </div>
+                                <!-- Loading Overlay -->
+                                <div id="salesLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                                    <p class="text-center text-gray-300 text-lg">
+                                        <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                                        Yükleniyor...
+                                    </p>
+                                </div>
+                                <p class="text-right text-xl font-bold text-gray-100 mt-4 pt-4 border-t border-gray-700">Toplam Satış Hacmi: <span id="totalSalesVolume" class="text-blue-400">0.00 TL</span></p>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Past Sales List -->
-                    <div id="pastSalesListContainer" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg relative">
-                        <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Geçmiş Satışlar</h3>
-                        <div id="pastSalesList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                            <!-- Past sales will be loaded here by JS -->
-                        </div>
-                        <!-- Loading Overlay -->
-                        <div id="salesLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-2xl">
-                            <p class="text-center text-gray-300 text-lg">
-                                <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
-                                Yükleniyor...
-                            </p>
-                        </div>
-                        <p class="text-right text-xl font-bold text-gray-100 mt-6 pt-4 border-t border-gray-700">Toplam Satış Hacmi: <span id="totalSalesVolume" class="text-blue-400">0.00 TL</span></p>
-                    </div>
-
                 </div> <!-- Right Column End -->
 
             </div> <!-- Main Content Grid End -->
@@ -600,7 +614,6 @@
             <button id="clearNotificationsBtn" class="text-blue-400 hover:text-blue-200 text-sm">Tümünü Temizle</button>
         </div>
         <div id="notificationList" class="notification-list">
-            <!-- Bildirimler buraya JS ile eklenecek -->
             <p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>
         </div>
         <div class="notification-footer">
@@ -616,7 +629,6 @@
 
             <div class="video-container">
                 <video id="video" autoplay playsinline></video>
-                <!-- Canvas QuaggaJS tarafından dinamik olarak eklenecek -->
             </div>
 
             <div id="barcodeScannerResult" class="text-center text-red-400 font-bold mt-5 text-lg">Tarama bekleniyor...</div>
@@ -768,7 +780,11 @@
             const clearSaleFormBtn = document.getElementById('clearSaleFormBtn'); // Formu temizle butonu
 
 
-            // Past Sales Filter Elements
+            // Past Sales Filter & List Elements (Yeni Collapsible Yapı)
+            const pastSalesToggleHeader = document.getElementById('pastSalesToggleHeader');
+            const pastSalesToggleIcon = document.getElementById('pastSalesToggleIcon');
+            const pastSalesContent = document.getElementById('pastSalesContent'); // Gizlenecek/Gösterilecek içerik div'i
+
             const filterCustomerNameInput = document.getElementById('filterCustomerName');
             const filterSaleStartDateInput = document.getElementById('filterSaleStartDate');
             const filterSaleEndDateInput = document.getElementById('filterSaleEndDate');
@@ -1329,7 +1345,7 @@
                     // Sepette aynı ürün varsa miktarını artır
                     if (existingItemInCart) {
                         existingItemInCart.quantity += quantity;
-                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice; // Corrected: Use existingItem.unitPrice
+                        existingItemInCart.totalPrice = existingItemInCart.quantity * existingItemInCart.unitPrice;
                     } else {
                         currentSaleItems.push({
                             productId,
@@ -1344,7 +1360,7 @@
 
                     // allProducts dizisindeki ürünün stok miktarını GÖRSEL OLARAK azalt (veri tabanına yazma yok)
                     if (productInAllProducts) {
-                        productInAllProducts.quantity -= quantity; // Sanal olarak düşür
+                        productInAllProducts.quantity -= quantity;
                     }
 
                     renderSaleItems();
@@ -1412,7 +1428,7 @@
 
             // Ödeme finalizasyonunu yönetir
             async function finalizePayment() {
-                console.log("[DEBUG] finalizePayment fonksiyonu çağrıldı."); // Debug log
+                console.log("[DEBUG] finalizePayment fonksiyonu çağrıldı.");
 
                 const cashPaid = parseFloat(cashPaidAmountInput?.value) || 0;
                 const cardPaid = parseFloat(cardPaidAmountInput?.value) || 0;
@@ -1432,7 +1448,6 @@
                     return;
                 }
 
-                // Ödenen miktar toplam sepeti aşamaz (kalan borç negatif olmamalı)
                 if (paidTotal > totalSaleAmount) {
                     addNotification(`Ödenen miktar (${paidTotal.toFixed(2)} TL) sepet toplamından (${totalSaleAmount.toFixed(2)} TL) fazla olamaz. Lütfen miktarları kontrol edin.`, 'error');
                     console.log(`[DEBUG] Ödenen miktar sepet toplamından fazla. Ödenen: ${paidTotal.toFixed(2)}, Toplam: ${totalSaleAmount.toFixed(2)}. Satış iptal edildi.`);
@@ -1473,10 +1488,10 @@
                         paymentMethod: paymentMethodDescription,
                         cashPaid: cashPaid,
                         cardPaid: cardPaid,
-                        creditDebt: creditAmount > 0 ? creditAmount : 0 // Veresiye miktarını ekle
+                        creditDebt: creditAmount > 0 ? creditAmount : 0
                     };
 
-                    console.log("[DEBUG] API'ye gönderilecek satış verisi (Payload):", JSON.stringify(salePayload, null, 2)); // Payload'ı daha okunur formatta logla
+                    console.log("[DEBUG] API'ye gönderilecek satış verisi (Payload):", JSON.stringify(salePayload, null, 2));
 
                     const saleResponse = await fetch(`${API_BASE_URL}/sales`, {
                         method: 'POST',
@@ -1488,7 +1503,7 @@
                     });
 
                     const saleResult = await saleResponse.json();
-                    console.log("[DEBUG] API'den gelen satış cevabı:", saleResult); // API cevabını logla
+                    console.log("[DEBUG] API'den gelen satış cevabı:", saleResult);
 
                     if (!saleResponse.ok) {
                         if (saleResponse.status === 401 || saleResponse.status === 403) { handleAuthError(); return; }
@@ -1497,11 +1512,11 @@
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
                     closePaymentFinalizationModal();
-                    resetSaleForm(); // Bu, allProducts'ı yeniden çekecek ve stokları güncelleyecek
+                    resetSaleForm();
                     fetchPastSales();
 
                 } catch (error) {
-                    console.error('[DEBUG] Satış işlemi sırasında hata:', error); // Hata objesini detaylı logla
+                    console.error('[DEBUG] Satış işlemi sırasında hata:', error);
                     addNotification(`Satış işlemi sırasında bir hata oluştu: ${error.message}`, 'error');
                 } finally {
                     if (finalizePaymentBtn) {
@@ -1533,15 +1548,12 @@
 
             // Arama sonuçları dışına tıklayınca listeyi kapatma
             document.addEventListener('click', (event) => {
-                // Müşteri arama sonuçlarını kapat
                 if (customerSearchInput && customerSearchResults && !customerSearchInput.contains(event.target) && !customerSearchResults.contains(event.target)) {
                     customerSearchResults.classList.add('hidden');
                 }
-                // Ürün arama önerilerini kapat
                 if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
                     productSuggestions.classList.add('hidden');
                 }
-                // Bildirim merkezini kapat
                 if (notificationCenter && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
                     notificationCenter.classList.remove('active');
                 }
@@ -1555,9 +1567,6 @@
             // Open Payment Modal Button (Satışı Tamamla butonu)
             if (openPaymentModalBtn) {
                 openPaymentModalBtn.addEventListener('click', openPaymentFinalizationModal);
-                console.log("[DEBUG] 'Satışı Tamamla' butonuna olay dinleyicisi eklendi."); // Debug log
-            } else {
-                console.error("HATA: 'Satışı Tamamla' butonu (ID: openPaymentModalBtn) DOM'da bulunamadı."); // Debug log
             }
 
 
@@ -1573,13 +1582,21 @@
             if (finalizePaymentForm) {
                 finalizePaymentForm.addEventListener('submit', async (event) => {
                     event.preventDefault();
-                    console.log("[DEBUG] Ödeme Finalizasyon Formu gönderildi."); // Debug log
                     await finalizePayment();
                 });
-            } else {
-                 console.error("HATA: 'paymentFinalizationForm' formu (ID: paymentFinalizationForm) DOM'da bulunamadı."); // Debug log
             }
 
+
+            // Geçmiş satışlar dropdown toggle
+            if (pastSalesToggleHeader && pastSalesContent && pastSalesToggleIcon) {
+                pastSalesToggleHeader.addEventListener('click', () => {
+                    pastSalesContent.classList.toggle('hidden');
+                    pastSalesToggleIcon.classList.toggle('rotate-180');
+                    if (!pastSalesContent.classList.contains('hidden')) {
+                        fetchPastSales(); // Sadece açıldığında geçmiş satışları çek
+                    }
+                });
+            }
 
             // Geçmiş satışları çekme ve listeleme
             async function fetchPastSales() {
@@ -1602,7 +1619,7 @@
                 if (filterCustomer) url += `customerName=${encodeURIComponent(filterCustomer)}&`;
                 if (filterStartDate) url += `startDate=${encodeURIComponent(new Date(filterStartDate).toISOString())}&`;
                 if (filterEndDate) url += `endDate=${encodeURIComponent(new Date(filterEndDate + 'T23:59:59.999').toISOString())}&`;
-                url += `timestamp=${Date.now()}`; // Cache busting
+                url += `timestamp=${Date.now()}`;
 
                 try {
                     const response = await fetch(url, {
@@ -1781,7 +1798,6 @@
             document.querySelector('a[href="/Fingo-WEB/index.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); });
             document.querySelector('a[href="/Fingo-WEB/customers.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); });
             document.querySelector('a[href="/Fingo-WEB/products.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); });
-            // Satış Yönetimi linki için özel durum: zaten bu sayfadayız
             document.querySelector('a[href="/Fingo-WEB/sales_management.html"]')?.addEventListener('click', (e) => { e.preventDefault(); closeSidebar(); });
             document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); });
             document.querySelector('a[href="/Fingo-WEB/reports.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); });
@@ -1799,7 +1815,6 @@
                 });
             }
 
-            // handleAuthError fonksiyonu
             function handleAuthError() {
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
@@ -1810,9 +1825,9 @@
             }
 
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
-            fetchAllProducts(); // Bu, allProducts dizisini dolduracak
+            fetchAllProducts();
             fetchAllCustomers();
-            fetchPastSales();
+            // fetchPastSales(); // Geçmiş satışlar artık sadece dropdown açıldığında çekilecek
             loadNotifications();
             if (saleDateInput) saleDateInput.valueAsDate = new Date();
             if (productSearchInput) productSearchInput.focus();
