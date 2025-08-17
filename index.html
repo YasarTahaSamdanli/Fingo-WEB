@@ -1098,11 +1098,15 @@
                         resetForm();
                         fetchTransactions();
                         fetchGeneralFinancialSummary();
-                        // İşlem eklendiğinde/güncellendiğinde aylık ve yıllık özetleri de güncelle
-                        const currentYear = new Date().getFullYear();
-                        const currentMonth = new Date().getMonth();
-                        fetchMonthlySummary(currentYear, currentMonth); // API'ye 0-tabanlı ay gönderiyoruz, API içinde +1 ile halledilecek
-                        fetchAnnualSummary(currentYear);
+
+                        // Seçili ay ve yıl değerlerini alarak grafikleri güncelle
+                        const selectedYearForMonthly = parseInt(yearSelect.value);
+                        const selectedMonthForMonthly = parseInt(monthSelect.value);
+                        fetchMonthlySummary(selectedYearForMonthly, selectedMonthForMonthly);
+
+                        const selectedYearForAnnual = parseInt(annualYearSelect.value);
+                        fetchAnnualSummary(selectedYearForAnnual);
+
                     } catch (error) {
                         console.error('İşlem ekleme/güncelleme hatası:', error);
                         addNotification(`İşlem eklenirken/güncellenirken hata: ${error.message}`, 'error');
@@ -1169,20 +1173,29 @@
                         // İşlem başarıyla silindiyse tüm özetleri ve listeyi güncelle
                         fetchTransactions();
                         fetchGeneralFinancialSummary();
-                        const currentYear = new Date().getFullYear();
-                        const currentMonth = new Date().getMonth();
-                        fetchMonthlySummary(currentYear, currentMonth);
-                        fetchAnnualSummary(currentYear);
+
+                        // Seçili ay ve yıl değerlerini alarak grafikleri güncelle
+                        const selectedYearForMonthly = parseInt(yearSelect.value);
+                        const selectedMonthForMonthly = parseInt(monthSelect.value);
+                        fetchMonthlySummary(selectedYearForMonthly, selectedMonthForMonthly);
+
+                        const selectedYearForAnnual = parseInt(annualYearSelect.value);
+                        fetchAnnualSummary(selectedYearForAnnual);
+
                     } catch (error) {
                         console.error('İşlem silme hatası:', error);
                         addNotification(`İşlem silinirken hata: ${error.message}`, 'error');
                         // Hata durumunda da UI'ın güncel kalması için verileri tekrar çek
                         fetchTransactions();
                         fetchGeneralFinancialSummary();
-                        const currentYear = new Date().getFullYear();
-                        const currentMonth = new Date().getMonth();
-                        fetchMonthlySummary(currentYear, currentMonth);
-                        fetchAnnualSummary(currentYear);
+
+                        // Hata durumunda da seçili ay ve yıl değerlerini alarak grafikleri güncelle
+                        const selectedYearForMonthly = parseInt(yearSelect.value);
+                        const selectedMonthForMonthly = parseInt(monthSelect.value);
+                        fetchMonthlySummary(selectedYearForMonthly, selectedMonthForMonthly);
+
+                        const selectedYearForAnnual = parseInt(annualYearSelect.value);
+                        fetchAnnualSummary(selectedYearForAnnual);
                     }
                 });
             }
@@ -1412,7 +1425,7 @@
                         throw new Error(errorData.message || 'Aylık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("Aylık Özet Verisi:", data);
+                    console.log("[DEBUG] Aylık Özet Verisi Alındı:", data); // Debug log eklendi
                     renderMonthlySummaryChart(data);
                 } catch (error) {
                     console.error('Aylık özet çekilirken hata:', error);
@@ -1421,6 +1434,7 @@
             }
 
             function renderMonthlySummaryChart(data) {
+                console.log("[DEBUG] renderMonthlySummaryChart çağrıldı, veri:", data); // Debug log eklendi
                 if (!monthlySummaryChartCtx) {
                     console.error("monthlySummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('monthlySummaryChart');
@@ -1553,7 +1567,7 @@
                         throw new Error(errorData.message || 'Yıllık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("Yıllık Özet Verisi:", data);
+                    console.log("[DEBUG] Yıllık Özet Verisi Alındı:", data); // Debug log eklendi
                     renderAnnualSummaryChart(data);
                 } catch (error) {
                     console.error('Yıllık özet çekilirken hata:', error);
@@ -1562,6 +1576,7 @@
             }
 
             function renderAnnualSummaryChart(data) {
+                console.log("[DEBUG] renderAnnualSummaryChart çağrıldı, veri:", data); // Debug log eklendi
                 if (!annualSummaryChartCtx) {
                     console.error("annualSummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('annualSummaryChart');
@@ -1785,7 +1800,7 @@
             };
 
             window.addEventListener('resize', () => {
-                initializeSidebarState(); // Boyut değiştiğinde sidebar durumunu ve başlık konumunu güncelle
+                initializeSidebarState(); // Boyut değiştiğinde sidebar durumunu güncelle
             });
 
             if (sidebarToggleBtn) {
@@ -1905,10 +1920,15 @@
             resetForm();
             fetchGeneralFinancialSummary();
             populateMonthYearDropdowns();
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth();
-            fetchMonthlySummary(currentYear, currentMonth);
-            fetchAnnualSummary(currentYear);
+
+            // Başlangıçta seçili olan ay ve yıl ile grafikleri çek
+            const initialSelectedYearForMonthly = parseInt(yearSelect.value);
+            const initialSelectedMonthForMonthly = parseInt(monthSelect.value);
+            fetchMonthlySummary(initialSelectedYearForMonthly, initialSelectedMonthForMonthly);
+
+            const initialSelectedYearForAnnual = parseInt(annualYearSelect.value);
+            fetchAnnualSummary(initialSelectedYearForAnnual);
+
             fetchCategories();
             fetchUser2FAStatus();
             loadNotifications();
