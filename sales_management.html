@@ -467,85 +467,85 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Satış Yönetimi Ana İçerik Alanı -->
-        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-5 rounded-2xl shadow-xl border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
+        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-6 rounded-2xl shadow-xl border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out"> <!-- max-w-5xl -> max-w-6xl, lg:p-4 -> lg:p-6 -->
             <h2 class="text-3xl font-bold text-blue-300 mb-4 text-center mt-4">Satış Yönetimi</h2>
-            <p class="text-lg text-gray-400 text-center mb-6 font-light">Yeni satışları kaydedin ve geçmiş satışlarınızı yönetin.</p>
+            <p class="text-lg text-gray-400 text-center mb-5 font-light">Yeni satışları kaydedin ve geçmiş satışlarınızı yönetin.</p>
 
             <div class="grid grid-cols-1 gap-6">
 
                 <!-- Top Row: New Sale Form (split internally) -->
                 <div class="lg:col-span-1">
-                    <div class="p-4 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col"> <!-- p-5 -> p-4 -->
-                        <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yeni Satış Oluştur</h3>
-                        <form id="newSaleForm" class="space-y-1"> <!-- space-y-2 -> space-y-1 -->
+                    <div class="p-4 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col"> <!-- p-3 -> p-4 -->
+                        <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yeni Satış Oluştur</h3> <!-- mb-3 -> mb-4 -->
+                        <form id="newSaleForm" class="space-y-1">
                             <div>
                                 <label for="saleDate" class="block text-gray-300 text-sm font-semibold mb-1">Satış Tarihi:</label>
-                                <input type="date" id="saleDate" class="form-input w-full p-1.5 text-base shadow-sm" value=""> <!-- p-2 -> p-1.5 -->
+                                <input type="date" id="saleDate" class="form-input w-full p-1.5 text-base shadow-sm" value=""> <!-- p-1 -> p-1.5 -->
                             </div>
 
                             <!-- Müşteri Seçme Alanı (Veresiye için Gerekli) -->
-                            <div class="mb-1 bg-gray-700 p-2 rounded-lg shadow-inner"> <!-- mb-2 -> mb-1, p-3 -> p-2 -->
+                            <div class="mb-1 bg-gray-700 p-2 rounded-lg shadow-inner"> <!-- mb-0.5 -> mb-1, p-1.5 -> p-2 -->
                                 <h3 class="text-base font-semibold text-gray-200 mb-1 flex items-center">
                                     <i class="fas fa-user-tag text-blue-400 mr-1 text-sm"></i> Müşteri Seçimi (Veresiye İşlemi İçin)
                                 </h3>
                                 <div class="relative">
-                                    <input type="text" id="customerSearchInput" placeholder="Müşteri ara (Adı veya Telefon Numarası)" class="w-full p-1.5 pr-8 text-sm bg-gray-800 text-white rounded-md shadow-sm border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"> <!-- p-2 -> p-1.5 -->
+                                    <input type="text" id="customerSearchInput" placeholder="Müşteri ara (Adı veya Telefon Numarası)" class="w-full p-1.5 pr-8 text-sm bg-gray-800 text-white rounded-md shadow-sm border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"> <!-- p-1 -> p-1.5 -->
                                     <i class="fas fa-search absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                                 </div>
-                                <div id="customerSearchResults" class="absolute z-10 w-full mt-1 bg-gray-800 rounded-md shadow-lg max-h-32 overflow-y-auto hidden">
-                                    <div class="p-1.5 text-gray-400 text-center text-sm">Müşteri bulunamadı.</div> <!-- p-2 -> p-1.5 -->
+                                <div id="customerSearchResults" class="absolute z-10 w-full mt-1 bg-gray-800 rounded-md shadow-lg max-h-32 overflow-y-auto hidden"> <!-- max-h-28 -> max-h-32 -->
+                                    <div class="p-1.5 text-gray-400 text-center text-sm">Müşteri bulunamadı.</div> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
                                 </div>
-                                <div id="selectedCustomerDisplay" class="mt-1 p-1.5 bg-blue-800 text-white rounded-md shadow-sm hidden"> <!-- mt-2 -> mt-1, p-2 -> p-1.5 -->
-                                    <span class="font-bold text-sm">Seçili Müşteri:</span> <span id="selectedCustomerName" class="text-sm"></span>
-                                    <button id="clearCustomerSelectionBtn" class="float-right text-gray-200 hover:text-white transition-colors text-sm"><i class="fas fa-times-circle"></i></button>
+                                <div id="selectedCustomerDisplay" class="mt-1 p-1.5 bg-blue-800 text-white rounded-md shadow-sm hidden"> <!-- mt-0.5 -> mt-1, p-1 -> p-1.5 -->
+                                    <span class="font-bold text-sm">Seçili Müşteri:</span> <span id="selectedCustomerName" class="text-sm"></span> <!-- text-xs -> text-sm -->
+                                    <button id="clearCustomerSelectionBtn" class="float-right text-gray-200 hover:text-white transition-colors text-sm"><i class="fas fa-times-circle"></i></button> <!-- text-xs -> text-sm -->
                                 </div>
                             </div>
                             <!-- Müşteri Seçme Alanı Sonu -->
 
                             <!-- Inner Grid for Product Add and Sale Items List -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> <!-- gap-2 -> gap-4 -->
                                 <!-- Product Selection for Sale -->
                                 <div>
                                     <div class="border-t-2 border-b-2 border-blue-700 pt-2 pb-2 mb-2 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
                                         <h4 class="text-base font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
                                         <div class="relative mb-2">
-                                            <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-1">Ürün Adı veya Barkod:</label>
-                                            <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-2 -> p-1.5 -->
-                                            <ul id="productSuggestions" class="absolute z-10 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg mt-1 max-h-32 overflow-y-auto hidden">
+                                            <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-1">Ürün Adı veya Barkod:</label> <!-- text-xs -> text-sm, mb-0.5 -> mb-1 -->
+                                            <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
+                                            <ul id="productSuggestions" class="absolute z-10 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg mt-1 max-h-32 overflow-y-auto hidden"> <!-- mt-0.5 -> mt-1, max-h-28 -> max-h-32 -->
                                             </ul>
                                         </div>
                                         <div class="grid grid-cols-1 gap-2">
                                             <div>
-                                                <label for="productQuantityForSale" class="block text-gray-300 text-sm font-semibold mb-1">Miktar:</label>
-                                                <input type="number" id="productQuantityForSale" placeholder="Adet" min="1" value="1" class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-2 -> p-1.5 -->
+                                                <label for="productQuantityForSale" class="block text-gray-300 text-sm font-semibold mb-1">Miktar:</label> <!-- text-xs -> text-sm, mb-0.5 -> mb-1 -->
+                                                <input type="number" id="productQuantityForSale" placeholder="Adet" min="1" value="1" class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
                                             </div>
                                             <div class="flex items-end">
-                                                <button type="button" id="scanBarcodeBtn" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-1.5 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-300 ease-in-out shadow-md flex items-center justify-center text-sm"> <!-- p-2 -> p-1.5 -->
-                                                    <i class="fas fa-barcode mr-1"></i> Barkod Tara
+                                                <button type="button" id="scanBarcodeBtn" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-2 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-300 ease-in-out shadow-md flex items-center justify-center text-sm"> <!-- p-1.5 -> p-2, text-xs -> text-sm -->
+                                                    <i class="fas fa-barcode mr-1"></i> Barkod Tara <!-- mr-0.5 -> mr-1 -->
                                                 </button>
                                             </div>
                                         </div>
-                                        <button type="button" id="addProductToSaleBtn" class="mt-2 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white p-1.5 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-md text-sm">Ürünü Sepete Ekle</button> <!-- mt-3 -> mt-2, p-2 -> p-1.5 -->
+                                        <button type="button" id="addProductToSaleBtn" class="mt-2 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white p-2 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-md text-sm">Ürünü Sepete Ekle</button> <!-- mt-1.5 -> mt-2, p-1.5 -> p-2 -->
                                     </div>
                                 </div>
 
                                 <!-- Sale Items List -->
                                 <div>
                                     <h4 class="text-xl font-bold text-gray-200 mb-3 text-center">Satış Sepeti</h4>
-                                    <div id="saleItemsList" class="space-y-0.5 max-h-28 overflow-y-auto p-1.5 bg-gray-900 rounded-md border border-gray-700 shadow-sm"> <!-- space-y-1 -> space-y-0.5, max-h-32 -> max-h-28, p-2 -> p-1.5 -->
-                                        <p class="text-center text-gray-400 py-1 text-sm">Henüz ürün eklenmedi.</p>
+                                    <div id="saleItemsList" class="space-y-1 max-h-28 overflow-y-auto p-1.5 bg-gray-900 rounded-md border border-gray-700 shadow-sm"> <!-- max-h-24 -> max-h-28, p-1 -> p-1.5, space-y-0.5 -> space-y-1 -->
+                                        <p class="text-center text-gray-400 py-1 text-sm">Henüz ürün eklenmedi.</p> <!-- py-0.5 -> py-1, text-xs -> text-sm -->
                                     </div>
-                                    <p class="text-right text-lg font-bold text-gray-100 mt-2">Toplam Tutar: <span id="totalSaleAmount" class="text-green-400">0.00 TL</span></p> <!-- text-xl -> text-lg, mt-2 -->
+                                    <p class="text-right text-lg font-bold text-gray-100 mt-2">Toplam Tutar: <span id="totalSaleAmount" class="text-green-400">0.00 TL</span></p> <!-- text-base -> text-lg, mt-1.5 -> mt-2 -->
                                 </div>
                             </div>
                             <!-- End Inner Grid -->
 
                             <!-- Yeni Satışı Tamamla ve Formu Temizle Butonları -->
                             <div class="mt-3 flex justify-end space-x-2">
-                                <button type="button" id="openPaymentModalBtn" class="bg-gradient-to-r from-green-600 to-green-800 text-white px-3 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-sm flex items-center"> <!-- px-4 py-2 -> px-3 py-2, text-base -> text-sm -->
+                                <button type="button" id="openPaymentModalBtn" class="bg-gradient-to-r from-green-600 to-green-800 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-base flex items-center">
                                     <i class="fas fa-hand-holding-usd mr-1"></i> Satışı Tamamla
                                 </button>
-                                <button type="button" id="clearSaleFormBtn" class="bg-gray-700 text-white px-3 py-2 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-sm flex items-center"> <!-- px-4 py-2 -> px-3 py-2, text-base -> text-sm -->
+                                <button type="button" id="clearSaleFormBtn" class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-base flex items-center">
                                     <i class="fas fa-eraser mr-1"></i> Formu Temizle
                                 </button>
                             </div>
@@ -555,7 +555,7 @@
 
                 <!-- Bottom Row: Geçmiş Satışlar (Collapsible) -->
                 <div class="lg:col-span-1">
-                    <div class="p-5 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
+                    <div class="p-4 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg"> <!-- p-3 -> p-4 -->
                         <div id="pastSalesToggleHeader" class="flex justify-between items-center cursor-pointer mb-3">
                             <h3 class="text-2xl font-bold text-blue-300">Geçmiş Satışlar</h3>
                             <i id="pastSalesToggleIcon" class="fas fa-chevron-down text-xl text-gray-400 transition-transform duration-300 ease-in-out"></i>
@@ -563,20 +563,20 @@
 
                         <div id="pastSalesContent" class="hidden"> <!-- Başlangıçta gizli -->
                             <!-- Filter Past Sales -->
-                            <div class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner mb-3">
+                            <div class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner mb-3"> <!-- p-2 -> p-3 -->
                                 <h3 class="text-xl font-bold text-blue-300 mb-3 text-center">Filtrele</h3>
                                 <div class="grid grid-cols-1 gap-2 mb-3">
                                     <div>
-                                        <label for="filterCustomerName" class="block text-gray-300 text-sm font-semibold mb-1">Müşteri Adına Göre Ara:</label>
-                                        <input type="text" id="filterCustomerName" placeholder="Müşteri adı" class="form-input w-full p-2 text-sm shadow-sm">
+                                        <label for="filterCustomerName" class="block text-gray-300 text-sm font-semibold mb-1">Müşteri Adına Göre Ara:</label> <!-- text-xs -> text-sm, mb-0.5 -> mb-1 -->
+                                        <input type="text" id="filterCustomerName" placeholder="Müşteri adı" class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
                                     </div>
                                     <div>
-                                        <label for="filterSaleStartDate" class="block text-gray-300 text-sm font-semibold mb-1">Başlangıç Tarihi:</label>
-                                        <input type="date" id="filterSaleStartDate" class="form-input w-full p-2 text-sm shadow-sm">
+                                        <label for="filterSaleStartDate" class="block text-gray-300 text-sm font-semibold mb-1">Başlangıç Tarihi:</label> <!-- text-xs -> text-sm, mb-0.5 -> mb-1 -->
+                                        <input type="date" id="filterSaleStartDate" class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
                                     </div>
                                     <div>
-                                        <label for="filterSaleEndDate" class="block text-gray-300 text-sm font-semibold mb-1">Bitiş Tarihi:</label>
-                                        <input type="date" id="filterSaleEndDate" class="form-input w-full p-2 text-sm shadow-sm">
+                                        <label for="filterSaleEndDate" class="block text-gray-300 text-sm font-semibold mb-1">Bitiş Tarihi:</label> <!-- text-xs -> text-sm, mb-0.5 -> mb-1 -->
+                                        <input type="date" id="filterSaleEndDate" class="form-input w-full p-1.5 text-sm shadow-sm"> <!-- p-1 -> p-1.5, text-xs -> text-sm -->
                                     </div>
                                 </div>
                                 <div class="flex space-x-2 mt-3">
@@ -586,13 +586,13 @@
                             </div>
 
                             <!-- Past Sales List -->
-                            <div id="pastSalesListContainer" class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner relative">
-                                <h3 class="text-xl font-bold text-blue-300 mb-3 text-center">Geçmiş Satışlar Listesi</h3>
-                                <div id="pastSalesList" class="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                            <div id="pastSalesListContainer" class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner relative"> <!-- p-2 -> p-3 -->
+                                <h3 class="text-xl font-bold text-blue-300 mb-3 text-center">Geçmiş Satışlar Listesi</h3> <!-- mb-2 -> mb-3 -->
+                                <div id="pastSalesList" class="space-y-2 max-h-[150px] overflow-y-auto pr-2"> <!-- max-h-[150px] -->
                                 </div>
                                 <!-- Loading Overlay -->
                                 <div id="salesLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
-                                    <p class="text-center text-gray-300 text-lg">
+                                    <p class="text-center text-gray-300 text-sm">
                                         <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
                                         Yükleniyor...
                                     </p>
@@ -1001,7 +1001,7 @@
             async function searchCustomers(query) {
                 if (query.length < 2) {
                     if (customerSearchResults) {
-                        customerSearchResults.innerHTML = '<div class="p-1.5 text-gray-400 text-center text-sm">En az 2 karakter girin.</div>'; // p-3 -> p-1.5
+                        customerSearchResults.innerHTML = '<div class="p-1 text-gray-400 text-center text-xs">En az 2 karakter girin.</div>';
                         customerSearchResults.classList.remove('hidden');
                     }
                     return;
@@ -1015,7 +1015,7 @@
                     renderCustomerSearchResults(filteredCustomers);
                 } catch (error) {
                     console.error('Müşteri arama hatası:', error);
-                    if (customerSearchResults) customerSearchResults.innerHTML = `<div class="p-1.5 text-red-400 text-center text-sm">Arama sırasında hata oluştu.</div>`; // p-3 -> p-1.5
+                    if (customerSearchResults) customerSearchResults.innerHTML = `<div class="p-1 text-red-400 text-center text-xs">Arama sırasında hata oluştu.</div>`;
                 }
             }
 
@@ -1023,14 +1023,14 @@
                 if (!customerSearchResults) return;
                 customerSearchResults.innerHTML = '';
                 if (customers.length === 0) {
-                    customerSearchResults.innerHTML = '<div class="p-1.5 text-gray-400 text-center text-sm">Müşteri bulunamadı.</div>'; // p-3 -> p-1.5
+                    customerSearchResults.innerHTML = '<div class="p-1 text-gray-400 text-center text-xs">Müşteri bulunamadı.</div>';
                 } else {
                     customers.forEach(customer => {
                         const customerItem = document.createElement('div');
-                        customerItem.className = 'p-1.5 cursor-pointer hover:bg-gray-700 transition-colors border-b border-gray-600 last:border-b-0'; // p-3 -> p-1.5
+                        customerItem.className = 'p-1 cursor-pointer hover:bg-gray-700 transition-colors border-b border-gray-600 last:border-b-0';
                         customerItem.innerHTML = `
-                            <div class="font-bold text-blue-300 text-sm">${customer.name}</div> <!-- text-sm eklendi -->
-                            <div class="text-xs text-gray-400">${customer.phoneNumber} - ${customer.shopName || 'Bireysel'}</div> <!-- text-sm -> text-xs -->
+                            <div class="font-bold text-blue-300 text-xs">${customer.name}</div>
+                            <div class="text-xs text-gray-400">${customer.phoneNumber} - ${customer.shopName || 'Bireysel'}</div>
                         `;
                         customerItem.onclick = () => selectCustomer(customer);
                         customerSearchResults.appendChild(customerItem);
@@ -1042,20 +1042,20 @@
             function selectCustomer(customer) {
                 selectedCustomer = customer;
                 if (selectedCustomerNameSpan) selectedCustomerNameSpan.textContent = customer.name;
-                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${customer.name} (${customer.phoneNumber})</span>`; // Modaldaki müşteri bilgisini güncelle
+                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">${customer.name} (${customer.phoneNumber})</span>`;
                 if (selectedCustomerDisplay) selectedCustomerDisplay.classList.remove('hidden');
                 if (customerSearchResults) customerSearchResults.classList.add('hidden');
-                if (customerSearchInput) customerSearchInput.value = ''; // Arama kutusunu temizle
+                if (customerSearchInput) customerSearchInput.value = '';
                 addNotification(`Müşteri seçildi: ${customer.name}`, 'info');
-                updateRemainingCreditAmount(); // Müşteri seçimi değiştiğinde kalan borcu güncelle
+                updateRemainingCreditAmount();
             }
 
             function clearCustomerSelection() {
                 selectedCustomer = null;
                 if (selectedCustomerDisplay) selectedCustomerDisplay.classList.add('hidden');
-                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`; // Modaldaki müşteri bilgisini sıfırla
+                if (modalSelectedCustomerInfoSpan) modalSelectedCustomerInfoSpan.innerHTML = `Müşteri: <span class="font-bold text-blue-200">Yok</span>`;
                 addNotification('Müşteri seçimi kaldırıldı.', 'info');
-                updateRemainingCreditAmount(); // Müşteri seçimi değiştiğinde kalan borcu güncelle
+                updateRemainingCreditAmount();
             }
 
             // Yeni Modal Yönetim Fonksiyonları
@@ -1139,8 +1139,8 @@
                     if (filteredProducts.length > 0) {
                         filteredProducts.forEach(product => {
                             const li = document.createElement('li');
-                            li.className = 'p-1.5 cursor-pointer hover:bg-gray-700 transition-colors border-b border-gray-700 last:border-b-0 text-gray-200 text-xs'; // p-2 -> p-1.5, text-sm -> text-xs
-                            li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`; // Orijinal stok göster
+                            li.className = 'p-1 cursor-pointer hover:bg-gray-700 transition-colors border-b border-gray-700 last:border-b-0 text-gray-200 text-xs';
+                            li.textContent = `${product.name} (Stok: ${product.quantity} ${product.unit})`;
                             // Ürün bilgilerini dataset'e ekle
                             li.dataset.productId = product._id;
                             li.dataset.productName = product.name;
@@ -1383,17 +1383,17 @@
                 if (!saleItemsList) return;
                 saleItemsList.innerHTML = '';
                 if (currentSaleItems.length === 0) {
-                    saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-1.5 text-sm">Henüz ürün eklenmedi.</p>'; // py-2 -> py-1.5
+                    saleItemsList.innerHTML = '<p class="text-center text-gray-400 py-0.5 text-xs">Henüz ürün eklenmedi.</p>';
                     return;
                 }
 
                 currentSaleItems.forEach((item, index) => {
                     const itemDiv = document.createElement('div');
-                    itemDiv.className = 'flex justify-between items-center p-1.5 bg-gray-800 rounded-md shadow-sm border border-gray-700'; // p-2 -> p-1.5
+                    itemDiv.className = 'flex justify-between items-center p-1 bg-gray-800 rounded-md shadow-sm border border-gray-700';
                     itemDiv.innerHTML = `
-                        <span class="text-gray-200 font-medium text-sm">${item.productName} (${item.quantity} ${item.unit})</span> <!-- text-sm eklendi -->
-                        <span class="text-blue-400 font-semibold text-sm">${(item.quantity * item.unitPrice).toFixed(2)} TL</span> <!-- text-sm eklendi -->
-                        <button type="button" class="remove-sale-item-btn text-red-400 hover:text-red-200 ml-1 transition-colors text-xs" data-index="${index}"> <!-- ml-2 -> ml-1, text-xs eklendi -->
+                        <span class="text-gray-200 font-medium text-xs">${item.productName} (${item.quantity} ${item.unit})</span>
+                        <span class="text-blue-400 font-semibold text-xs">${(item.quantity * item.unitPrice).toFixed(2)} TL</span>
+                        <button type="button" class="remove-sale-item-btn text-red-400 hover:text-red-200 ml-0.5 transition-colors text-xs" data-index="${index}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     `;
@@ -1658,7 +1658,7 @@
                     let totalSalesValue = 0;
                     sales.forEach(sale => {
                         const saleItemDiv = document.createElement('div');
-                        saleItemDiv.className = `p-3 bg-gray-700 rounded-lg shadow-md border border-gray-600`; // p-4 -> p-3
+                        saleItemDiv.className = `p-2 bg-gray-700 rounded-lg shadow-md border border-gray-600`;
 
                         const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
                         const customerInfo = sale.customerName ? `Müşteri: <span class="font-medium text-gray-200">${sale.customerName}</span>` : 'Müşteri: <span class="font-medium text-gray-200">Anonim</span>';
@@ -1671,22 +1671,22 @@
                         if(paymentDetails) paymentDetails = `(${paymentDetails})`;
 
                         let itemsHtml = sale.saleItems.map(item => `
-                            <li class="text-xs text-gray-300 ml-3">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li> <!-- text-sm -> text-xs, ml-4 -> ml-3 -->
+                            <li class="text-xs text-gray-300 ml-2">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
                         `).join('');
 
                         saleItemDiv.innerHTML = `
-                            <div class="flex justify-between items-center mb-1.5"> <!-- mb-2 -> mb-1.5 -->
-                                <p class="text-base font-semibold text-gray-200">Satış Tarihi: <span class="text-blue-400">${saleDate}</span></p> <!-- text-lg -> text-base -->
-                                <p class="text-base font-bold text-green-400">${sale.totalAmount.toFixed(2)} TL</p> <!-- text-lg -> text-base -->
+                            <div class="flex justify-between items-center mb-1">
+                                <p class="text-sm font-semibold text-gray-200">Satış Tarihi: <span class="text-blue-400">${saleDate}</span></p>
+                                <p class="text-sm font-bold text-green-400">${sale.totalAmount.toFixed(2)} TL</p>
                             </div>
-                            <p class="text-xs text-gray-300 mb-1">${customerInfo}</p> <!-- text-sm -> text-xs -->
-                            <p class="text-xs text-gray-300 mb-1.5">${paymentMethodInfo} ${paymentDetails}</p> <!-- text-sm -> text-xs, mb-2 -> mb-1.5 -->
-                            <p class="text-sm font-semibold text-gray-200 mb-1">Satılan Ürünler:</p> <!-- text-md -> text-sm -->
+                            <p class="text-xs text-gray-300 mb-0.5">${customerInfo}</p>
+                            <p class="text-xs text-gray-300 mb-1">${paymentMethodInfo} ${paymentDetails}</p>
+                            <p class="text-xs font-semibold text-gray-200 mb-0.5">Satılan Ürünler:</p>
                             <ul class="list-disc list-inside">
                                 ${itemsHtml}
                             </ul>
-                            <div class="flex justify-end mt-3"> <!-- mt-4 -> mt-3 -->
-                                <button class="view-sale-details-btn bg-gradient-to-r from-blue-600 to-blue-800 text-white px-2 py-1 rounded-md hover:from-blue-700 hover:to-blue-900 text-xs transition-all duration-300 ease-in-out shadow-sm" data-sale-id="${sale._id}">Detayları Görüntüle</button> <!-- px-3 py-1 -> px-2 py-1, text-sm -> text-xs -->
+                            <div class="flex justify-end mt-2">
+                                <button class="view-sale-details-btn bg-gradient-to-r from-blue-600 to-blue-800 text-white px-1.5 py-0.5 rounded-md hover:from-blue-700 hover:to-blue-900 text-xs transition-all duration-300 ease-in-out shadow-sm" data-sale-id="${sale._id}">Detayları Görüntüle</button>
                             </div>
                         `;
                         if (pastSalesListDiv) pastSalesListDiv.appendChild(saleItemDiv);
