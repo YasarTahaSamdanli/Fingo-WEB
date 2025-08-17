@@ -86,6 +86,11 @@ router.post('/sales', authenticateToken, async (req, res) => {
                     { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
                 );
                 console.log(`[DEBUG-BACKEND-SALES] Müşteri güncelleme sonucu: Eşleşen belge sayısı: ${customerUpdateResult.matchedCount}, Değiştirilen belge sayısı: ${customerUpdateResult.modifiedCount}`);
+                if(customerUpdateResult.modifiedCount > 0){
+                    console.log(`[DEBUG-BACKEND-SALES] Müşterinin borcu başarıyla güncellendi.`);
+                } else {
+                     console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Belki de borç zaten aynıydı.`);
+                }
             } else {
                 console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Müşteri ID'si ${newSale.customerId} veya userId ${userId} ile eşleşmiyor.`);
             }
