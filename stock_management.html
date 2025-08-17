@@ -15,16 +15,11 @@
             background-color: #0d1117; /* Ana koyu ton */
             color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
 
-            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            /* customers.html'den kopyalanan kozmik arka plan */
             background-image:
-                /* Büyük, yumuşak, mavimsi bulutsu */
                 radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
-                /* Büyük, yumuşak, morumsu bulutsu */
                 radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
-                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
                 radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
-
-                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
                 radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
                 radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
                 radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
@@ -32,59 +27,54 @@
                 radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
                 radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
 
-            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
-            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
-            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
-            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        /* Input ve Select Elementleri için Tema Uyumu */
-        .form-input, .form-select, .w-full.p-3.border { /* Genel input ve select stilleri */
-            background-color: #1A202C; /* Koyu input arkaplanı */
-            color: #E2E8F0; /* Açık metin rengi */
-            border-color: #4A5568; /* Koyu border */
+        /* customers.html'den kopyalanan form ve mesaj kutusu stilleri */
+        .form-input, .form-select, .w-full.p-3.border {
+            background-color: #1A202C;
+            color: #E2E8F0;
+            border-color: #4A5568;
+            border-radius: 0.5rem; /* rounded-lg */
         }
         .form-input::placeholder {
-            color: #A0AEC0; /* Açık placeholder */
+            color: #A0AEC0;
         }
         .form-input:focus, .form-select:focus, .w-full.p-3.border:focus {
-            border-color: #60A5FA; /* Mavi odaklama rengi */
-            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
         }
-
-        /* Message Box Stillleri (index.html'den taşındı ve güncellendi) */
         .message-box {
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #4CAF50;
-            color: white;
-            padding: 15px 20px;
+            padding: 15px 25px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            color: white;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            min-width: 280px;
-            max-width: 90%;
-            font-size: 0.95rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            z-index: 1000;
         }
         .message-box.show {
             opacity: 1;
             transform: translateY(0);
         }
-        .message-box.success { background-color: #10B981; } /* Tailwind green-500 */
-        .message-box.error { background-color: #EF4444; } /* Tailwind red-500 */
-        .message-box.info { background-color: #3B82F6; } /* Tailwind blue-500 */
-        .message-box.warning { background-color: #F59E0B; } /* Tailwind amber-500 */
+        .message-box.success { background-color: #10B981; }
+        .message-box.error { background-color: #EF4444; }
+        .message-box.info { background-color: #3B82F6; }
+        .message-box.warning { background-color: #F59E0B; }
         .message-box.confirm {
-            background-color: #607D8B; /* Tailwind blue-gray-500 */
-            min-width: 300px;
-            flex-direction: column; /* Butonları alt alta sırala */
+            background-color: #607D8B;
+            flex-direction: column;
             align-items: center;
         }
         .message-box-close {
@@ -95,26 +85,22 @@
             cursor: pointer;
             margin-left: 15px;
             line-height: 1;
-        }
-        .message-box.confirm .message-box-close {
-            position: absolute;
+            position: absolute; /* Confirm box için konumlandırma */
             top: 5px;
             right: 10px;
         }
-
-        /* Bildirim Merkezi Stillleri (products.html'den taşındı ve güncellendi) */
         .notification-center {
             position: fixed;
-            top: 70px; /* Header'ın altında başla */
+            top: 70px;
             right: 20px;
             width: 320px;
             max-height: 80vh;
-            background-color: #2D3748; /* Koyu tema için koyu gri */
-            color: #e2e8f0; /* Açık gri metin */
+            background-color: #2D3748;
+            color: #e2e8f0;
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            z-index: 900; /* Mesaj kutusunun altında olsun */
-            transform: translateX(110%); /* Başlangıçta ekran dışı */
+            z-index: 900;
+            transform: translateX(110%);
             opacity: 0;
             visibility: hidden;
             transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
@@ -128,12 +114,12 @@
         }
         .notification-header {
             padding: 15px;
-            border-bottom: 1px solid #4A5568; /* Koyu border */
+            border-bottom: 1px solid #4A5568;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
-            color: #e2e8f0; /* Açık metin */
+            color: #e2e8f0;
         }
         .notification-list {
             flex-grow: 1;
@@ -151,24 +137,24 @@
             align-items: flex-start;
         }
         .notification-item.unread {
-            background-color: #1A202C; /* Koyu mavi-gri */
-            border-left: 4px solid #6366F1; /* Tailwind indigo-500 */
+            background-color: #1A202C;
+            border-left: 4px solid #6366F1;
             color: #E2E8F0;
         }
         .notification-item.read {
-            background-color: #2D3748; /* Biraz daha açık koyu gri */
-            border-left: 4px solid #4A5568; /* Koyu gri border */
-            color: #A0AEC0; /* Biraz daha açık metin */
+            background-color: #2D3748;
+            border-left: 4px solid #4A5568;
+            color: #A0AEC0;
         }
         .notification-item.success { border-left-color: #34D399; }
         .notification-item.error { border-left-color: #F87171; }
-        .notification-item.warning { border-left-color: #F59E0B; }
+        .notification-item.warning { border-left-color: #FBBF24; }
         .notification-item.info { border-left-color: #60A5FA; }
 
         .notification-item-icon {
             margin-right: 10px;
             font-size: 1.2rem;
-            color: #A0AEC0; /* Açık gri ikon */
+            color: #A0AEC0;
         }
         .notification-item.success .notification-item-icon { color: #34D399; }
         .notification-item.error .notification-item-icon { color: #F87171; }
@@ -177,14 +163,14 @@
 
         .notification-footer {
             padding: 10px 15px;
-            border-top: 1px solid #4A5568; /* Koyu border */
+            border-top: 1px solid #4A5568;
             text-align: center;
         }
         .notification-count-badge {
             position: absolute;
             top: -5px;
             right: -5px;
-            background-color: #EF4444; /* Tailwind red-500 */
+            background-color: #EF4444;
             color: white;
             border-radius: 50%;
             padding: 2px 6px;
@@ -194,7 +180,7 @@
             text-align: center;
         }
 
-        /* QR / Barkod Okuyucu Modal Stillleri (products.html'den taşındı ve güncellendi) */
+        /* QR / Barkod Okuyucu Modal Stillleri */
         .barcode-scanner-modal {
             position: fixed;
             top: 0;
@@ -294,12 +280,13 @@
             background-color: rgba(26, 32, 44, 0.7); /* Koyu arkaplan */
         }
 
-        /* Sidebar Geçiş Animasyonu */
+        /* Sidebar Geçiş Animasyonu (customers.html'den kopyalandı) */
         #sidebar {
             transition: transform 0.3s ease-in-out;
             transform: translateX(-100%);
             width: 256px;
             z-index: 50;
+            overflow-y: auto;
         }
         #sidebar.open {
             transform: translateX(0);
@@ -318,6 +305,27 @@
         #mainContent {
             transition: margin-left 0.3s ease-in-out;
             flex-grow: 1;
+            padding-top: 16px;
+        }
+        /* Scrollbar stilleri (customers.html'den kopyalandı) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2D3748;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366F1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4F46E5;
+        }
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #6366F1 #2D3748;
         }
 
         /* Buton Efektleri (Güncellendi: Renkler koyu temaya uygun) */
@@ -344,100 +352,102 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
-    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
-        <div class="flex items-center">
-            <!-- Menü Aç/Kapa Butonu -->
+    <!-- Header (customers.html'den kopyalandı) -->
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Left group: menu button and title -->
+        <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Stok Yönetimi</h1>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
+            <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Stok Yönetimi</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
-            <!-- Bildirim Zili ve Sayacı -->
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
-            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
+            <!-- Hoş Geldin metni kaldırıldı -->
             <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
     <!-- Ana İçerik Alanı -->
-    <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
+    <div class="flex flex-1 pt-16">
 
-        <!-- Yan Menü (Sidebar) -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-20">
-            <div class="flex items-center justify-between mb-8">
-                <h2 class="text-2xl font-bold text-blue-300">Fingo</h2>
-                <!-- Sidebar Kapatma Butonu -->
+        <!-- Sidebar (customers.html'den kopyalandı) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
+            <div class="flex items-center justify-between mb-4 mt-4">
+                <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <nav class="space-y-3">
-                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-lg font-medium">
-                    <i class="fas fa-home"></i> <span class="text-gray-100">Ana Sayfa</span>
+                <a href="/Fingo-WEB/index.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
                 </a>
-                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="/Fingo-WEB/customers.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="/Fingo-WEB/products.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="/Fingo-WEB/sales_management.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="/Fingo-WEB/recurring_transactions.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
                 </a>
-                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="/Fingo-WEB/reports.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
                 </a>
-                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
                 </a>
-                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-lg font-medium">
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
                 </a>
             </nav>
         </aside>
 
-        <!-- Sidebar Overlay -->
+        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Stok Yönetimi Ana İçerik Alanı -->
-        <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl">
+        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-8 rounded-2xl shadow-xl border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
             <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Stok Yönetimi</h2>
-            <p class="text-lg text-gray-400 text-center mb-10 font-light">Ürün stoklarını hızlıca güncelleyin.</p>
+            <p class="text-lg text-gray-400 text-center mb-8 font-light">Ürün stoklarını hızlıca güncelleyin.</p>
 
-            <!-- Search and Scan Section - En üste, belirgin bir blok olarak taşındı -->
-            <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg mb-8 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+            <!-- Search and Scan Section -->
+            <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg mb-8 flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
                 <input type="text" id="stockSearchInput" placeholder="Ürün adı veya barkod ile ara..." class="form-input flex-1 w-full md:w-auto p-3 text-base shadow-sm">
-                <button type="button" id="stockScanBarcodeBtn" class="w-full md:w-auto bg-indigo-600 text-white p-3 rounded-md hover:bg-indigo-700 transition-colors shadow-md font-semibold text-lg">
+                <button type="button" id="stockScanBarcodeBtn" class="w-full md:w-auto bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-3 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">
                     <i class="fas fa-barcode mr-2"></i> Barkod Tara
                 </button>
-                <button id="clearStockSearchBtn" class="w-full md:w-auto bg-gray-700 text-white p-3 rounded-md hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Temizle</button>
+                <button id="clearStockSearchBtn" class="w-full md:w-auto bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Temizle</button>
             </div>
             <!-- Search and Scan Section End -->
 
             <!-- Product List for Stock Management -->
-            <div id="stockProductsListContainer" class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
+            <div id="stockProductsListContainer" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg relative">
                 <h3 class="text-2xl font-bold text-blue-300 mb-6 text-center">Stok Güncellenecek Ürünler</h3>
 
                 <div id="stockProductsList" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                     <!-- Products for stock management will be loaded here by JS -->
                 </div>
                 <!-- Loading Overlay -->
-                <div id="stockProductsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                <div id="stockProductsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-2xl">
                     <p class="text-center text-gray-300 text-lg">
                         <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
                         Yükleniyor...
                     </p>
                 </div>
                 <div class="mt-8 text-center">
-                    <button id="goToProductsPageBtn" class="bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 transition-colors shadow-lg font-semibold text-lg">Ürün Yönetimine Geri Dön</button>
+                    <button id="goToProductsPageBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-lg font-semibold text-lg">Ürün Yönetimine Geri Dön</button>
                 </div>
             </div>
 
@@ -456,17 +466,17 @@
             </div>
 
             <div id="barcodeScannerResult" class="text-center text-red-400 font-bold mt-5 text-lg">Tarama bekleniyor...</div>
-            <button id="stopScanBtn" class="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition-colors shadow-md">Taramayı Durdur</button>
+            <button id="stopScanBtn" class="bg-gradient-to-r from-red-600 to-red-800 text-white px-6 py-3 rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 ease-in-out shadow-md">Taramayı Durdur</button>
         </div>
     </div>
 
-    <!-- Message Box -->
+    <!-- Message Box (customers.html'den kopyalandı) -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <!-- Bildirim Merkezi Paneli -->
+    <!-- Bildirim Merkezi Paneli (customers.html'den kopyalandı) -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -521,12 +531,38 @@
             const getToken = () => localStorage.getItem('jwtToken');
             const getUserId = () => localStorage.getItem('userId');
 
-            // DOM Elements
+            // Header and Sidebar Elements (customers.html'den kopyalandı)
+            const appHeader = document.getElementById('appHeader');
+            const headerLeftGroup = document.getElementById('headerLeftGroup');
+            const headerTitle = document.getElementById('headerTitle'); // Header başlığı
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+
+            // Navigation buttons (sidebar'dan)
+            const goToDashboardBtn = document.querySelector('a[href="/Fingo-WEB/index.html"]');
+            const manageCustomersBtn = document.querySelector('a[href="/Fingo-WEB/customers.html"]');
+            const manageProductsBtn = document.querySelector('a[href="/Fingo-WEB/products.html"]');
+            const goToSalesManagementBtn = document.querySelector('a[href="/Fingo-WEB/sales_management.html"]');
+            const manageRecurringTransactionsBtn = document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]');
+            const viewReportsBtn = document.querySelector('a[href="/Fingo-WEB/reports.html"]');
+            const exportCsvBtn = document.querySelector('a[id="exportCsvBtn"]');
+            const importCsvBtn = document.querySelector('a[id="importCsvBtn"]');
             const logoutBtn = document.getElementById('logoutBtn');
-            const loggedInUserSpan = document.getElementById('loggedInUser');
+
+            // Message Box and Notification Center Elements (customers.html'den kopyalandı)
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
 
+            // Stok Yönetimi Sayfasına Özel DOM Elementleri
             const stockSearchInput = document.getElementById('stockSearchInput');
             const stockScanBarcodeBtn = document.getElementById('stockScanBarcodeBtn');
             const clearStockSearchBtn = document.getElementById('clearStockSearchBtn');
@@ -536,37 +572,15 @@
 
             // Barcode Scanner Modal Elements
             const barcodeScannerModal = document.getElementById('barcodeScannerModal');
-            const barcodeScannerCloseBtn = document.getElementById('barcodeScannerCloseBtn'); // Yeni eklendi
+            const barcodeScannerCloseBtn = document.getElementById('barcodeScannerCloseBtn');
             const video = document.getElementById('video');
             const stopScanBtn = document.getElementById('stopScanBtn');
             const barcodeScannerResult = document.getElementById('barcodeScannerResult');
 
-            // Bildirim Merkezi DOM Elementleri
-            const notificationBellBtn = document.getElementById('notificationBellBtn');
-            const notificationCountBadge = document.getElementById('notificationCountBadge');
-            const notificationCenter = document.getElementById('notificationCenter');
-            const notificationList = document.getElementById('notificationList');
-            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
-            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
-
-            // Sidebar ve Yönlendirme Butonları
-            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-            const mainContent = document.getElementById('mainContent');
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
-            const manageProductsBtn = document.getElementById('manageProductsBtn');
-            const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
-            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
-            const viewReportsBtn = document.getElementById('viewReportsBtn');
-            const exportCsvBtn = document.getElementById('exportCsvBtn');
-            const importCsvBtn = document.getElementById('importCsvBtn');
-
 
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 
-            // Bildirim fonksiyonları
+            // Bildirim fonksiyonları (customers.html'den kopyalandı)
             function loadNotifications() {
                 renderNotifications();
                 updateNotificationCount();
@@ -601,10 +615,36 @@
                 }, 3000);
             }
 
+            function showConfirmBox(message, onConfirm) {
+                if (!messageBox || !messageText) return;
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
+                messageBox.classList.add('show', 'confirm');
+                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
+
+                document.getElementById('confirmYes').onclick = () => {
+                    onConfirm();
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
+                };
+
+                document.getElementById('confirmNo').onclick = () => {
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
+                };
+            }
+
             function renderNotifications() {
                 notificationList.innerHTML = '';
                 if (notifications.length === 0) {
-                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>'; // Koyu tema metin rengi
+                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
                     return;
                 }
 
@@ -667,25 +707,22 @@
 
             if (clearNotificationsBtn) {
                 clearNotificationsBtn.addEventListener('click', () => {
-                    notifications = [];
-                    saveNotifications();
-                    renderNotifications();
-                    updateNotificationCount();
-                    addNotification('Tüm bildirimler temizlendi.', 'info', true);
+                    showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
+                        notifications = [];
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                        addNotification('Tüm bildirimler temizlendi.', 'info');
+                    });
                 });
             }
 
             if (notificationBellBtn) {
                 notificationBellBtn.addEventListener('click', () => {
-                    if (notificationCenter) notificationCenter.classList.toggle('active');
-                    if (notificationCenter && notificationCenter.classList.contains('active')) {
-                        notifications.forEach(notif => {
-                            if (notif.type === 'warning' && !notif.isRead) {
-                                notif.isRead = true;
-                            }
-                        });
+                    notificationCenter.classList.toggle('active');
+                    if (notificationCenter.classList.contains('active')) {
+                        notifications.forEach(n => n.isRead = true);
                         saveNotifications();
-                        renderNotifications();
                         updateNotificationCount();
                     }
                 });
@@ -693,7 +730,7 @@
 
             if (closeNotificationsBtn) {
                 closeNotificationsBtn.addEventListener('click', () => {
-                    if (notificationCenter) notificationCenter.classList.remove('active');
+                    notificationCenter.classList.remove('active');
                 });
             }
 
@@ -706,7 +743,7 @@
                 window.location.href = 'auth.html';
             }
 
-            // Stok Güncelleme Fonksiyonu - Düzeltildi
+            // Stok Güncelleme Fonksiyonu
             async function updateProductStock(productId, changeAmount, clickedButton) {
                 const token = getToken();
                 if (!token) {
@@ -714,7 +751,6 @@
                     return;
                 }
 
-                // Mevcut stok miktarını DOM'dan al
                 const productItemDiv = document.querySelector(`div[data-id="${productId}"]`);
                 const currentStockDisplay = productItemDiv ? productItemDiv.querySelector('.current-stock-display') : null;
 
@@ -745,7 +781,7 @@
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify({ newQuantity: newQuantity }) // Backend'in beklediği 'newQuantity' parametresi
+                        body: JSON.stringify({ newQuantity: newQuantity })
                     });
 
                     const result = await response.json();
@@ -787,7 +823,7 @@
                         const minStockLevel = parseInt(productItemDiv.dataset.minStockLevel);
                         const isBelowMinStock = result.newQuantity <= minStockLevel;
 
-                        let lowStockWarningElement = productItemDiv.querySelector('.ml-2.text-red-400'); // Koyu tema metin rengi
+                        let lowStockWarningElement = productItemDiv.querySelector('.ml-2.text-red-400');
 
                         if (isBelowMinStock) {
                             if (!lowStockWarningElement) {
@@ -802,12 +838,12 @@
                                     addNotification(`Düşük Stok: "${productName}" ürününün stoğu ${result.newQuantity} seviyesinde!`, 'warning');
                                 }
                             }
-                            productItemDiv.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500'); // Koyu tema düşük stok rengi
+                            productItemDiv.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                         } else {
                             if (lowStockWarningElement) {
                                 lowStockWarningElement.remove();
                             }
-                            productItemDiv.classList.remove('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500'); // Koyu tema düşük stok rengi
+                            productItemDiv.classList.remove('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                             removeLowStockNotification(productName);
                         }
                     }
@@ -831,7 +867,7 @@
 
                 let url = `${API_BASE_URL}/products?userId=${getUserId()}&`;
                 if (searchTerm) {
-                    url += `search=${encodeURIComponent(searchTerm)}&`; // Backend'de 'search' parametresi ile hem isim hem barkodda arama yapılması beklenir.
+                    url += `search=${encodeURIComponent(searchTerm)}&`;
                 }
                 url += `timestamp=${Date.now()}`;
 
@@ -846,7 +882,7 @@
 
                     if (response.status === 403) {
                         addNotification('Stokları görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
-                        if (stockProductsListDiv) stockProductsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`; // Koyu tema metin rengi
+                        if (stockProductsListDiv) stockProductsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
                         return;
                     }
 
@@ -859,7 +895,7 @@
                     if (stockProductsListDiv) stockProductsListDiv.innerHTML = '';
 
                     if (products.length === 0) {
-                        if (stockProductsListDiv) stockProductsListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Aradığınız kriterlere uygun ürün bulunamadı.</p>`; // Koyu tema metin rengi
+                        if (stockProductsListDiv) stockProductsListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Aradığınız kriterlere uygun ürün bulunamadı.</p>`;
                         return;
                     }
 
@@ -867,11 +903,10 @@
                         const productItem = document.createElement('div');
                         productItem.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 md:space-x-4`;
 
-                        // minStockLevel kontrolü
                         const isBelowMinStock = product.minStockLevel !== undefined && product.quantity <= product.minStockLevel;
 
                         if (isBelowMinStock) {
-                            productItem.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500'); // Koyu tema düşük stok rengi
+                            productItem.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                             const notificationExists = notifications.some(n =>
                                 n.type === 'warning' && n.message.includes(`Düşük Stok: "${product.name}"`)
                             );
@@ -881,12 +916,12 @@
                         }
 
                         productItem.dataset.id = product._id;
-                        productItem.dataset.minStockLevel = product.minStockLevel !== undefined ? product.minStockLevel : 0; // minStockLevel'ı data attribute olarak ekle, yoksa 0
-                        productItem.dataset.productUnit = product.unit; // Ürün birimini data attribute olarak ekle
+                        productItem.dataset.minStockLevel = product.minStockLevel !== undefined ? product.minStockLevel : 0;
+                        productItem.dataset.productUnit = product.unit;
 
                         const imageUrlHtml = product.imageUrl ?
-                            `<img src="${product.imageUrl}" alt="${product.name}" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/80x80/2D3748/A0AEC0?text=Resim+Yok';">` : // Koyu tema placeholder
-                            `<img src="https://placehold.co/80x80/2D3748/A0AEC0?text=Resim+Yok" alt="Resim Yok" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600">`; // Koyu tema placeholder
+                            `<img src="${product.imageUrl}" alt="${product.name}" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/80x80/2D3748/A0AEC0?text=Resim+Yok';">` :
+                            `<img src="https://placehold.co/80x80/2D3748/A0AEC0?text=Resim+Yok" alt="Resim Yok" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600">`;
 
                         productItem.innerHTML = `
                             ${imageUrlHtml}
@@ -894,7 +929,7 @@
                                 <p class="text-xl text-gray-100 font-semibold mb-1">${product.name}
                                     ${isBelowMinStock ? '<span class="ml-2 text-red-400 font-bold text-sm" title="Stok Minimum Seviyenin Altında!">&#9888; Düşük Stok!</span>' : ''}
                                 </p>
-                                <p class="text-base text-gray-300 mb-1">Miktar: <span class="font-bold text-blue-400 text-lg product-main-quantity">${product.quantity} ${product.unit}</span></p>
+                                <p class="text-base text-gray-300 mb-1">Miktar: <span class="font-bold text-blue-400 text-lg current-stock-display product-main-quantity">${product.quantity} ${product.unit}</span></p>
                                 ${product.barcode ? `<p class="text-sm text-gray-400">Barkod: <span class="font-mono text-gray-200">${product.barcode}</span></p>` : ''}
                             </div>
                             <div class="flex items-center space-x-2 mt-3 md:mt-0">
@@ -1041,7 +1076,7 @@
                 });
             }
 
-            // Sidebar Fonksiyonları (reports.html ve sales_management.html'den kopyalandı)
+            // Sidebar Fonksiyonları (customers.html ve products.html ile senkronize)
             const closeSidebar = () => {
                 if (sidebar) {
                     sidebar.classList.remove('open');
@@ -1051,7 +1086,14 @@
 
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
+                    if (appHeader) appHeader.classList.remove('lg:pl-64');
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-center');
+                        headerLeftGroup.classList.add('lg:justify-start');
+                    }
+                    if (headerTitle) headerTitle.classList.remove('lg:hidden');
                 }
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
 
             const openSidebar = () => {
@@ -1064,8 +1106,15 @@
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
                     if (mainContent) mainContent.classList.add('lg:ml-64');
+                    if (appHeader) appHeader.classList.add('lg:pl-64');
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-start');
+                        headerLeftGroup.classList.add('lg:justify-center');
+                    }
+                    if (headerTitle) headerTitle.classList.add('lg:hidden');
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
 
             const initializeSidebarState = () => {
@@ -1100,11 +1149,18 @@
                 });
             }
 
-            // Yönlendirme Butonları (reports.html ve sales_management.html ile senkronize)
+            // Yönlendirme Butonları (customers.html ve products.html ile senkronize)
             if (goToDashboardBtn) {
                 goToDashboardBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     window.location.href = '/Fingo-WEB/index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageCustomersBtn) {
+                manageCustomersBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/customers.html';
                     closeSidebar();
                 });
             }
@@ -1139,18 +1195,17 @@
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessage('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
             if (importCsvBtn) {
                 importCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessage('Veri içe aktarma özelliği geliştiriliyor...', 'info');
+                    showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
             }
-
 
             // Logout Button
             if (logoutBtn) {
