@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Profil Yönetimi</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -16,7 +13,7 @@
             background-color: #0d1117; /* Ana koyu ton */
             color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
 
-            /* customers.html'den kopyalanan kozmik arka plan */
+            /* customers.html'den kopyalanan arka plan efekti */
             background-image:
                 radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
                 radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
@@ -40,7 +37,7 @@
             top: 20px;
             right: 20px;
             color: white;
-            padding: 15px 25px;
+            padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
@@ -62,11 +59,6 @@
         .message-box.error { background-color: #EF4444; }
         .message-box.info { background-color: #3B82F6; }
         .message-box.warning { background-color: #F59E0B; }
-        .message-box.confirm {
-            background-color: #607D8B;
-            flex-direction: column;
-            align-items: center;
-        }
         .message-box-close {
             background: none;
             border: none;
@@ -75,9 +67,6 @@
             cursor: pointer;
             margin-left: 15px;
             line-height: 1;
-            position: absolute; /* Confirm box için konumlandırma */
-            top: 5px;
-            right: 10px;
         }
 
         /* customers.html'den kopyalanan input stilleri */
@@ -93,53 +82,6 @@
         .form-input:focus, .form-select:focus {
             border-color: #60A5FA;
             box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
-        }
-
-        /* customers.html'den kopyalanan sidebar ve scrollbar stilleri */
-        #sidebar {
-            transition: transform 0.3s ease-in-out;
-            transform: translateX(-100%);
-            width: 256px;
-            z-index: 50;
-            overflow-y: auto;
-        }
-        #sidebar.open {
-            transform: translateX(0);
-        }
-        #sidebarOverlay {
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 40;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-        #sidebarOverlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        #mainContent {
-            transition: margin-left 0.3s ease-in-out;
-            flex-grow: 1;
-            padding-top: 16px;
-        }
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #2D3748;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #6366F1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4F46E5;
-        }
-        html {
-            scrollbar-width: thin;
-            scrollbar-color: #6366F1 #2D3748;
         }
 
         /* Spinner CSS */
@@ -164,817 +106,103 @@
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <!-- Header (customers.html'den kopyalandı) -->
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <!-- Left group: menu button and title -->
-        <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
-            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
-            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-                <i class="fas fa-bars text-white text-xl"></i>
-            </button>
-            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
-            <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Profil Yönetimi</h1>
-        </div>
-        <!-- Right group: notifications and logout -->
-        <div class="flex items-center space-x-3 md:space-x-4">
-            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
-                <i class="fas fa-bell text-white text-xl"></i>
-                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
-            </button>
-            <!-- Hoş Geldin metni kaldırıldı -->
-            <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
-        </div>
+    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center w-full max-w-6xl rounded-lg mb-6 border border-blue-700">
+        <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Profil Yönetimi</h1>
+        <button id="goToDashboardBtn" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors text-sm">
+            <i class="fas fa-arrow-left mr-2"></i>Ana Sayfaya Dön
+        </button>
     </header>
 
-    <!-- Ana İçerik Alanı -->
-    <div class="flex flex-1 pt-16">
+    <main class="bg-gray-900 bg-opacity-70 p-8 rounded-2xl shadow-xl w-full max-w-6xl border border-gray-700">
+        <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Hesap Ayarları</h2>
+        <p class="text-lg text-gray-400 text-center mb-8">Burada hesabınızla ilgili ayarları yönetebilirsiniz.</p>
 
-        <!-- Sidebar (customers.html'den kopyalandı) -->
-        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
-            <div class="flex items-center justify-between mb-4 mt-4">
-                <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
-                <!-- Sidebar kapatma tuşu -->
-                <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <div class="lg:col-span-1 space-y-8">
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
+                        <i class="fas fa-user-circle mr-3"></i> Kullanıcı Bilgileri
+                    </h3>
+                    <div class="space-y-3">
+                        <p class="text-gray-300 text-lg"><strong>E-posta:</strong> <span id="userEmailDisplay" class="font-semibold text-blue-400">Yükleniyor...</span></p>
+                        <p class="text-gray-300 text-lg"><strong>2FA Durumu:</strong> <span id="2FAStatusDisplay" class="font-semibold text-gray-300">Yükleniyor...</span></p>
+                    </div>
+                </section>
+
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
+                        <i class="fas fa-key mr-3"></i> Şifre Değiştir
+                    </h3>
+                    <form id="changePasswordForm" class="space-y-4">
+                        <div>
+                            <label for="currentPassword" class="block text-gray-300 text-sm font-medium mb-1">Mevcut Şifre:</label>
+                            <input type="password" id="currentPassword" class="form-input w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="newPassword" class="block text-gray-300 text-sm font-medium mb-1">Yeni Şifre:</label>
+                            <input type="password" id="newPassword" class="form-input w-full p-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="confirmNewPassword" class="block text-gray-300 text-sm font-medium mb-1">Yeni Şifre Tekrar:</label>
+                            <input type="password" id="confirmNewPassword" class="form-input w-full p-2 text-sm">
+                        </div>
+                        <button type="submit" id="changePasswordBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Şifreyi Değiştir</button>
+                    </form>
+                </section>
             </div>
-            <nav class="space-y-3">
-                <a href="/Fingo-WEB/index.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
-                </a>
-                <a href="/Fingo-WEB/customers.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
-                </a>
-                <a href="/Fingo-WEB/products.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
-                </a>
-                <a href="/Fingo-WEB/sales_management.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
-                </a>
-                <a href="/Fingo-WEB/recurring_transactions.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
-                </a>
-                <a href="/Fingo-WEB/reports.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
-                </a>
-                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
-                </a>
-            </nav>
-        </aside>
 
-        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
-        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+            <div class="lg:col-span-1">
+                <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
+                    <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
+                        <i class="fas fa-shield-alt mr-3"></i> İki Faktörlü Kimlik Doğrulama (2FA)
+                    </h3>
+                    <div class="flex-grow">
+                        <div id="enable2FASection" class="space-y-4">
+                            <p class="text-gray-300">Hesabınız için 2FA şu anda kapalı. Daha fazla güvenlik için etkinleştirin.</p>
+                            <button type="button" id="generateSecretBtn" class="bg-green-600 text-white p-2 rounded-md hover:bg-green-700 transition-colors w-full text-sm">2FA Etkinleştir</button>
 
-        <!-- Ana İçerik Alanı -->
-        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-10 mx-auto bg-gray-900 bg-opacity-70 rounded-2xl shadow-xl w-full max-w-6xl border border-gray-700 transition-all duration-300 ease-in-out">
-            <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Hesap Ayarları</h2>
-            <p class="text-lg text-gray-400 text-center mb-8">Burada hesabınızla ilgili ayarları yönetebilirsiniz.</p>
-
-            <!-- Grid Container -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-                <!-- Sol Sütun: Kullanıcı Bilgileri ve Şifre Değiştirme -->
-                <div class="lg:col-span-1 space-y-8">
-                    <!-- Kullanıcı Bilgileri Kartı -->
-                    <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
-                        <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
-                            <i class="fas fa-user-circle mr-3"></i> Kullanıcı Bilgileri
-                        </h3>
-                        <div class="space-y-3">
-                            <p class="text-gray-300 text-lg"><strong>E-posta:</strong> <span id="userEmailDisplay" class="font-semibold text-blue-400">Yükleniyor...</span></p>
-                            <p class="text-gray-300 text-lg"><strong>2FA Durumu:</strong> <span id="2FAStatusDisplay" class="font-semibold text-gray-300">Yükleniyor...</span></p>
-                        </div>
-                    </section>
-
-                    <!-- Şifre Değiştirme Kartı -->
-                    <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
-                        <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
-                            <i class="fas fa-key mr-3"></i> Şifre Değiştir
-                        </h3>
-                        <form id="changePasswordForm" class="space-y-4">
-                            <div>
-                                <label for="currentPassword" class="block text-gray-300 text-sm font-medium mb-1">Mevcut Şifre:</label>
-                                <input type="password" id="currentPassword" class="form-input w-full p-2 text-sm">
-                            </div>
-                            <div>
-                                <label for="newPassword" class="block text-gray-300 text-sm font-medium mb-1">Yeni Şifre:</label>
-                                <input type="password" id="newPassword" class="form-input w-full p-2 text-sm">
-                            </div>
-                            <div>
-                                <label for="confirmNewPassword" class="block text-gray-300 text-sm font-medium mb-1">Yeni Şifre Tekrar:</label>
-                                <input type="password" id="confirmNewPassword" class="form-input w-full p-2 text-sm">
-                            </div>
-                            <button type="submit" id="changePasswordBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-2 rounded-md hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">Şifreyi Değiştir</button>
-                        </form>
-                    </section>
-                </div>
-
-                <!-- Sağ Sütun: 2FA Ayarları -->
-                <div class="lg:col-span-1">
-                    <section class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
-                        <h3 class="text-2xl font-bold text-blue-300 mb-4 flex items-center">
-                            <i class="fas fa-shield-alt mr-3"></i> İki Faktörlü Kimlik Doğrulama (2FA)
-                        </h3>
-                        <div class="flex-grow">
-                            <!-- 2FA Etkinleştirme Alanı (is2FAEnabled false ise göster) -->
-                            <div id="enable2FASection" class="space-y-4">
-                                <p class="text-gray-300">Hesabınız için 2FA şu anda kapalı. Daha fazla güvenlik için etkinleştirin.</p>
-                                <button type="button" id="generateSecretBtn" class="bg-gradient-to-r from-green-600 to-green-800 text-white p-2 rounded-md hover:from-green-700 hover:to-green-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">2FA Etkinleştir</button>
-
-                                <!-- QR Kodu ve Gizli Anahtar Alanı -->
-                                <div id="qrcodeDisplayArea" class="hidden flex flex-col items-center justify-center p-4 border border-gray-700 rounded-md bg-gray-900 mt-4 space-y-4">
-                                    <p class="text-gray-300 text-center font-medium">Lütfen telefonunuzdaki Google Authenticator veya benzeri bir uygulama ile aşağıdaki QR kodu tarayın:</p>
-                                    <div id="qrcodeCanvas" class="p-2 bg-gray-700 border border-gray-600 rounded-md flex items-center justify-center">
-                                        <!-- QR Kodu buraya çizilecek veya img olarak gelecek -->
+                            <div id="qrcodeDisplayArea" class="hidden flex flex-col items-center justify-center p-4 border border-gray-700 rounded-md bg-gray-900 mt-4 space-y-4">
+                                <p class="text-gray-300 text-center font-medium">Lütfen telefonunuzdaki Google Authenticator veya benzeri bir uygulama ile aşağıdaki QR kodu tarayın:</p>
+                                <div id="qrcodeCanvas" class="p-2 bg-gray-700 border border-gray-600 rounded-md flex items-center justify-center">
                                     </div>
-                                    <p class="text-gray-300 text-center">Veya manuel olarak şu gizli anahtarı girin:</p>
-                                    <p id="secretKeyDisplay" class="font-bold text-lg text-blue-400 break-all bg-gray-700 p-2 rounded-md select-all font-mono"></p>
-                                    <p class="text-gray-300 text-center font-medium">Uygulamadaki 6 haneli kodu aşağıya girerek 2FA'yı etkinleştirin:</p>
-                                    <div>
-                                        <input type="text" id="2faCodeInput" placeholder="######" maxlength="6" class="form-input w-full p-2 text-sm text-center tracking-widest text-lg">
-                                    </div>
-                                    <button type="button" id="verify2FAEnableBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-2 rounded-md hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">2FA'yı Doğrula ve Etkinleştir</button>
-                                    <button type="button" id="cancel2FASetupBtn" class="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm shadow-md">İptal</button>
+                                <p class="text-gray-300 text-center">Veya manuel olarak şu gizli anahtarı girin:</p>
+                                <p id="secretKeyDisplay" class="font-bold text-lg text-blue-400 break-all bg-gray-700 p-2 rounded-md select-all font-mono"></p>
+                                <p class="text-gray-300 text-center font-medium">Uygulamadaki 6 haneli kodu aşağıya girerek 2FA'yı etkinleştirin:</p>
+                                <div>
+                                    <input type="text" id="2faCodeInput" placeholder="######" maxlength="6" class="form-input w-full p-2 text-sm text-center tracking-widest text-lg">
                                 </div>
-                            </div>
-
-                            <!-- 2FA Devre Dışı Bırakma Alanı (is2FAEnabled true ise göster) -->
-                            <div id="disable2FASection" class="hidden space-y-4">
-                                <p class="text-gray-300">Hesabınız için 2FA şu anda etkin. İsteğe bağlı olarak devre dışı bırakabilirsiniz.</p>
-                                <button type="button" id="disable2FABtn" class="bg-gradient-to-r from-red-600 to-red-800 text-white p-2 rounded-md hover:from-red-700 hover:to-red-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">2FA Devre Dışı Bırak</button>
-
-                                <!-- Kurtarma Kodları Kartı -->
-                                <div id="recoveryCodesSection" class="hidden p-4 border border-gray-700 rounded-md bg-yellow-900 bg-opacity-30 mt-4 space-y-3">
-                                    <h4 class="text-xl font-bold text-yellow-400 mb-2">Kurtarma Kodlarınız</h4>
-                                    <p class="text-yellow-300 font-medium">Bu kodları güvenli bir yere kaydedin. Giriş yapamadığınızda tek kullanımlık olarak kullanabilirsiniz. **Kaybetmeyin!**</p>
-                                    <div id="recoveryCodesDisplay" class="grid grid-cols-1 md:grid-cols-2 gap-2 font-mono text-gray-200 bg-gray-800 p-3 rounded-md">
-                                        <!-- Kodlar buraya JS ile yüklenecek -->
-                                    </div>
-                                    <button id="copyRecoveryCodesBtn" class="bg-gradient-to-r from-yellow-600 to-yellow-800 text-white p-2 rounded-md hover:from-yellow-700 hover:to-yellow-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">Kodları Kopyala</button>
-                                    <button id="closeRecoveryCodesBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-2 rounded-md hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out w-full text-sm shadow-md">Anladım</button>
-                                </div>
+                                <button type="button" id="verify2FAEnableBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">2FA'yı Doğrula ve Etkinleştir</button>
+                                <button type="button" id="cancel2FASetupBtn" class="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600 transition-colors w-full text-sm">İptal</button>
                             </div>
                         </div>
-                    </section>
-                </div>
-            </div> <!-- Grid Container End -->
-        </main>
-    </div>
 
-    <!-- Message Box (customers.html'den kopyalandı) -->
+                        <div id="disable2FASection" class="hidden space-y-4">
+                            <p class="text-gray-300">Hesabınız için 2FA şu anda etkin. İsteğe bağlı olarak devre dışı bırakabilirsiniz.</p>
+                            <button type="button" id="disable2FABtn" class="bg-red-600 text-white p-2 rounded-md hover:bg-red-700 transition-colors w-full text-sm">2FA Devre Dışı Bırak</button>
+
+                            <div id="recoveryCodesSection" class="hidden p-4 border border-gray-700 rounded-md bg-yellow-900 bg-opacity-30 mt-4 space-y-3">
+                                <h4 class="text-xl font-bold text-yellow-400 mb-2">Kurtarma Kodlarınız</h4>
+                                <p class="text-yellow-300 font-medium">Bu kodları güvenli bir yere kaydedin. Giriş yapamadığınızda tek kullanımlık olarak kullanabilirsiniz. **Kaybetmeyin!**</p>
+                                <div id="recoveryCodesDisplay" class="grid grid-cols-1 md:grid-cols-2 gap-2 font-mono text-gray-200 bg-gray-800 p-3 rounded-md">
+                                    </div>
+                                <button id="copyRecoveryCodesBtn" class="bg-yellow-600 text-white p-2 rounded-md hover:bg-yellow-700 transition-colors w-full text-sm">Kodları Kopyala</button>
+                                <button id="closeRecoveryCodesBtn" class="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors w-full text-sm">Anladım</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div> </main>
+
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <!-- Bildirim Merkezi Paneli (customers.html'den kopyalandı) -->
-    <div id="notificationCenter" class="notification-center">
-        <div class="notification-header">
-            <span>Bildirimler</span>
-            <button id="clearNotificationsBtn" class="text-blue-400 hover:text-blue-200 text-sm">Tümünü Temizle</button>
-        </div>
-        <div id="notificationList" class="notification-list">
-            <p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>
-        </div>
-        <div class="notification-footer">
-            <button id="closeNotificationsBtn" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm">Kapat</button>
-        </div>
-    </div>
-
-    <!-- QRCode kütüphanesi - profile.js'den ÖNCE ve doğru CDN'den yükleniyor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- profile.js -->
-    <script>
-        // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
-        const initialJwtToken = localStorage.getItem('jwtToken');
-        const initialUserId = localStorage.getItem('userId');
-        const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
-
-        // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
-        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        if (response.status === 401 || response.status === 403) {
-                            handleAuthError();
-                            return;
-                        }
-                        throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
-                    }
-                    return response;
-                } catch (error) {
-                    if (i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                    } else {
-                        throw error;
-                    }
-                }
-            }
-        }
-
-        // Redirect if not logged in
-        // JWT Token'ı parse eden yardımcı fonksiyon
-        function parseJwt (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                return JSON.parse(jsonPayload);
-            } catch (e) {
-                console.error("JWT parse error:", e);
-                return null;
-            }
-        };
-
-        const decodedToken = parseJwt(initialJwtToken);
-        if (!initialJwtToken || !initialUserId || !decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
-            console.warn("JWT invalid or expired. Redirecting to login.");
-            localStorage.removeItem('jwtToken');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('fingoNotifications');
-            window.location.href = 'auth.html';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOMContentLoaded fired. Initializing Profile Management application...");
-
-            const getToken = () => localStorage.getItem('jwtToken');
-            const getUserId = () => localStorage.getItem('userId');
-
-            // DOM Elements
-            const logoutBtn = document.getElementById('logoutBtn');
-            // const loggedInUserSpan = document.getElementById('loggedInUser'); // Kaldırıldı
-            const messageBox = document.getElementById('messageBox');
-            const messageText = document.getElementById('messageText');
-            const appHeader = document.getElementById('appHeader');
-            const headerLeftGroup = document.getElementById('headerLeftGroup');
-            const headerTitle = document.getElementById('headerTitle'); // Yeni: Header başlığı
-
-            // Profile Sections
-            const userEmailDisplay = document.getElementById('userEmailDisplay');
-            const twoFAStatusDisplay = document.getElementById('2FAStatusDisplay');
-            const changePasswordForm = document.getElementById('changePasswordForm');
-            const currentPasswordInput = document.getElementById('currentPassword');
-            const newPasswordInput = document.getElementById('newPassword');
-            const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
-            const changePasswordBtn = document.getElementById('changePasswordBtn');
-
-            // 2FA Elements
-            const enable2FASection = document.getElementById('enable2FASection');
-            const disable2FASection = document.getElementById('disable2FASection');
-            const generateSecretBtn = document.getElementById('generateSecretBtn');
-            const disable2FABtn = document.getElementById('disable2FABtn');
-            const qrcodeDisplayArea = document.getElementById('qrcodeDisplayArea');
-            const qrcodeCanvas = document.getElementById('qrcodeCanvas');
-            const secretKeyDisplay = document.getElementById('secretKeyDisplay');
-            const twoFACodeInput = document.getElementById('2faCodeInput');
-            const verify2FAEnableBtn = document.getElementById('verify2FAEnableBtn');
-            const cancel2FASetupBtn = document.getElementById('cancel2FASetupBtn');
-            const recoveryCodesSection = document.getElementById('recoveryCodesSection');
-            const recoveryCodesDisplay = document.getElementById('recoveryCodesDisplay');
-            const copyRecoveryCodesBtn = document.getElementById('copyRecoveryCodesBtn');
-            const closeRecoveryCodesBtn = document.getElementById('closeRecoveryCodesBtn');
-
-            // Bildirim Merkezi DOM Elementleri (customers.html'den kopyalandı)
-            const notificationBellBtn = document.getElementById('notificationBellBtn');
-            const notificationCountBadge = document.getElementById('notificationCountBadge');
-            const notificationCenter = document.getElementById('notificationCenter');
-            const notificationList = document.getElementById('notificationList');
-            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
-            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
-
-            // Sidebar ve Yönlendirme Butonları (customers.html'den kopyalandı)
-            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-            const mainContent = document.getElementById('mainContent');
-
-            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
-
-            // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
-            function loadNotifications() {
-                renderNotifications();
-                updateNotificationCount();
-            }
-
-            // Bildirimleri Local Storage'a kaydet
-            function saveNotifications() {
-                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
-            }
-
-            // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
-            function addNotification(message, type = 'info', isRead = false) {
-                const timestamp = new Date().toLocaleString('tr-TR');
-                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
-                saveNotifications();
-                renderNotifications();
-                updateNotificationCount();
-
-                // Anlık mesaj kutusunu da göster
-                showMessageBox(message, type);
-            }
-
-            // Anlık mesaj kutusu gösterme fonksiyonu (eski showMessage)
-            function showMessageBox(message, type = 'success') {
-                if (!messageBox || !messageText) {
-                    console.error("Message box elements not found!");
-                    return;
-                }
-                messageText.innerHTML = message;
-                messageBox.className = `message-box show ${type}`;
-                messageBox.classList.remove('hidden');
-                setTimeout(() => {
-                    messageBox.classList.remove('show');
-                    setTimeout(() => {
-                        messageBox.classList.add('hidden');
-                    }, 300);
-                }, 3000);
-            }
-
-            // Confirm Box fonksiyonu (yeniden kullanıldı)
-            function showConfirmBox(message, onConfirm) {
-                if (!messageBox || !messageText) {
-                    console.error("Message box elements not found! Cannot display confirm box.");
-                    return;
-                }
-
-                messageBox.innerHTML = `
-                    <span id="messageText">${message}</span>
-                    <div class="flex justify-center space-x-4 mt-3">
-                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
-                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
-                    </div>
-                `;
-                messageBox.classList.add('show', 'confirm');
-                messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
-
-                document.getElementById('confirmYes').onclick = () => {
-                    onConfirm();
-                    messageBox.classList.remove('show', 'confirm');
-                    messageBox.classList.add('hidden');
-                    // Orijinal mesaj kutusu içeriğini geri yükle
-                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
-                };
-
-                document.getElementById('confirmNo').onclick = () => {
-                    messageBox.classList.remove('show', 'confirm');
-                    messageBox.classList.add('hidden');
-                    // Orijinal mesaj kutusu içeriğini geri yükle
-                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
-                };
-            }
-
-            // Bildirimleri render etme (HTML'e basma)
-            function renderNotifications() {
-                if (!notificationList) return;
-                notificationList.innerHTML = '';
-                if (notifications.length === 0) {
-                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
-                    return;
-                }
-
-                notifications.forEach((notif, index) => {
-                    const notificationItem = document.createElement('div');
-                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
-                    notificationItem.dataset.index = index; // Index'i sakla
-
-                    let iconClass = '';
-                    if (notif.type === 'success') iconClass = 'fa-check-circle';
-                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
-                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
-                    else iconClass = 'fa-info-circle';
-
-                    notificationItem.innerHTML = `
-                        <i class="fas ${iconClass} notification-item-icon"></i>
-                        <div>
-                            <p>${notif.message}</p>
-                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
-                        </div>
-                    `;
-                    notificationList.appendChild(notificationItem);
-
-                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
-                    if (!notif.isRead) {
-                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
-                    }
-                });
-            }
-
-            // Okunmamış bildirim sayısını güncelle
-            function updateNotificationCount() {
-                if (!notificationCountBadge) return;
-                const unreadCount = notifications.filter(n => !n.isRead).length;
-                if (unreadCount > 0) {
-                    notificationCountBadge.textContent = unreadCount;
-                    notificationCountBadge.classList.remove('hidden');
-                } else {
-                    notificationCountBadge.classList.add('hidden');
-                }
-            }
-
-            // Bildirimi okundu olarak işaretle
-            function markNotificationAsRead(index) {
-                if (notifications[index]) {
-                    notifications[index].isRead = true;
-                    saveNotifications();
-                    renderNotifications();
-                    updateNotificationCount();
-                }
-            }
-
-            // Bildirim Çanı tıklama olayı
-            if (notificationBellBtn) {
-                notificationBellBtn.addEventListener('click', () => {
-                    notificationCenter.classList.toggle('active');
-                    if (notificationCenter.classList.contains('active')) {
-                        // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
-                        notifications.forEach(n => n.isRead = true);
-                        saveNotifications();
-                        updateNotificationCount();
-                    }
-                });
-            }
-
-            // Bildirim merkezini kapatma butonu
-            if (closeNotificationsBtn) {
-                closeNotificationsBtn.addEventListener('click', () => {
-                    notificationCenter.classList.remove('active');
-                });
-            }
-
-            // Tüm bildirimleri temizle butonu
-            if (clearNotificationsBtn) {
-                clearNotificationsBtn.addEventListener('click', () => {
-                    showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
-                        notifications = [];
-                        saveNotifications();
-                        renderNotifications();
-                        updateNotificationCount();
-                        addNotification('Tüm bildirimler temizlendi.', 'info');
-                    });
-                });
-            }
-
-            // Sidebar Fonksiyonları (customers.html ile aynı)
-            const closeSidebar = () => {
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                    sidebar.classList.add('-translate-x-full');
-                }
-                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-
-                // Responsive ayarı: Eğer ekran büyükse, sidebar kapanırken mainContent'in marginini kaldır
-                if (window.innerWidth >= 1024) {
-                    if (mainContent) mainContent.classList.remove('lg:ml-64');
-                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır
-                    if (headerLeftGroup) { // Header sol grubunu sola hizala
-                        headerLeftGroup.classList.remove('lg:justify-center');
-                        headerLeftGroup.classList.add('lg:justify-start');
-                    }
-                    if (headerTitle) headerTitle.classList.remove('lg:hidden'); // Başlığı göster
-                }
-                // Sidebar kapanırken menü tuşunu tekrar göster
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
-            };
-
-            const openSidebar = () => {
-                if (sidebar) {
-                    sidebar.classList.add('open');
-                    sidebar.classList.remove('-translate-x-full');
-                }
-
-                if (window.innerWidth < 1024) {
-                    // Küçük ekranlarda overlay'i aktifleştir
-                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
-                } else {
-                    // Büyük ekranlarda mainContent'i kaydır ve overlay'i kapat
-                    if (mainContent) mainContent.classList.add('lg:ml-64');
-                    if (appHeader) appHeader.classList.add('lg:pl-64'); // Header'a padding ekle
-                    if (headerLeftGroup) { // Header sol grubunu ortala
-                        headerLeftGroup.classList.remove('lg:justify-start');
-                        headerLeftGroup.classList.add('lg:justify-center');
-                    }
-                    if (headerTitle) headerTitle.classList.add('lg:hidden'); // Başlığı gizle
-                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
-                }
-                // Sidebar açılırken menü tuşunu gizle
-                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
-            };
-
-            const initializeSidebarState = () => {
-                if (window.innerWidth >= 1024) {
-                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
-                } else {
-                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
-                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
-                }
-            };
-
-            window.addEventListener('resize', initializeSidebarState);
-
-            if (sidebarToggleBtn) {
-                sidebarToggleBtn.addEventListener('click', () => {
-                    if (sidebar && sidebar.classList.contains('open')) {
-                        closeSidebar();
-                    } else {
-                        openSidebar();
-                    }
-                });
-            }
-
-            if (closeSidebarBtn) {
-                closeSidebarBtn.addEventListener('click', () => {
-                    closeSidebar();
-                });
-            }
-
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', () => {
-                    closeSidebar();
-                });
-            }
-
-            // Yönlendirme Butonları (customers.html ile aynı href'ler)
-            document.getElementById('goToDashboardBtn')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); });
-            document.querySelector('a[href="/Fingo-WEB/customers.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); });
-            document.querySelector('a[href="/Fingo-WEB/products.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); });
-            document.querySelector('a[href="/Fingo-WEB/sales_management.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/sales_management.html'; closeSidebar(); });
-            document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); });
-            document.querySelector('a[href="/Fingo-WEB/reports.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); });
-            document.querySelector('a[id="exportCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
-            document.querySelector('a[id="importCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
-
-
-            // Logout Button
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    localStorage.removeItem('jwtToken');
-                    localStorage.removeItem('userId');
-                    localStorage.removeItem('userEmail');
-                    localStorage.removeItem('fingoNotifications');
-                    window.location.href = 'auth.html';
-                });
-            }
-
-            // handleAuthError fonksiyonu (token süresi dolduğunda veya yetkilendirme hatasında yönlendirme)
-            function handleAuthError() {
-                addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
-                localStorage.removeItem('jwtToken');
-                localStorage.removeItem('userId');
-                localStorage.removeItem('userEmail');
-                localStorage.removeItem('fingoNotifications');
-                window.location.href = 'auth.html';
-            }
-
-
-            // Fetch User Details
-            async function fetchUserDetails() {
-                const token = getToken();
-                const userId = getUserId();
-                if (!token || !userId) {
-                    handleAuthError();
-                    return;
-                }
-
-                try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/users/profile/${userId}`, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-
-                    const data = await response.json();
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Kullanıcı bilgileri çekilirken hata oluştu.');
-                    }
-
-                    if (userEmailDisplay) userEmailDisplay.textContent = data.email || 'N/A';
-                    if (twoFAStatusDisplay) twoFAStatusDisplay.textContent = data.is2FAEnabled ? 'Etkin' : 'Devre Dışı';
-
-                    if (data.is2FAEnabled) {
-                        enable2FASection.classList.add('hidden');
-                        disable2FASection.classList.remove('hidden');
-                    } else {
-                        enable2FASection.classList.remove('hidden');
-                        disable2FASection.classList.add('hidden');
-                    }
-
-                } catch (error) {
-                    console.error('Kullanıcı bilgileri yüklenirken hata:', error);
-                    addNotification(`Kullanıcı bilgileri yüklenirken hata: ${error.message}`, 'error');
-                }
-            }
-
-            // Change Password Form Submission
-            if (changePasswordForm) {
-                changePasswordForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const currentPassword = currentPasswordInput.value;
-                    const newPassword = newPasswordInput.value;
-                    const confirmNewPassword = confirmNewPasswordInput.value;
-
-                    if (!currentPassword || !newPassword || !confirmNewPassword) {
-                        addNotification('Lütfen tüm şifre alanlarını doldurun.', 'error');
-                        return;
-                    }
-                    if (newPassword !== confirmNewPassword) {
-                        addNotification('Yeni şifreler uyuşmuyor.', 'error');
-                        return;
-                    }
-                    if (newPassword.length < 6) {
-                        addNotification('Yeni şifre en az 6 karakter olmalı.', 'error');
-                        return;
-                    }
-
-                    try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/users/change-password`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getToken()}`
-                            },
-                            body: JSON.stringify({ oldPassword: currentPassword, newPassword: newPassword })
-                        });
-                        const result = await response.json();
-                        if (!response.ok) {
-                            throw new Error(result.message || 'Şifre değiştirme başarısız oldu.');
-                        }
-                        addNotification('Şifre başarıyla değiştirildi!', 'success');
-                        changePasswordForm.reset();
-                    } catch (error) {
-                        console.error('Şifre değiştirme hatası:', error);
-                        addNotification(`Şifre değiştirilemedi: ${error.message}`, 'error');
-                    }
-                });
-            }
-
-            // 2FA Enable/Disable Logic
-            let qrCodeInstance = null; // QRCode.js instance'ı
-            let currentSecret = null; // Geçerli gizli anahtar
-
-            if (generateSecretBtn) {
-                generateSecretBtn.addEventListener('click', async () => {
-                    try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/users/generate-2fa-secret`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getToken()}`
-                            },
-                            body: JSON.stringify({ userId: getUserId() })
-                        });
-                        const result = await response.json();
-                        if (!response.ok) {
-                            throw new Error(result.message || 'Gizli anahtar oluşturulurken hata oluştu.');
-                        }
-                        currentSecret = result.secret; // Gizli anahtarı sakla
-
-                        if (secretKeyDisplay) secretKeyDisplay.textContent = currentSecret;
-                        if (qrcodeCanvas) {
-                            qrcodeCanvas.innerHTML = ''; // Önceki QR'ı temizle
-                            qrCodeInstance = new QRCode(qrcodeCanvas, {
-                                text: result.otpAuthUrl,
-                                width: 180,
-                                height: 180,
-                                colorDark : "#e2e8f0", // Açık renkli QR kodu için koyu tema uyumu
-                                colorLight : "#1A202C", // Açık renkli QR kodu için koyu tema uyumu
-                                correctLevel : QRCode.CorrectLevel.H
-                            });
-                        }
-                        if (qrcodeDisplayArea) qrcodeDisplayArea.classList.remove('hidden');
-                        addNotification('2FA kurulumu başlatıldı. QR kodu tarayın veya anahtarı manuel girin.', 'info');
-                    } catch (error) {
-                        console.error('2FA gizli anahtarı oluşturma hatası:', error);
-                        addNotification(`2FA kurulumu başlatılamadı: ${error.message}`, 'error');
-                    }
-                });
-            }
-
-            if (verify2FAEnableBtn) {
-                verify2FAEnableBtn.addEventListener('click', async () => {
-                    const code = twoFACodeInput.value.trim();
-                    if (!code) {
-                        addNotification('Lütfen 6 haneli 2FA kodunu girin.', 'error');
-                        return;
-                    }
-                    if (!currentSecret) {
-                        addNotification('Lütfen önce 2FA\'yı etkinleştirme adımlarını takip edin.', 'error');
-                        return;
-                    }
-
-                    try {
-                        const response = await fetchWithRetry(`${API_BASE_URL}/users/verify-2fa`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getToken()}`
-                            },
-                            body: JSON.stringify({ userId: getUserId(), token: code, secret: currentSecret })
-                        });
-                        const result = await response.json();
-                        if (!response.ok) {
-                            throw new Error(result.message || '2FA doğrulama başarısız oldu.');
-                        }
-                        addNotification('2FA başarıyla etkinleştirildi! Kurtarma kodlarınızı kaydedin.', 'success');
-                        if (qrcodeDisplayArea) qrcodeDisplayArea.classList.add('hidden');
-                        twoFACodeInput.value = '';
-                        currentSecret = null; // Gizli anahtarı temizle
-                        fetchUserDetails(); // Durumu güncelle
-
-                        // Kurtarma kodlarını göster
-                        if (recoveryCodesDisplay) {
-                            recoveryCodesDisplay.innerHTML = result.recoveryCodes.map(code => `<div class="bg-gray-700 p-2 rounded-md">${code}</div>`).join('');
-                        }
-                        if (recoveryCodesSection) recoveryCodesSection.classList.remove('hidden');
-
-                    } catch (error) {
-                        console.error('2FA doğrulama hatası:', error);
-                        addNotification(`2FA doğrulanamadı: ${error.message}`, 'error');
-                    }
-                });
-            }
-
-            if (cancel2FASetupBtn) {
-                cancel2FASetupBtn.addEventListener('click', () => {
-                    if (qrcodeDisplayArea) qrcodeDisplayArea.classList.add('hidden');
-                    twoFACodeInput.value = '';
-                    currentSecret = null;
-                    addNotification('2FA kurulumu iptal edildi.', 'info');
-                });
-            }
-
-            if (disable2FABtn) {
-                disable2FABtn.addEventListener('click', async () => {
-                    showConfirmBox('2FA\'yı devre dışı bırakmak istediğinizden emin misiniz? Bu, hesabınızın güvenliğini azaltacaktır.', async () => {
-                        try {
-                            const response = await fetchWithRetry(`${API_BASE_URL}/users/disable-2fa`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${getToken()}`
-                                },
-                                body: JSON.stringify({ userId: getUserId() })
-                            });
-                            const result = await response.json();
-                            if (!response.ok) {
-                                throw new Error(result.message || '2FA devre dışı bırakılırken hata oluştu.');
-                            }
-                            addNotification('2FA başarıyla devre dışı bırakıldı!', 'success');
-                            fetchUserDetails(); // Durumu güncelle
-                            if (recoveryCodesSection) recoveryCodesSection.classList.add('hidden'); // Kurtarma kodlarını gizle
-                        } catch (error) {
-                            console.error('2FA devre dışı bırakma hatası:', error);
-                            addNotification(`2FA devre dışı bırakılamadı: ${error.message}`, 'error');
-                        }
-                    });
-                });
-            }
-
-            if (copyRecoveryCodesBtn) {
-                copyRecoveryCodesBtn.addEventListener('click', () => {
-                    const codes = Array.from(recoveryCodesDisplay.children).map(div => div.textContent).join('\n');
-                    try {
-                        // navigator.clipboard.writeText(codes); // iframe'de çalışmayabilir
-                        const tempTextArea = document.createElement('textarea');
-                        tempTextArea.value = codes;
-                        document.body.appendChild(tempTextArea);
-                        tempTextArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(tempTextArea);
-                        addNotification('Kurtarma kodları panoya kopyalandı!', 'success');
-                    } catch (err) {
-                        console.error('Panoya kopyalanamadı:', err);
-                        addNotification('Kurtarma kodları panoya kopyalanamadı.', 'error');
-                    }
-                });
-            }
-
-            if (closeRecoveryCodesBtn) {
-                closeRecoveryCodesBtn.addEventListener('click', () => {
-                    if (recoveryCodesSection) recoveryCodesSection.classList.add('hidden');
-                    addNotification('Kurtarma kodları penceresi kapatıldı.', 'info');
-                });
-            }
-
-            // Initial calls on page load
-            fetchUserDetails();
-            loadNotifications();
-            initializeSidebarState();
-        });
-    </script>
+    <script src="/Fingo-WEB/js/profile.js"></script>
 </body>
 </html>

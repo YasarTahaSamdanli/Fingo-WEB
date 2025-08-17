@@ -39,6 +39,7 @@
             background-color: #1A202C;
             color: #E2E8F0;
             border-color: #4A5568;
+            border-radius: 0.5rem; /* rounded-lg */
         }
         .form-input::placeholder {
             color: #A0AEC0;
@@ -72,14 +73,22 @@
         .message-box.error { background-color: #EF4444; }
         .message-box.info { background-color: #3B82F6; }
         .message-box.warning { background-color: #F59E0B; }
-        .message-box.confirm { background-color: #607D8B; }
+        .message-box.confirm {
+            background-color: #607D8B;
+            flex-direction: column;
+            align-items: center;
+        }
         .message-box-close {
             background: none;
             border: none;
             color: white;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
             margin-left: 15px;
+            line-height: 1;
+            position: absolute; /* Confirm box için konumlandırma */
+            top: 5px;
+            right: 10px;
         }
         .notification-center {
             position: fixed;
@@ -274,11 +283,21 @@
             scrollbar-width: thin;
             scrollbar-color: #6366F1 #2D3748;
         }
+
+        /* Yeni eklendi: Dropdown ikon animasyonu */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .transition-transform {
+            transition-property: transform;
+            transition-duration: 300ms;
+            transition-timing-function: ease-in-out;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header -->
+    <!-- Header (customers.html'den kopyalandı) -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <!-- Left group: menu button and title -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
@@ -303,7 +322,7 @@
     <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
-        <!-- Sidebar -->
+        <!-- Sidebar (customers.html'den kopyalandı) -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
@@ -313,34 +332,34 @@
                 </button>
             </div>
             <nav class="space-y-3">
-                <a href="/Fingo-WEB/index.html" id="goToDashboardBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="/Fingo-WEB/index.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
                 </a>
-                <a href="/Fingo-WEB/customers.html" id="manageCustomersBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="/Fingo-WEB/customers.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/products.html" id="manageProductsBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium">
+                <a href="/Fingo-WEB/products.html" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium">
                     <i class="fas fa-box"></i> <span class="text-gray-100">Ürün Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/sales_management.html" id="goToSalesManagementBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="/Fingo-WEB/sales_management.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
                 </a>
-                <a href="/Fingo-WEB/recurring_transactions.html" id="manageRecurringTransactionsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="/Fingo-WEB/recurring_transactions.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
                 </a>
-                <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="/Fingo-WEB/reports.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
                 </a>
-                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
                 </a>
-                <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
                 </a>
             </nav>
         </aside>
 
-        <!-- Sidebar Overlay -->
+        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <!-- Main Content -->
@@ -354,7 +373,7 @@
                 <div class="lg:col-span-1">
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h2 id="productFormTitle" class="text-2xl font-bold text-blue-300 mb-6 text-center">Yeni Ürün Ekle</h2>
-                        <form id="productForm" class="space-y-4"> <!-- space-y-5 -> space-y-4 -->
+                        <form id="productForm" class="space-y-4">
                             <div class="grid grid-cols-1 gap-4 mb-4">
                                 <div>
                                     <label for="productName" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı:</label>
@@ -383,7 +402,7 @@
                                         <input type="number" id="profitMarginInput" placeholder="Örn: 25 (yani %25 kar)" step="0.01" min="0" class="form-input w-full p-3 text-base shadow-sm">
                                         <p class="text-xs text-gray-400 mt-1">Hedeflediğiniz brüt kar oranı.</p>
                                     </div>
-                                    <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
+                                    <button type="button" id="calculateSellingPriceBtn" class="mt-6 w-full bg-gradient-to-r from-green-600 to-green-800 text-white p-3 rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md">Satış Fiyatını Hesapla</button>
                                 </div>
                                 <!-- End Price Calculation Section -->
 
@@ -401,7 +420,7 @@
                                         <input type="text" id="productBarcodeInput" placeholder="Barkod numarası" class="form-input w-full p-3 text-base shadow-sm">
                                         <p class="text-xs text-gray-400 mt-1">Bu ürün için barkodu manuel girin veya tara butonunu kullanın.</p>
                                     </div>
-                                    <button type="button" id="scanBarcodeBtn" class="mt-6 w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">
+                                    <button type="button" id="scanBarcodeBtn" class="mt-6 w-full bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-3 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">
                                         <i class="fas fa-barcode mr-2"></i> Barkod Tara
                                     </button>
                                 </div>
@@ -445,12 +464,12 @@
                                     <div id="imagePreviewContainer" class="mt-4 hidden">
                                         <p class="text-sm text-gray-400 mb-2">Seçilen Resim Önizlemesi:</p>
                                         <img id="imagePreview" src="#" alt="Resim Önizlemesi" class="w-32 h-32 object-cover rounded-md border border-gray-700">
-                                        <button type="button" id="clearImageBtn" class="mt-2 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-xs">Resmi Temizle</button>
+                                        <button type="button" id="clearImageBtn" class="mt-2 bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-xs transition-colors duration-200 ease-in-out">Resmi Temizle</button>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex space-x-3 mt-6">
-                                <button type="submit" id="submitProductBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Ürün Ekle</button>
+                                <button type="submit" id="submitProductBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Ürün Ekle</button>
                                 <button type="button" id="cancelProductEditBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md hidden font-semibold text-lg">İptal</button>
                             </div>
                         </form>
@@ -458,7 +477,7 @@
                 </div>
 
                 <!-- Sağ Sütun (Filtreler ve Ürün Listesi Kartı) -->
-                <div class="lg:col-span-1 space-y-6"> <!-- space-y-8 -> space-y-6 -->
+                <div class="lg:col-span-1 space-y-6">
 
                     <!-- Filtre Kartı -->
                     <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
@@ -476,17 +495,35 @@
                             </div>
                         </div>
                         <div class="flex space-x-3 mt-6">
-                            <button id="applyProductFilterBtn" class="flex-1 bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtrele</button>
+                            <button id="applyProductFilterBtn" class="flex-1 bg-gradient-to-r from-purple-600 to-purple-800 text-white p-3 rounded-lg hover:from-purple-700 hover:to-purple-900 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtrele</button>
                             <button id="clearProductFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md font-semibold text-lg">Filtreleri Temizle</button>
                         </div>
                     </div>
 
                     <!-- Ürün Listesi Kartı -->
-                    <div id="productsListContainer" class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg relative">
-                        <h2 class="text-2xl font-bold text-gray-200 mb-6 text-center">Mevcut Ürünler</h2>
-                        <div id="productsList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-                            <p class="text-center text-gray-400 py-4">Ürünler buraya yüklenecek...</p>
+                    <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg relative">
+                        <div id="productListHeader" class="flex justify-between items-center cursor-pointer mb-4">
+                            <h2 class="text-2xl font-bold text-gray-200">Mevcut Ürünler</h2>
+                            <i id="productListToggleIcon" class="fas fa-chevron-down text-xl text-gray-400 transition-transform duration-300 ease-in-out"></i>
                         </div>
+                        <div id="productsListContainer" class="hidden overflow-x-auto"> <!-- İçerik başlangıçta gizli -->
+                            <table class="min-w-full divide-y divide-gray-700 rounded-lg overflow-hidden">
+                                <thead class="bg-gray-700">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tl-lg">Ürün Adı</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Miktar</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Birim Fiyat</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Toplam</th>
+                                        <th scope="col" class="px-3 py-2 text-right text-xs font-medium text-gray-300 uppercase tracking-wider rounded-tr-lg">Aksiyonlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsList" class="bg-gray-800 divide-y divide-gray-700">
+                                    <!-- Products will be loaded here by JS -->
+                                    <tr><td colspan="5" class="text-center text-gray-400 py-4">Ürünler buraya yüklenecek...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Loading Overlay -->
                         <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-2xl">
                             <p class="text-center text-gray-300 text-lg">
                                 <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
@@ -495,10 +532,11 @@
                         </div>
                         <p class="text-right text-xl font-bold text-gray-200 mt-6 pt-4 border-t border-gray-700">Toplam Envanter Değeri: <span id="totalInventoryValue" class="text-blue-400">0.00 TL</span></p>
                         <div class="mt-8 text-center flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
-                            <button id="generateShelfCardsBtn" class="bg-indigo-600 text-white px-8 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Reyon Kartları Oluştur</button>
-                            <button id="goToStockManagementBtn" class="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Stok Yönetimi Sayfasına Git</button>
+                            <button id="generateShelfCardsBtn" class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white px-8 py-3 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Reyon Kartları Oluştur</button>
+                            <button id="goToStockManagementBtn" class="bg-gradient-to-r from-teal-600 to-teal-800 text-white px-8 py-3 rounded-lg hover:from-teal-700 hover:to-teal-900 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-lg font-semibold text-lg">Stok Yönetimi Sayfasına Git</button>
                         </div>
                     </div>
+
                 </div>
             </div>
         </main>
@@ -510,7 +548,7 @@
             <h3 class="text-xl font-bold text-gray-200 mb-4">Barkod Tara</h3>
             <video id="video" class="w-full h-auto max-h-[400px] bg-black rounded-lg shadow-md" autoplay playsinline></video>
             <div id="barcodeScannerResult" class="text-center text-red-400 font-bold mt-5 text-lg"></div>
-            <button id="stopScanBtn" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Taramayı Durdur</button>
+            <button id="stopScanBtn" class="bg-gradient-to-r from-red-600 to-red-800 text-white px-6 py-3 rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md">Taramayı Durdur</button>
         </div>
     </div>
 
@@ -542,6 +580,7 @@
         const initialUserId = localStorage.getItem('userId');
         const API_BASE_URL = 'https://fingo-web.onrender.com/api';
 
+        // JWT token'ı doğrula
         if (!initialJwtToken || !initialUserId) {
             window.location.href = 'auth.html';
         }
@@ -576,6 +615,7 @@
             const getToken = () => localStorage.getItem('jwtToken');
             const getUserId = () => localStorage.getItem('userId');
 
+            // Header and Sidebar Elements
             const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -583,22 +623,30 @@
             const mainContent = document.getElementById('mainContent');
             const appHeader = document.getElementById('appHeader');
             const headerLeftGroup = document.getElementById('headerLeftGroup');
-            const headerTitle = document.getElementById('headerTitle'); // Yeni eklenen başlık ID'si
+            const headerTitle = document.getElementById('headerTitle'); // Added header title element
 
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
-            const manageCustomersBtn = document.getElementById('manageCustomersBtn');
-            const manageProductsBtn = document.getElementById('manageProductsBtn');
-            const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
-            const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
-            const viewReportsBtn = document.getElementById('viewReportsBtn');
-            const exportCsvBtn = document.getElementById('exportCsvBtn');
-            const importCsvBtn = document.getElementById('importCsvBtn');
+            // Navigation buttons (from sidebar)
+            const goToDashboardBtn = document.querySelector('a[href="/Fingo-WEB/index.html"]');
+            const manageCustomersBtn = document.querySelector('a[href="/Fingo-WEB/customers.html"]');
+            const manageProductsBtn = document.querySelector('a[href="/Fingo-WEB/products.html"]');
+            const goToSalesManagementBtn = document.querySelector('a[href="/Fingo-WEB/sales_management.html"]');
+            const manageRecurringTransactionsBtn = document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]');
+            const viewReportsBtn = document.querySelector('a[href="/Fingo-WEB/reports.html"]');
+            const exportCsvBtn = document.querySelector('a[id="exportCsvBtn"]');
+            const importCsvBtn = document.querySelector('a[id="importCsvBtn"]');
             const logoutBtn = document.getElementById('logoutBtn');
-            // const loggedInUserSpan = document.getElementById('loggedInUser'); // Kaldırıldı
 
+            // Message Box and Notification Center Elements
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
 
+            // Product Form Elements
             const productForm = document.getElementById('productForm');
             const productNameInput = document.getElementById('productName');
             const productQuantityInput = document.getElementById('productQuantity');
@@ -627,7 +675,9 @@
             const submitProductBtn = document.getElementById('submitProductBtn');
             const cancelProductEditBtn = document.getElementById('cancelProductEditBtn');
             const productFormTitle = document.getElementById('productFormTitle');
-            const productsListDiv = document.getElementById('productsList');
+
+            // Product List & Filter Elements
+            const productsListTableBody = document.getElementById('productsList'); // Table body for products
             const productsLoadingOverlay = document.getElementById('productsLoadingOverlay');
             const totalInventoryValueSpan = document.getElementById('totalInventoryValue');
             const filterProductNameInput = document.getElementById('filterProductName');
@@ -637,16 +687,16 @@
             const generateShelfCardsBtn = document.getElementById('generateShelfCardsBtn');
             const goToStockManagementBtn = document.getElementById('goToStockManagementBtn');
 
-            const notificationBellBtn = document.getElementById('notificationBellBtn');
-            const notificationCountBadge = document.getElementById('notificationCountBadge');
-            const notificationCenter = document.getElementById('notificationCenter');
-            const notificationList = document.getElementById('notificationList');
-            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
-            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+            // Product List Dropdown Elements
+            const productListHeader = document.getElementById('productListHeader');
+            const productListContent = document.getElementById('productsListContainer'); // The div containing the table
+            const productListToggleIcon = document.getElementById('productListToggleIcon');
+
 
             let editingProductId = null;
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 
+            // Bildirimler ve Mesaj Kutusu Fonksiyonları
             function loadNotifications() {
                 renderNotifications();
                 updateNotificationCount();
@@ -902,8 +952,8 @@
             function addEventListenersToProductButtons() {
                 document.querySelectorAll('.edit-product-btn').forEach(button => {
                     button.onclick = (event) => {
-                        const productDiv = event.target.closest('div[data-id]');
-                        const productId = productDiv.dataset.id;
+                        const productRow = event.target.closest('tr'); // Table row
+                        const productId = productRow.dataset.id;
                         fetch(`${API_BASE_URL}/products/${productId}?userId=${getUserId()}`, {
                             headers: { 'Authorization': `Bearer ${getToken()}` }
                         })
@@ -952,8 +1002,8 @@
                 });
                 document.querySelectorAll('.delete-product-btn').forEach(button => {
                     button.onclick = async (event) => {
-                        const productDiv = event.target.closest('div[data-id]');
-                        const productId = productDiv.dataset.id;
+                        const productRow = event.target.closest('tr'); // Table row
+                        const productId = productRow.dataset.id;
                         showConfirmBox(`Bu ürünü silmek istediğinizden emin misiniz?`, async () => {
                             if (messageBox) messageBox.classList.add('hidden');
                             const token = getToken();
@@ -1150,9 +1200,17 @@
                 });
             }
 
+            // Products List Toggle Functionality
+            if (productListHeader && productListContent && productListToggleIcon) {
+                productListHeader.addEventListener('click', () => {
+                    productListContent.classList.toggle('hidden');
+                    productListToggleIcon.classList.toggle('rotate-180');
+                });
+            }
+
             async function fetchProducts() {
                 if (productsLoadingOverlay) productsLoadingOverlay.classList.remove('hidden');
-                if (productsListDiv) productsListDiv.innerHTML = '';
+                if (productsListTableBody) productsListTableBody.innerHTML = ''; // Clear table body
                 if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = '0.00 TL';
                 const token = getToken();
                 if (!token) {
@@ -1176,7 +1234,7 @@
                     });
                     if (response.status === 403) {
                          addNotification('Ürünleri görüntülemek için 2FA doğrulaması gerekli. Lütfen profil sayfanızdan 2FA\'yı doğrulayın.', 'error');
-                         if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
+                         if (productsListTableBody) productsListTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</td></tr>`;
                          return;
                     }
                     if (!response.ok) {
@@ -1184,68 +1242,61 @@
                         throw new Error(errorData.message || 'Ürünleri çekerken bir hata oluştu.');
                     }
                     const products = await response.json();
-                    if (productsListDiv) productsListDiv.innerHTML = '';
+                    if (productsListTableBody) productsListTableBody.innerHTML = '';
                     if (products.length === 0) {
-                        if (productsListDiv) productsListDiv.innerHTML = `<p class="text-center text-gray-400 py-4">Henüz hiç ürün eklenmemiş.</p>`;
+                        if (productsListTableBody) productsListTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-400 py-4">Henüz hiç ürün eklenmemiş.</td></tr>`;
                         return;
                     }
                     let totalValue = 0;
                     products.forEach(product => {
-                        const productItem = document.createElement('div');
-                        productItem.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 md:space-x-4`;
+                        const productRow = document.createElement('tr');
+                        productRow.className = `hover:bg-gray-700 transition-colors duration-200`; // Hover effect for table rows
                         if (product.isBelowMinStock) {
-                            productItem.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
+                            productRow.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                             const notificationExists = notifications.some(n => n.message.includes(product.name) && n.type === 'warning' && !n.isRead);
                             if (!notificationExists) {
                                 addNotification(`Düşük Stok: "${product.name}" ürününün stoğu ${product.quantity} seviyesinde!`, 'warning');
                             }
                         }
-                        productItem.dataset.id = product._id;
-                        const categoryText = product.category ? `<p class="text-sm text-gray-400">Kategori: <span class="font-medium text-gray-200">${product.category}</span></p>` : '';
-                        const barcodeText = product.barcode ? `<p class="text-xs text-gray-400">Barkod: <span class="font-mono text-gray-200">${product.barcode}</span></p>` : '';
-                        const imageUrlToDisplay = product.imageUrl && product.imageUrl !== 'null' ? product.imageUrl : `https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok`;
-                        const imageUrlHtml = `<img src="${imageUrlToDisplay}" alt="${product.name}" class="w-24 h-24 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/96x96/2D3748/A0AEC0?text=Resim+Yok';">`;
-                        const priceUpdateDate = product.priceUpdateDate ? new Date(product.priceUpdateDate).toLocaleString('tr-TR') : 'Bilinmiyor';
-                        productItem.innerHTML = `
-                            ${imageUrlHtml}
-                            <div class="flex-1">
-                                <p class="text-xl text-gray-100 font-semibold mb-1">${product.name}
-                                    ${product.isBelowMinStock ? '<span class="ml-2 text-red-400 font-bold text-sm" title="Stok Minimum Seviyenin Altında!">&#9888; Düşük Stok!</span>' : ''}
-                                </p>
-                                <p class="text-base text-gray-300 mb-1">Miktar: <span class="font-medium">${product.quantity} ${product.unit}</span></p>
-                                <p class="text-base text-gray-300 mb-1">Birim Fiyat: <span class="font-medium text-blue-400">${product.price.toFixed(2)} TL</span>
-                                    ${product.displayGrammage ? ` (<span class="font-medium">${product.displayGrammage}</span>)` : ''}
-                                </p>
-                                ${product.pricePerUnitKgOrLiter ? `<p class="text-sm text-gray-300 mb-1">1 ${product.unit === 'adet' ? (product.weightOrVolumePerUnit < 1 ? 'gram' : 'kg') : product.unit} Fiyatı: <span class="font-medium">${product.pricePerUnitKgOrLiter} TL</span></p>` : ''}
-                                ${product.description ? `<p class="text-sm text-gray-300 mb-1">Açıklama: <span class="font-medium">${product.description}</span></p>` : ''}
-                                ${categoryText}
-                                ${barcodeText}
-                                <p class="text-xs text-gray-400 mt-2">Fiyat Güncelleme: <span class="font-medium">${priceUpdateDate}</span></p>
-                            </div>
-                            <div class="flex flex-col md:flex-row items-end md:items-center space-y-2 md:space-y-0 md:space-x-3 mt-3 md:mt-0">
-                                <p class="font-bold text-xl text-gray-100 whitespace-nowrap">Toplam: <span class="text-green-400">${(product.quantity * product.price).toFixed(2)} TL</span></p>
-                                <div class="flex space-x-2">
+                        productRow.dataset.id = product._id;
+
+                        const imageUrlToDisplay = product.imageUrl && product.imageUrl !== 'null' ? product.imageUrl : `https://placehold.co/40x40/2D3748/A0AEC0?text=Yok`; // Smaller placeholder for table
+
+                        productRow.innerHTML = `
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-200">
+                                <div class="flex items-center">
+                                    <img src="${imageUrlToDisplay}" alt="${product.name}" class="h-10 w-10 rounded-full mr-2 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/40x40/2D3748/A0AEC0?text=Yok';">
+                                    <span>${product.name}
+                                    ${product.isBelowMinStock ? '<span class="ml-1 text-red-400 font-bold text-xs" title="Stok Minimum Seviyenin Altında!">&#9888;</span>' : ''}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-300">${product.quantity} ${product.unit}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-blue-400">${product.price.toFixed(2)} TL</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-sm font-bold text-green-400">${(product.quantity * product.price).toFixed(2)} TL</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
                                     <button class="edit-product-btn p-2 rounded-full bg-yellow-700 hover:bg-yellow-600 text-yellow-100 transition-colors duration-200 transform hover:scale-110 shadow-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.38-2.827-2.828z" />
                                         </svg>
                                     </button>
                                     <button class="delete-product-btn p-2 rounded-full bg-red-700 hover:bg-red-600 text-red-100 transition-colors duration-200 transform hover:scale-110 shadow-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h2a1 1 0 110 2H8a1 1 0 01-1-1zm6 0a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
                                     </button>
                                 </div>
-                            </div>
+                            </td>
                         `;
-                        if (productsListDiv) productsListDiv.appendChild(productItem);
+                        if (productsListTableBody) productsListTableBody.appendChild(productRow);
                         totalValue += product.quantity * product.price;
                     });
                     if (totalInventoryValueSpan) totalInventoryValueSpan.textContent = `${totalValue.toFixed(2)} TL`;
-                    addEventListenersToProductButtons();
+                    addEventListenersToProductButtons(); // Attach listeners to new buttons
                 } catch (error) {
                     console.error('Ürünleri çekerken hata:', error);
                     addNotification(`Ürünleri yüklerken bir hata oluştu: ${error.message}`, 'error');
-                    if (productsListDiv) productsListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Ürünler yüklenemedi.</p>`;
+                    if (productsListTableBody) productsListTableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-red-400">Ürünler yüklenemedi.</td></tr>`;
                 } finally {
                     if (productsLoadingOverlay) productsLoadingOverlay.classList.add('hidden');
                 }
@@ -1335,10 +1386,9 @@
 
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
-                    openSidebar(); // Büyük ekranlarda sidebar açık başlasın
+                    openSidebar();
                 } else {
-                    closeSidebar(); // Küçük ekranlarda sidebar kapalı başlasın
-                    if (appHeader) appHeader.classList.remove('lg:pl-64'); // Header'dan padding'i kaldır (küçük ekranda gereksiz)
+                    closeSidebar();
                 }
             };
 
@@ -1366,10 +1416,15 @@
                 });
             }
 
-            // Kullanıcı Adı Bilgisi kısmı tamamen kaldırıldı.
-            // if (loggedInUserSpan && decodedToken && decodedToken.email) {
-            //     loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
-            // }
+            // Navigation event listeners
+            if (goToDashboardBtn) goToDashboardBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); });
+            if (manageCustomersBtn) manageCustomersBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); });
+            if (manageProductsBtn) manageProductsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); });
+            if (goToSalesManagementBtn) goToSalesManagementBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/sales_management.html'; closeSidebar(); });
+            if (manageRecurringTransactionsBtn) manageRecurringTransactionsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); });
+            if (viewReportsBtn) viewReportsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); });
+            if (exportCsvBtn) exportCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
+            if (importCsvBtn) importCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
 
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
