@@ -67,7 +67,7 @@ router.post('/sales', authenticateToken, async (req, res) => {
 
         const saleResult = await db.collection('sales').insertOne(newSale);
 
-        // **DÜZELTME:** Müşterinin toplam veresiye borcunu güncelle
+        // **BURAYI DEĞİŞTİRİYORUZ:** Müşterinin toplam veresiye borcunu güncelle
         if (newSale.creditDebt > 0 && newSale.customerId) {
             const customerUpdateResult = await db.collection('customers').updateOne(
                 { _id: new ObjectId(newSale.customerId), userId: userId },
@@ -75,7 +75,7 @@ router.post('/sales', authenticateToken, async (req, res) => {
             );
             console.log(`[DEBUG-BACKEND-SALES] Müşteri ${newSale.customerName} (${newSale.customerId}) için veresiye borcu güncellendi. Eşleşen: ${customerUpdateResult.matchedCount}, Değiştirilen: ${customerUpdateResult.modifiedCount}`);
         }
-        // **DÜZELTME SONU**
+        // **DEĞİŞİKLİK SONU**
 
         res.status(201).json({ message: 'Satış başarıyla kaydedildi!', sale: newSale });
 
