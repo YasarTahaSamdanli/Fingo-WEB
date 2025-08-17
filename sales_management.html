@@ -1565,7 +1565,7 @@
                     productSuggestions.classList.add('hidden');
                 }
                 // Bildirim merkezini kapatma mantığı burada
-                if (notificationCenter && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
+                if (notificationCenter && notificationBellBtn && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
                     notificationCenter.classList.remove('active');
                 }
             });
@@ -1710,7 +1710,7 @@
                 } catch (error) {
                     console.error('Geçmiş satışları çekerken hata:', error);
                     addNotification(`Geçmiş satışlar yüklenirken bir hata oluştu: ${error.message}`, 'error');
-                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
+                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışlar yüklenemedi.</p>`;
                 } finally {
                     if (salesLoadingOverlay) salesLoadingOverlay.classList.add('hidden');
                 }
@@ -1835,7 +1835,41 @@
                 window.location.href = 'auth.html';
             }
 
-            // Sayfa yüklendiğinde çalışacak fonksiyonlar
+            // Bildirim Çanı tıklama olayı
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        // Eğer bildirim merkezi açılıyorsa, tüm bildirimleri okundu olarak işaretle
+                        notifications.forEach(n => n.isRead = true);
+                        saveNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            // Bildirim merkezini kapatma butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
+
+            // Tüm bildirimleri temizle butonu
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
+                        notifications = [];
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                        addNotification('Tüm bildirimler temizlendi.', 'info');
+                    });
+                });
+            }
+
+
+            // Initial calls on page load
             fetchAllProducts();
             fetchAllCustomers();
             // fetchPastSales(); // Geçmiş satışlar artık sadece dropdown açıldığında çekilecek
