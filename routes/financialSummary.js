@@ -47,7 +47,7 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
-        // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
+        // Yılın başlangıcı ve bitişi UTC olarak ayarlanır
         const startOfYear = new Date(Date.UTC(parseInt(year), 0, 1)); // Yılın ilk günü, 00:00:00 UTC
         const endOfYear = new Date(Date.UTC(parseInt(year) + 1, 0, 1)); // Bir sonraki yılın ilk günü, 00:00:00 UTC
 
@@ -55,12 +55,12 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
             {
                 $match: {
                     userId: new ObjectId(userId),
-                    date: { $gte: startOfYear, $lt: endOfYear } // $lt kullanmak daha güvenlidir
+                    date: { $gte: startOfYear, $lt: endOfYear } // $lt kullanmak daha güvenlidir, bitiş tarihini dahil etmez
                 }
             },
             {
                 $group: {
-                    _id: "$type",
+                    _id: "$type", // Gelir veya Gider'e göre grupla
                     totalAmount: { $sum: "$amount" }
                 }
             },
@@ -95,7 +95,7 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
 // AYLIK FİNANSAL ÖZETİ GETİRME ROTASI
 router.get('/financial-summary/monthly', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    const { year, month } = req.query; // Frontend'den gelen ay 0-11 arası (JavaScript'in Date objesi gibi)
+    const { year, month } = req.query; // Frontend'den gelen ay 1-tabanlı (örneğin Ağustos için 8)
 
     if (!year || month === undefined) {
         return res.status(400).json({ message: 'Yıl ve ay belirtmelisiniz.' });
@@ -103,22 +103,22 @@ router.get('/financial-summary/monthly', authenticateToken, async (req, res) => 
 
     try {
         const db = getDb();
-        // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
-        const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1)); // Ayın ilk günü, 00:00:00 UTC
-        const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) + 1, 1)); // Bir sonraki ayın ilk günü, 00:00:00 UTC
+        // DÜZELTME: Frontend'den gelen 1-tabanlı ayı, Date.UTC için 0-tabanlıya çevir.
+        const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1)); // Ayın ilk günü, 00:00:00 UTC
+        const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1)); // Bir sonraki ayın ilk günü, 00:00:00 UTC
 
-        console.log(`Backend: Aylık özet isteği - Yıl: ${year}, Ay (API'den Gelen): ${month}, MongoDB için Başlangıç Tarihi (UTC): ${startOfMonth}, Bitiş Tarihi (UTC): ${endOfMonth}`); // Debug log
+        console.log(`Backend: Aylık özet isteği - Yıl: ${year}, Ay (API'den Gelen 1-tabanlı): ${month}, MongoDB için Başlangıç Tarihi (UTC): ${startOfMonth}, Bitiş Tarihi (UTC): ${endOfMonth}`); // Debug log
 
         const monthlySummary = await db.collection('transactions').aggregate([
             {
                 $match: {
                     userId: new ObjectId(userId),
-                    date: { $gte: startOfMonth, $lt: endOfMonth } // $lt kullanmak daha güvenlidir
+                    date: { $gte: startOfMonth, $lt: endOfMonth }
                 }
             },
             {
                 $group: {
-                    _id: "$type",
+                    _id: "$type", // Gelir veya Gider'e göre grupla
                     totalAmount: { $sum: "$amount" }
                 }
             },
@@ -144,7 +144,7 @@ router.get('/financial-summary/monthly', authenticateToken, async (req, res) => 
 
         const result = [{
             year: parseInt(year),
-            month: parseInt(month) + 1, // Frontend'e 1-tabanlı ay olarak geri dön
+            month: parseInt(month), // Frontend'e yine 1-tabanlı ay olarak geri dön
             income: income,
             expense: expense,
             netBalance: income - expense
@@ -163,7 +163,7 @@ router.get('/financial-summary/monthly', authenticateToken, async (req, res) => 
 // Aylık Gelir ve Gider Dağılımını Getirme Rotası (Category Distribution)
 router.get('/financial-summary/monthly-category-distribution', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    const { year, month, type } = req.query; // type is 'income' or 'expense'. month is 0-indexed from frontend.
+    const { year, month, type } = req.query; // type is 'income' or 'expense'. month is 1-indexed from frontend.
 
     if (!year || month === undefined || !type) {
         return res.status(400).json({ message: 'Yıl, ay ve işlem tipi (income/expense) belirtmelisiniz.' });
@@ -178,9 +178,9 @@ router.get('/financial-summary/monthly-category-distribution', authenticateToken
         return res.status(400).json({ message: 'Geçerli bir "type" (income veya expense) belirtmelisiniz.' });
     }
 
-    // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
-    const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
-    const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) + 1, 1));
+    // DÜZELTME: Frontend'den gelen 1-tabanlı ayı, Date.UTC için 0-tabanlıya çevir.
+    const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, 1)); // Ayın ilk günü, 00:00:00 UTC
+    const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1)); // Bir sonraki ayın ilk günü, 00:00:00 UTC
 
     let matchQuery = {
         userId: new ObjectId(userId),
