@@ -592,7 +592,7 @@
                 </div>
             </section>
 
-            <!-- Aylık Özet Grafiği -->
+            <!-- Aylık Finansal Özet (Çizgi Grafik) -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Aylık Finansal Özet</h3>
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
@@ -602,6 +602,20 @@
                 </div>
                 <div class="relative h-96">
                     <canvas id="monthlySummaryChart"></canvas>
+                </div>
+            </section>
+
+            <!-- YENİ EKLENEN: Aylık Gider Kategori Dağılımı (Pasta Grafik) -->
+            <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Aylık Gider Kategori Dağılımı</h3>
+                <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
+                    <!-- Ay ve Yıl Seçiciler (Mevcut olanlarla aynı olacak, JS'de kullanılacak) -->
+                    <select id="categoryMonthSelect" class="form-select py-2 px-3 text-base"></select>
+                    <select id="categoryYearSelect" class="form-select py-2 px-3 text-base"></select>
+                    <button id="applyCategoryFilterBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">Uygula</button>
+                </div>
+                <div class="relative h-96 w-full flex items-center justify-center">
+                    <canvas id="monthlyCategoryChart"></canvas>
                 </div>
             </section>
 
@@ -694,7 +708,7 @@
                     // 404 durumunda özel mesaj ver, ancak yeniden deneme yapma
                     if (response.status === 404 && options.method === 'DELETE') {
                         const errorData = await response.json();
-                        throw new Error(errorData.message || 'İşlem bulunamadı veya yetkiniz yok.');
+                        throw new Error(errorData.message || 'Kaynak bulunamadı.');
                     }
                     if (!response.ok) {
                         const errorData = await response.json();
@@ -784,6 +798,14 @@
             const monthSelect = document.getElementById('monthSelect');
             const yearSelect = document.getElementById('yearSelect');
             const applyMonthlySummaryFilterBtn = document.getElementById('applyMonthlySummaryFilterBtn');
+
+            // YENİ GRAFİK İÇİN DOM ELEMENTLERİ
+            let monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart') ? document.getElementById('monthlyCategoryChart').getContext('2d') : null;
+            let monthlyCategoryChart; // Yeni grafik objesi
+            const categoryMonthSelect = document.getElementById('categoryMonthSelect'); // Yeni ay seçici
+            const categoryYearSelect = document.getElementById('categoryYearSelect');   // Yeni yıl seçici
+            const applyCategoryFilterBtn = document.getElementById('applyCategoryFilterBtn'); // Yeni uygula butonu
+
 
             const annualYearSelect = document.getElementById('annualYearSelect');
             const applyAnnualSummaryFilterBtn = document.getElementById('applyAnnualSummaryFilterBtn');
@@ -969,13 +991,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/general?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor, burada tekrar kontrol etmeye gerek yok
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
                     }
                     const summary = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchGeneralFinancialSummary - Alınan Veri:", summary); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchGeneralFinancialSummary - Alınan Veri:", summary);
                     if (totalIncomeSpan) totalIncomeSpan.textContent = `${parseFloat(summary.totalRevenue).toFixed(2)} TL`;
                     if (totalExpenseSpan) totalExpenseSpan.textContent = `${parseFloat(summary.totalExpenses).toFixed(2)} TL`;
                     if (netBalanceSpan) netBalanceSpan.textContent = `${parseFloat(summary.currentBalance).toFixed(2)} TL`;
@@ -1006,13 +1027,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/transactions?${query}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'İşlemler çekilemedi.');
                     }
                     const transactions = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchTransactions - Alınan Veri:", transactions); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchTransactions - Alınan Veri:", transactions);
 
                     if (transactionsTableBody) transactionsTableBody.innerHTML = '';
 
@@ -1091,7 +1111,6 @@
                         });
 
                         const result = await response.json();
-                        // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'İşlem başarısız oldu.');
                         }
@@ -1108,6 +1127,11 @@
 
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
+
+                        // YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
+                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
+                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
+                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
 
                     } catch (error) {
                         console.error('İşlem ekleme/güncelleme hatası:', error);
@@ -1127,13 +1151,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/transactions/${id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'İşlem çekilemedi.');
                     }
                     const transaction = await response.json();
-                    console.log("[FRONTEND DEBUG] editTransaction - Alınan Veri:", transaction); // NEW LOG
+                    console.log("[FRONTEND DEBUG] editTransaction - Alınan Veri:", transaction);
 
                     if (document.getElementById('type')) document.getElementById('type').value = transaction.type;
                     if (document.getElementById('amount')) document.getElementById('amount').value = transaction.amount;
@@ -1167,7 +1190,6 @@
                         });
 
                         const result = await response.json();
-                        // fetchWithRetry içinde 401/403 ve DELETE için 404 özel olarak ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'İşlem silinemedi.');
                         }
@@ -1185,6 +1207,11 @@
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
 
+                        // YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
+                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
+                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
+                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
+
                     } catch (error) {
                         console.error('İşlem silme hatası:', error);
                         addNotification(`İşlem silinirken hata: ${error.message}`, 'error');
@@ -1199,6 +1226,11 @@
 
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
+
+                        // Hata durumunda da YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
+                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
+                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
+                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
                     }
                 });
             }
@@ -1228,13 +1260,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/categories?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Kategoriler çekilemedi.');
                     }
                     const categories = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchCategories - Alınan Veri:", categories); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchCategories - Alınan Veri:", categories);
                     renderCategories(categories);
                     populateCategoryDropdowns(categories);
                 } catch (error) {
@@ -1330,7 +1361,6 @@
                         });
 
                         const result = await response.json();
-                        // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'Kategori işlemi başarısız oldu.');
                         }
@@ -1372,7 +1402,6 @@
                         });
 
                         const result = await response.json();
-                        // fetchWithRetry içinde 401/403 ve DELETE için 404 özel olarak ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'Kategori silinemedi.');
                         }
@@ -1383,7 +1412,6 @@
                     } catch (error) {
                         console.error('Kategori silme hatası:', error);
                         addNotification(`Kategori silinirken hata: ${error.message}`, 'error');
-                        // Hata durumunda da UI'ın güncel kalması için verileri tekrar çek
                         fetchCategories();
                         fetchTransactions();
                     }
@@ -1410,7 +1438,7 @@
                 });
             }
 
-            // Aylık Özet Grafiği
+            // Aylık Finansal Özet (Çizgi Grafik)
             async function fetchMonthlySummary(year, month) {
                 const token = getToken();
                 const userId = getUserId();
@@ -1419,17 +1447,16 @@
                     return;
                 }
                 try {
-                    // API'ye gönderirken ay değeri 1-tabanlı olmalı, JavaScript'te 0-tabanlı olduğu için +1 ekliyoruz.
-                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month + 1}&userId=${userId}`, {
+                    // Ay 1-tabanlı olarak gönderiliyor (örn: Ağustos için 8)
+                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Aylık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchMonthlySummary - Alınan Veri:", data); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchMonthlySummary - Alınan Veri:", data);
                     renderMonthlySummaryChart(data);
                 } catch (error) {
                     console.error('Aylık özet çekilirken hata:', error);
@@ -1438,7 +1465,7 @@
             }
 
             function renderMonthlySummaryChart(data) {
-                console.log("[FRONTEND DEBUG] renderMonthlySummaryChart çağrıldı, veri:", data); // Debug log eklendi
+                console.log("[FRONTEND DEBUG] renderMonthlySummaryChart çağrıldı, veri:", data);
                 if (!monthlySummaryChartCtx) {
                     console.error("monthlySummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('monthlySummaryChart');
@@ -1461,6 +1488,7 @@
                     monthlyChart.destroy();
                 }
 
+                // Veri yoksa veya sıfır değerler dönüyorsa mesaj göster
                 if (data.length === 0 || (data.length === 1 && data[0].income === 0 && data[0].expense === 0 && data[0].netBalance === 0)) {
                     console.log("Aylık özet için veri yok veya sıfır değerler döndü.");
                     const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
@@ -1469,6 +1497,7 @@
                     }
                     return;
                 } else {
+                    // Eğer "veri bulunamadı" mesajı varsa, canvas'ı geri getir
                     const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
                     if (chartContainer && chartContainer.querySelector('p')) {
                         chartContainer.innerHTML = '<canvas id="monthlySummaryChart"></canvas>';
@@ -1476,7 +1505,6 @@
                     }
                 }
 
-                // Veri tek bir obje olarak geliyorsa, onu Chart.js'in beklediği dizi formatına dönüştür
                 const chartData = Array.isArray(data) ? data : [data];
 
                 const labels = chartData.map(item => {
@@ -1556,6 +1584,130 @@
                 });
             }
 
+            // YENİ FONKSİYON: Aylık Kategori Dağılım Grafiği (Giderler için)
+            async function fetchMonthlyCategoryDistribution(year, month, type) {
+                const token = getToken();
+                const userId = getUserId();
+                if (!token || !userId) {
+                    handleAuthError();
+                    return;
+                }
+                try {
+                    // Ay 1-tabanlı olarak gönderiliyor (örn: Ağustos için 8)
+                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/monthly-category-distribution?year=${year}&month=${month}&type=${type}&userId=${userId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Aylık kategori dağılımı çekilemedi.');
+                    }
+                    const data = await response.json();
+                    console.log("[FRONTEND DEBUG] fetchMonthlyCategoryDistribution - Alınan Veri:", data);
+                    renderMonthlyCategoryChart(data);
+                } catch (error) {
+                    console.error('Aylık kategori dağılımı çekilirken hata:', error);
+                    addNotification(`Aylık kategori dağılımı yüklenirken hata: ${error.message}`, 'error');
+                }
+            }
+
+            function renderMonthlyCategoryChart(data) {
+                console.log("[FRONTEND DEBUG] renderMonthlyCategoryChart çağrıldı, veri:", data);
+                if (!monthlyCategoryChartCtx) {
+                    console.error("monthlyCategoryChart canvas context not found. Attempting to re-initialize.");
+                    const canvasElement = document.getElementById('monthlyCategoryChart');
+                    if (canvasElement) {
+                        monthlyCategoryChartCtx = canvasElement.getContext('2d');
+                    } else {
+                        const chartContainer = document.querySelector('section.mb-10 canvas#monthlyCategoryChart')?.parentElement;
+                        if (chartContainer) {
+                            chartContainer.innerHTML = '<canvas id="monthlyCategoryChart"></canvas>';
+                            monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart')?.getContext('2d');
+                        }
+                    }
+                    if (!monthlyCategoryChartCtx) {
+                        console.error("Failed to get monthlyCategoryChart canvas context after re-initialization attempt.");
+                        return;
+                    }
+                }
+
+                if (monthlyCategoryChart) {
+                    monthlyCategoryChart.destroy();
+                }
+
+                // Veri yoksa veya sıfır değerler dönüyorsa mesaj göster
+                if (data.length === 0 || (data.length === 1 && data[0].totalAmount === 0)) {
+                    console.log("Aylık kategori dağılımı için veri yok veya sıfır değerler döndü.");
+                    const chartContainer = monthlyCategoryChartCtx.canvas.parentElement;
+                    if (chartContainer) {
+                        chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili ay için gider kategori dağılımı verisi bulunamadı.</p>';
+                    }
+                    return;
+                } else {
+                    // Eğer "veri bulunamadı" mesajı varsa, canvas'ı geri getir
+                    const chartContainer = monthlyCategoryChartCtx.canvas.parentElement;
+                    if (chartContainer && chartContainer.querySelector('p')) {
+                        chartContainer.innerHTML = '<canvas id="monthlyCategoryChart"></canvas>';
+                        monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart').getContext('2d');
+                    }
+                }
+
+                const labels = data.map(item => item.category);
+                const amounts = data.map(item => item.totalAmount);
+
+                // Renk paleti oluştur (daha fazla kategori için genişletilebilir)
+                const backgroundColors = [
+                    '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E', '#10B981', '#06B6D4',
+                    '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
+                ];
+
+                monthlyCategoryChart = new Chart(monthlyCategoryChartCtx, {
+                    type: 'doughnut', // Pasta grafik
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: amounts,
+                            backgroundColor: backgroundColors.slice(0, labels.length), // Kategori sayısına göre renk kullan
+                            borderColor: '#0d1117', // Arkadaşın arka plan rengi
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right', // Legend'ı sağa al
+                                labels: {
+                                    color: '#E2E8F0',
+                                    boxWidth: 20,
+                                    padding: 15
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Aylık Gider Kategori Dağılımı',
+                                color: '#E2E8F0'
+                            },
+                            tooltip: { // Tooltip'leri daha bilgilendirici yap
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(context.parsed);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
             // Yıllık Özet Grafiği
             async function fetchAnnualSummary(year) {
                 const token = getToken();
@@ -1568,13 +1720,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/annual?year=${year}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Yıllık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchAnnualSummary - Alınan Veri:", data); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchAnnualSummary - Alınan Veri:", data);
                     renderAnnualSummaryChart(data);
                 } catch (error) {
                     console.error('Yıllık özet çekilirken hata:', error);
@@ -1583,7 +1734,7 @@
             }
 
             function renderAnnualSummaryChart(data) {
-                console.log("[FRONTEND DEBUG] renderAnnualSummaryChart çağrıldı, veri:", data); // Debug log eklendi
+                console.log("[FRONTEND DEBUG] renderAnnualSummaryChart çağrıldı, veri:", data);
                 if (!annualSummaryChartCtx) {
                     console.error("annualSummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('annualSummaryChart');
@@ -1621,7 +1772,6 @@
                     }
                 }
 
-                // Veri tek bir obje olarak geliyorsa, onu Chart.js'in beklediği dizi formatına dönüştür
                 const chartData = Array.isArray(data) ? data : [data];
 
                 const labels = chartData.map(item => item.year);
@@ -1701,36 +1851,42 @@
                 const currentMonth = new Date().getMonth(); // 0-11 arası
 
                 if (monthSelect) monthSelect.innerHTML = '';
+                if (categoryMonthSelect) categoryMonthSelect.innerHTML = ''; // Yeni grafik için
                 const months = [
                     "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
                     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
                 ];
                 months.forEach((month, index) => {
                     const option = document.createElement('option');
-                    option.value = index; // Ay 0-tabanlı olduğu için index değerini kullan
+                    option.value = index + 1; // Ayı 1-tabanlı olarak kaydet (API'ye gönderirken)
                     option.textContent = month;
                     if (monthSelect) monthSelect.appendChild(option);
+                    if (categoryMonthSelect) categoryMonthSelect.appendChild(option.cloneNode(true)); // Yeni grafik için
                 });
-                if (monthSelect) monthSelect.value = currentMonth;
+                if (monthSelect) monthSelect.value = currentMonth + 1; // Başlangıçta güncel ayı seç
+                if (categoryMonthSelect) categoryMonthSelect.value = currentMonth + 1; // Yeni grafik için
 
                 if (yearSelect) yearSelect.innerHTML = '';
                 if (annualYearSelect) annualYearSelect.innerHTML = '';
+                if (categoryYearSelect) categoryYearSelect.innerHTML = ''; // Yeni grafik için
                 for (let i = currentYear - 5; i <= currentYear + 1; i++) {
                     const optionYear = document.createElement('option');
                     optionYear.value = i;
                     optionYear.textContent = i;
                     if (yearSelect) yearSelect.appendChild(optionYear);
                     if (annualYearSelect) annualYearSelect.appendChild(optionYear.cloneNode(true));
+                    if (categoryYearSelect) categoryYearSelect.appendChild(optionYear.cloneNode(true)); // Yeni grafik için
                 }
                 if (yearSelect) yearSelect.value = currentYear;
                 if (annualYearSelect) annualYearSelect.value = currentYear;
+                if (categoryYearSelect) categoryYearSelect.value = currentYear; // Yeni grafik için
             }
 
             // Yıllık ve Aylık Özet için Uygula butonlarına olay dinleyicileri ekle
             if (applyMonthlySummaryFilterBtn) {
                 applyMonthlySummaryFilterBtn.addEventListener('click', () => {
                     const selectedYear = yearSelect ? parseInt(yearSelect.value) : new Date().getFullYear();
-                    const selectedMonth = monthSelect ? parseInt(monthSelect.value) : new Date().getMonth();
+                    const selectedMonth = monthSelect ? parseInt(monthSelect.value) : (new Date().getMonth() + 1); // 1-tabanlı
                     fetchMonthlySummary(selectedYear, selectedMonth);
                 });
             }
@@ -1741,6 +1897,16 @@
                     fetchAnnualSummary(selectedYear);
                 });
             }
+
+            // YENİ GRAFİK: Kategori Dağılımı için Uygula butonu
+            if (applyCategoryFilterBtn) {
+                applyCategoryFilterBtn.addEventListener('click', () => {
+                    const selectedYear = categoryYearSelect ? parseInt(categoryYearSelect.value) : new Date().getFullYear();
+                    const selectedMonth = categoryMonthSelect ? parseInt(categoryMonthSelect.value) : (new Date().getMonth() + 1); // 1-tabanlı
+                    fetchMonthlyCategoryDistribution(selectedYear, selectedMonth, 'expense'); // Varsayılan olarak giderleri göster
+                });
+            }
+
 
             // Kullanıcının 2FA durumunu çek (artık profil sayfasında detaylı yönetilecek)
             async function fetchUser2FAStatus() {
@@ -1754,13 +1920,12 @@
                     const response = await fetchWithRetry(`${API_BASE_URL}/users/me?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchUser2FAStatus - Alınan Veri:", data); // NEW LOG
+                    console.log("[FRONTEND DEBUG] fetchUser2FAStatus - Alınan Veri:", data);
                 } catch (error) {
                     console.error('Kullanıcı bilgileri çekilirken hata:', error);
                 }
@@ -1939,6 +2104,11 @@
 
             const initialSelectedYearForAnnual = parseInt(annualYearSelect.value);
             fetchAnnualSummary(initialSelectedYearForAnnual);
+
+            // YENİ GRAFİK: Kategori dağılım grafiğini de başlangıçta yükle
+            const initialSelectedCategoryYear = parseInt(categoryYearSelect.value);
+            const initialSelectedCategoryMonth = parseInt(categoryMonthSelect.value);
+            fetchMonthlyCategoryDistribution(initialSelectedCategoryYear, initialSelectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
 
             fetchCategories();
             fetchUser2FAStatus();
