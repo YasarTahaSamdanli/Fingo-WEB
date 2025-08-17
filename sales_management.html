@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Satış Yönetimi</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- QuaggaJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
         body {
@@ -397,27 +401,36 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
+    <!-- Header (customers.html'den kopyalandı) -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Left group: menu button and title -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
             <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Satış Yönetimi</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
+            <!-- Hoş Geldin metni kaldırıldı -->
             <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
+    <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
+        <!-- Sidebar (customers.html'den kopyalandı) -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -450,14 +463,17 @@
             </nav>
         </aside>
 
+        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
+        <!-- Satış Yönetimi Ana İçerik Alanı -->
         <main id="mainContent" class="flex-1 p-4 md:p-6 lg:p-4 rounded-2xl shadow-xl border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
             <h2 class="text-3xl font-bold text-blue-300 mb-4 text-center mt-4">Satış Yönetimi</h2>
             <p class="text-lg text-gray-400 text-center mb-5 font-light">Yeni satışları kaydedin ve geçmiş satışlarınızı yönetin.</p>
 
             <div class="grid grid-cols-1 gap-6">
 
+                <!-- Top Row: New Sale Form (split internally) -->
                 <div class="lg:col-span-1">
                     <div class="p-4 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h3 class="text-2xl font-bold text-blue-300 mb-4 text-center">Yeni Satış Oluştur</h3>
@@ -467,6 +483,7 @@
                                 <input type="date" id="saleDate" class="form-input w-full p-1.5 text-base shadow-sm" value="">
                             </div>
 
+                            <!-- Müşteri Seçme Alanı (Veresiye için Gerekli) -->
                             <div class="mb-1 bg-gray-700 p-2 rounded-lg shadow-inner">
                                 <h3 class="text-base font-semibold text-gray-200 mb-1 flex items-center">
                                     <i class="fas fa-user-tag text-blue-400 mr-1 text-sm"></i> Müşteri Seçimi (Veresiye İşlemi İçin)
@@ -483,9 +500,14 @@
                                     <button id="clearCustomerSelectionBtn" class="float-right text-gray-200 hover:text-white transition-colors text-sm"><i class="fas fa-times-circle"></i></button>
                                 </div>
                             </div>
+                            <!-- Müşteri Seçme Alanı Sonu -->
+
+                            <!-- Inner Grid for Product Add and Sale Items List -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Product Selection for Sale -->
                                 <div>
-                                    <div class="pt-2 pb-2 mb-2 -mx-6 px-6 rounded-lg"> <h4 class="text-xl font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
+                                    <div class="pt-2 pb-2 mb-2 -mx-6 px-6 rounded-lg"> <!-- bg-gray-900 ve shadow-inner kaldırıldı -->
+                                        <h4 class="text-xl font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
                                         <div class="relative mb-2">
                                             <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-1">Ürün Adı veya Barkod:</label>
                                             <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-1.5 text-sm shadow-sm">
@@ -507,6 +529,7 @@
                                     </div>
                                 </div>
 
+                                <!-- Sale Items List -->
                                 <div>
                                     <h4 class="text-xl font-bold text-gray-200 mb-10 text-center">Satış Sepeti</h4>
                                     <div id="saleItemsList" class="space-y-1 max-h-28 overflow-y-auto p-1.5 bg-gray-900 rounded-md border border-gray-700 shadow-sm">
@@ -515,6 +538,9 @@
                                     <p class="text-right text-lg font-bold text-gray-100 mt-2">Toplam Tutar: <span id="totalSaleAmount" class="text-green-400">0.00 TL</span></p>
                                 </div>
                             </div>
+                            <!-- End Inner Grid -->
+
+                            <!-- Yeni Satışı Tamamla ve Formu Temizle Butonları -->
                             <div class="mt-3 flex justify-end space-x-2">
                                 <button type="button" id="openPaymentModalBtn" class="bg-gradient-to-r from-green-600 to-green-800 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-green-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-base flex items-center">
                                     <i class="fas fa-hand-holding-usd mr-1"></i> Satışı Tamamla
@@ -525,14 +551,19 @@
                             </div>
                         </form>
                     </div>
-                </div> <div class="lg:col-span-1">
+                </div> <!-- Left Column End -->
+
+                <!-- Bottom Row: Geçmiş Satışlar (Collapsible) -->
+                <div class="lg:col-span-1">
                     <div class="p-4 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg">
                         <div id="pastSalesToggleHeader" class="flex justify-between items-center cursor-pointer mb-3">
                             <h3 class="text-2xl font-bold text-blue-300">Geçmiş Satışlar</h3>
                             <i id="pastSalesToggleIcon" class="fas fa-chevron-down text-xl text-gray-400 transition-transform duration-300 ease-in-out"></i>
                         </div>
 
-                        <div id="pastSalesContent" class="hidden"> <div class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner mb-3">
+                        <div id="pastSalesContent" class="hidden"> <!-- Başlangıçta gizli -->
+                            <!-- Filter Past Sales -->
+                            <div class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner mb-3">
                                 <h3 class="text-xl font-bold text-blue-300 mb-3 text-center">Filtrele</h3>
                                 <div class="grid grid-cols-1 gap-2 mb-3">
                                     <div>
@@ -554,10 +585,12 @@
                                 </div>
                             </div>
 
+                            <!-- Past Sales List -->
                             <div id="pastSalesListContainer" class="p-3 bg-gray-700 rounded-xl border border-gray-600 shadow-inner relative">
                                 <h3 class="text-xl font-bold text-blue-300 mb-3 text-center">Geçmiş Satışlar Listesi</h3>
                                 <div id="pastSalesList" class="space-y-2 max-h-[150px] overflow-y-auto pr-2">
                                 </div>
+                                <!-- Loading Overlay -->
                                 <div id="salesLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
                                     <p class="text-center text-gray-300 text-lg">
                                         <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
@@ -568,14 +601,19 @@
                             </div>
                         </div>
                     </div>
-                </div> </div> </main>
+                </div> <!-- Right Column End -->
+
+            </div> <!-- Main Content Grid End -->
+        </main>
     </div>
 
+    <!-- Mesaj Kutusu -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
+    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -589,6 +627,7 @@
         </div>
     </div>
 
+    <!-- QR / Barkod Okuyucu Modal -->
     <div id="barcodeScannerModal" class="barcode-scanner-modal">
         <div class="barcode-scanner-content">
             <button id="barcodeScannerCloseBtn" class="barcode-scanner-close-btn">&times;</button>
@@ -603,6 +642,7 @@
         </div>
     </div>
 
+    <!-- Ödeme Finalizasyon Modalı -->
     <div id="paymentFinalizationModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-lg w-full">
             <button class="modal-close-btn" onclick="closePaymentFinalizationModal()">&times;</button>
@@ -635,6 +675,9 @@
             </form>
         </div>
     </div>
+    <!-- Ödeme Finalizasyon Modalı Sonu -->
+
+
     <script type="module">
         // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
         const initialJwtToken = localStorage.getItem('jwtToken');
@@ -1412,10 +1455,35 @@
                         throw new Error(saleResult.message || `Satış kaydı sırasında hata oluştu. Durum Kodu: ${saleResponse.status}`);
                     }
 
-                    // --- BURADA DEĞİŞİKLİK YAPILDI ---
+                    // Eğer veresiye borcu varsa, müşteri veritabanındaki toplam borcunu güncelle
+                    if (creditAmount > 0 && selectedCustomer) {
+                        const creditUpdatePayload = {
+                            customerId: selectedCustomer._id,
+                            amount: creditAmount,
+                            type: 'debt', // Borç eklendiği için 'debt'
+                            description: `Satıştan kaynaklanan veresiye borcu: ${saleResult.saleId}`, // Satış ID'si ile açıklama
+                            userId: getUserId()
+                        };
+                        const creditResponse = await fetch(`${API_BASE_URL}/transactions/credit`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
+                            body: JSON.stringify(creditUpdatePayload)
+                        });
+
+                        if (!creditResponse.ok) {
+                            const creditErrorResult = await creditResponse.json();
+                            console.error('Veresiye borcu güncellenirken hata:', creditErrorResult);
+                            addNotification(`Veresiye borcu güncellenemedi: ${creditErrorResult.message}`, 'warning');
+                        } else {
+                            addNotification('Müşteri veresiye borcu başarıyla güncellendi.', 'success');
+                        }
+                    }
+
                     // Satış başarıyla tamamlandığında customers.html için bir flag ayarla
                     localStorage.setItem('fingoCustomersUpdateNeeded', 'true');
-                    // --- DEĞİŞİKLİK BİTTİ ---
 
                     addNotification('Satış başarıyla tamamlandı!', 'success');
                     closePaymentFinalizationModal();

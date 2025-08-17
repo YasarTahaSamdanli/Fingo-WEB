@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Müşteri Yönetimi</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css)">
+    <!-- Google Fonts - Inter -->
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap)" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -288,13 +291,16 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
+    <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Left group: menu button and title -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
             <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Müşteri Yönetimi</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
@@ -305,11 +311,14 @@
         </div>
     </header>
 
+    <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
+        <!-- Sidebar -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -342,14 +351,17 @@
             </nav>
         </aside>
 
+        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
+        <!-- Müşteri Yönetimi Ana İçerik Alanı -->
         <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
             <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center"></h2>
             <p class="text-base text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve geçmişlerini görüntüleyin.</p>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
+                <!-- Left Column (Yeni Müşteri Ekle) -->
                 <div class="lg:col-span-1">
                     <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h3>
@@ -377,8 +389,12 @@
                             <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Müşteri Ekle</button>
                         </form>
                     </div>
-                </div> <div class="lg:col-span-1 space-y-10">
+                </div> <!-- Left Column End -->
 
+                <!-- Right Column (Müşteri Listesi) -->
+                <div class="lg:col-span-1 space-y-10">
+
+                    <!-- Müşteri Ara -->
                     <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşteri Ara</h3>
                         <div class="relative">
@@ -391,11 +407,13 @@
                         </div>
                     </div>
 
+                    <!-- Müşteri Listesi -->
                     <div id="customerListContainer" class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşterileriniz</h3>
                         <div id="customerList" class="space-y-5 max-h-[500px] overflow-y-auto pr-3">
                             <p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>
                         </div>
+                        <!-- Loading Overlay -->
                         <div id="customerLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
                             <p class="text-center text-gray-300 text-lg">
                                 <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
@@ -403,14 +421,19 @@
                             </p>
                         </div>
                     </div>
-                </div> </div> </main>
+                </div> <!-- Right Column End -->
+
+            </div> <!-- Main Content Grid End -->
+        </main>
     </div>
 
+    <!-- Mesaj Kutusu -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
+    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -424,6 +447,7 @@
         </div>
     </div>
 
+    <!-- Müşteri Düzenleme Modalı -->
     <div id="editCustomerModal" class="modal-overlay hidden">
         <div class="modal-content relative">
             <button class="modal-close-btn" onclick="closeEditCustomerModal()">&times;</button>
@@ -454,6 +478,7 @@
             </form>
         </div>
     </div>
+    <!-- Müşteri Geçmişi Modalı -->
     <div id="customerHistoryModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerHistoryModal()">&times;</button>
@@ -463,6 +488,7 @@
             </div>
         </div>
     </div>
+    <!-- Veresiye İşlemleri Modalı -->
     <div id="customerCreditTransactionsModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerCreditTransactionsModal()">&times;</button>
@@ -499,10 +525,12 @@
 
 
     <script>
+        // JWT Token'ı ve userId'yi doğrudan al (DOMContentLoaded öncesi kontrol için)
         const initialJwtToken = localStorage.getItem('jwtToken');
         const initialUserId = localStorage.getItem('userId');
-        const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+        const API_BASE_URL = '[https://fingo-web.onrender.com/api](https://fingo-web.onrender.com/api)';
 
+        // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
         async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
@@ -530,6 +558,8 @@
             }
         }
 
+        // Redirect if not logged in
+        // JWT Token'ı parse eden yardımcı fonksiyon
         function parseJwt (token) {
             try {
                 const base64Url = token.split('.')[1];
@@ -559,23 +589,30 @@
             const getToken = () => localStorage.getItem('jwtToken');
             const getUserId = () => localStorage.getItem('userId');
 
+            // DOM Elements
             const logoutBtn = document.getElementById('logoutBtn');
             const loggedInUserSpan = document.getElementById('loggedInUser');
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
             const appHeader = document.getElementById('appHeader');
             const headerLeftGroup = document.getElementById('headerLeftGroup');
+
+            // Customer Form Elements
             const newCustomerForm = document.getElementById('newCustomerForm');
             const customerNameInput = document.getElementById('customerName');
             const customerPhoneNumberInput = document.getElementById('customerPhoneNumber');
             const customerEmailInput = document.getElementById('customerEmail');
             const customerAddressInput = document.getElementById('customerAddress');
             const customerShopNameInput = document.getElementById('customerShopName');
+
+            // Customer List and Search Elements
             const searchCustomerInput = document.getElementById('searchCustomerInput');
             const applyCustomerFilterBtn = document.getElementById('applyCustomerFilterBtn');
             const clearCustomerFilterBtn = document.getElementById('clearCustomerFilterBtn');
             const customerListDiv = document.getElementById('customerList');
             const customerLoadingOverlay = document.getElementById('customerLoadingOverlay');
+
+            // Modals and their elements
             const editCustomerModal = document.getElementById('editCustomerModal');
             const editCustomerForm = document.getElementById('editCustomerForm');
             const editCustomerIdInput = document.getElementById('editCustomerId');
@@ -584,9 +621,11 @@
             const editCustomerEmailInput = document.getElementById('editCustomerEmail');
             const editCustomerAddressInput = document.getElementById('editCustomerAddress');
             const editCustomerShopNameInput = document.getElementById('editCustomerShopName');
+
             const customerHistoryModal = document.getElementById('customerHistoryModal');
             const historyCustomerNameSpan = document.getElementById('historyCustomerName');
             const customerSalesHistoryDiv = document.getElementById('customerSalesHistory');
+
             const customerCreditTransactionsModal = document.getElementById('customerCreditTransactionsModal');
             const creditCustomerNameSpan = document.getElementById('creditCustomerName');
             const currentCreditDebtSpan = document.getElementById('currentCreditDebt');
@@ -596,12 +635,17 @@
             const creditTransactionTypeSelect = document.getElementById('creditTransactionType');
             const creditDescriptionInput = document.getElementById('creditDescription');
             const creditTransactionHistoryDiv = document.getElementById('creditTransactionHistory');
+
+
+            // Bildirim Merkezi DOM Elementleri
             const notificationBellBtn = document.getElementById('notificationBellBtn');
             const notificationCountBadge = document.getElementById('notificationCountBadge');
             const notificationCenter = document.getElementById('notificationCenter');
             const notificationList = document.getElementById('notificationList');
             const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
             const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
+
+            // Sidebar ve Yönlendirme Butonları
             const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -616,28 +660,40 @@
             const importCsvBtn = document.getElementById('importCsvBtn');
 
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+
+            // Global değişken: Açık olan müşterinin ID'sini tutmak için
             let currentOpenCustomerIdForCredit = null;
 
+
+            // Bildirimleri Local Storage'dan yükle ve UI'ı güncelle
             function loadNotifications() {
                 renderNotifications();
                 updateNotificationCount();
             }
 
+            // Bildirimleri Local Storage'a kaydet
             function saveNotifications() {
                 localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
             }
 
+            // Bildirim ekleme fonksiyonu (hem anlık mesaj kutusunu hem de bildirim merkezini günceller)
             function addNotification(message, type = 'info', isRead = false) {
                 const timestamp = new Date().toLocaleString('tr-TR');
-                notifications.unshift({ message, type, timestamp, isRead });
+                notifications.unshift({ message, type, timestamp, isRead }); // En yeni en üste
                 saveNotifications();
                 renderNotifications();
                 updateNotificationCount();
+
+                // Anlık mesaj kutusunu da göster
                 showMessageBox(message, type);
             }
 
+            // Anlık mesaj kutusu gösterme fonksiyonu (eski showMessage)
             function showMessageBox(message, type = 'success') {
-                if (!messageBox || !messageText) { return; }
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found!");
+                    return;
+                }
                 messageText.innerHTML = message;
                 messageBox.className = `message-box show ${type}`;
                 messageBox.classList.remove('hidden');
@@ -649,34 +705,72 @@
                 }, 3000);
             }
 
+            // Confirm Box fonksiyonu (yeniden kullanıldı)
             function showConfirmBox(message, onConfirm) {
-                if (!messageBox || !messageText) { return; }
-                messageBox.innerHTML = `<span id="messageText">${message}</span><div class="flex justify-center space-x-4 mt-3"><button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button><button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button></div>`;
+                if (!messageBox || !messageText) {
+                    console.error("Message box elements not found! Cannot display confirm box.");
+                    return;
+                }
+
+                messageBox.innerHTML = `
+                    <span id="messageText">${message}</span>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <button id="confirmYes" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Evet</button>
+                        <button id="confirmNo" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Hayır</button>
+                    </div>
+                `;
                 messageBox.classList.add('show', 'confirm');
                 messageBox.classList.remove('hidden', 'success', 'error', 'info', 'warning');
-                document.getElementById('confirmYes').onclick = () => { onConfirm(); messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>'; };
-                document.getElementById('confirmNo').onclick = () => { messageBox.classList.remove('show', 'confirm'); messageBox.classList.add('hidden'); messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>'; };
+
+                document.getElementById('confirmYes').onclick = () => {
+                    onConfirm();
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
+
+                document.getElementById('confirmNo').onclick = () => {
+                    messageBox.classList.remove('show', 'confirm');
+                    messageBox.classList.add('hidden');
+                };
             }
 
+            // Bildirimleri render etme (HTML'e basma)
             function renderNotifications() {
                 if (!notificationList) return;
                 notificationList.innerHTML = '';
-                if (notifications.length === 0) { notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>'; return; }
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+
                 notifications.forEach((notif, index) => {
                     const notificationItem = document.createElement('div');
                     notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
-                    notificationItem.dataset.index = index;
+                    notificationItem.dataset.index = index; // Index'i sakla
+
                     let iconClass = '';
                     if (notif.type === 'success') iconClass = 'fa-check-circle';
                     else if (notif.type === 'error') iconClass = 'fa-times-circle';
                     else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
                     else iconClass = 'fa-info-circle';
-                    notificationItem.innerHTML = `<i class="fas ${iconClass} notification-item-icon"></i><div><p>${notif.message}</p><p class="text-xs text-gray-400">${notif.timestamp}</p></div>`;
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
                     notificationList.appendChild(notificationItem);
-                    if (!notif.isRead) { notificationItem.addEventListener('click', () => markNotificationAsRead(index)); }
+
+                    // Okunmamış bildirime tıklandığında okundu olarak işaretle
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
                 });
             }
 
+            // Okunmamış bildirim sayısını güncelle
             function updateNotificationCount() {
                 if (!notificationCountBadge) return;
                 const unreadCount = notifications.filter(n => !n.isRead).length;
@@ -688,6 +782,7 @@
                 }
             }
 
+            // Bildirimi okundu olarak işaretle
             function markNotificationAsRead(index) {
                 if (notifications[index]) {
                     notifications[index].isRead = true;
@@ -697,6 +792,7 @@
                 }
             }
 
+            // Yeni Müşteri Ekleme Formu Gönderimi
             if (newCustomerForm) {
                 newCustomerForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -705,24 +801,38 @@
                     const email = customerEmailInput?.value.trim() || null;
                     const address = customerAddressInput?.value.trim() || null;
                     const shopName = customerShopNameInput?.value.trim() || null;
+
                     if (!name || !phoneNumber) {
                         addNotification('Müşteri adı ve telefon numarası zorunludur.', 'error');
                         return;
                     }
+
                     try {
                         const response = await fetchWithRetry(`${API_BASE_URL}/customers`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                            body: JSON.stringify({ name, phoneNumber, email, address, shopName, userId: getUserId() })
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
+                            body: JSON.stringify({
+                                name,
+                                phoneNumber,
+                                email,
+                                address,
+                                shopName,
+                                userId: getUserId()
+                            })
                         });
+
                         const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                             throw new Error(result.message || 'Müşteri eklenirken hata oluştu.');
                         }
+
                         addNotification('Müşteri başarıyla eklendi!', 'success');
                         newCustomerForm.reset();
-                        fetchCustomers();
+                        fetchCustomers(); // Listeyi yenile
                     } catch (error) {
                         console.error('Müşteri ekleme hatası:', error);
                         addNotification(`Müşteri eklenirken hata: ${error.message}`, 'error');
@@ -730,37 +840,52 @@
                 });
             }
 
+            // Müşterileri API'den çekme ve listeleme
             async function fetchCustomers() {
                 if (customerLoadingOverlay) customerLoadingOverlay.classList.remove('hidden');
                 if (customerListDiv) customerListDiv.innerHTML = '';
+
                 const token = getToken();
                 if (!token) {
                     addNotification('Yetkisiz erişim. Lütfen giriş yapın.', 'error');
                     window.location.href = 'auth.html';
                     return;
                 }
+
                 const searchTerm = searchCustomerInput?.value.trim() || '';
                 let url = `${API_BASE_URL}/customers?userId=${getUserId()}`;
-                if (searchTerm) { url += `&search=${encodeURIComponent(searchTerm)}`; }
-                url += `&timestamp=${Date.now()}`;
+                if (searchTerm) {
+                    url += `&search=${encodeURIComponent(searchTerm)}`;
+                }
+                url += `&timestamp=${Date.now()}`; // Cache busting
+
                 try {
                     const response = await fetchWithRetry(url, {
                         method: 'GET',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
                     });
+
                     if (!response.ok) {
                         if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                         throw new Error(`HTTP hata! Durum: ${response.status}`);
                     }
+
                     const customers = await response.json();
-                    if (customerListDiv) customerListDiv.innerHTML = '';
+
+                    if (customerListDiv) customerListDiv.innerHTML = ''; // Eski müşterileri temizle
+
                     if (customers.length === 0) {
                         if (customerListDiv) customerListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>';
                         return;
                     }
+
                     customers.forEach(customer => {
                         const customerCard = document.createElement('div');
                         customerCard.className = 'bg-gray-700 p-4 rounded-lg shadow-md border border-gray-600';
+
                         customerCard.innerHTML = `
                             <h4 class="text-lg font-bold text-blue-300">${customer.name}</h4>
                             <p class="text-gray-300 text-sm">Telefon: ${customer.phoneNumber}</p>
@@ -785,7 +910,8 @@
                         `;
                         if (customerListDiv) customerListDiv.appendChild(customerCard);
                     });
-                    addCustomerActionListeners();
+
+                    addCustomerActionListeners(); // Event listener'ları ekle
                 } catch (error) {
                     console.error('Müşteriler çekilirken hata:', error);
                     addNotification(`Müşteriler yüklenirken hata: ${error.message}`, 'error');
@@ -804,6 +930,7 @@
                         await openEditCustomerModal(customerId);
                     });
                 });
+
                 document.querySelectorAll('.view-history-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
@@ -813,6 +940,7 @@
                         await openCustomerHistoryModal(customerId, customerName);
                     });
                 });
+
                 document.querySelectorAll('.view-credit-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
@@ -823,6 +951,7 @@
                         await openCreditTransactionsModal(customerId, customerName, currentDebt);
                     });
                 });
+
                 document.querySelectorAll('.delete-customer-btn').forEach(button => {
                     button.addEventListener('click', async (e) => {
                         const clickedButton = e.target.closest('button');
@@ -851,20 +980,25 @@
                 });
             }
 
+            // Müşteri Düzenleme Modalı Fonksiyonları
             async function openEditCustomerModal(customerId) {
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                    const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
                     const customer = await response.json();
                     if (!response.ok) {
                         if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                         throw new Error(customer.message || 'Müşteri bilgileri çekilirken hata oluştu.');
                     }
+
                     if (editCustomerIdInput) editCustomerIdInput.value = customer._id;
                     if (editCustomerNameInput) editCustomerNameInput.value = customer.name;
                     if (editCustomerPhoneNumberInput) editCustomerPhoneNumberInput.value = customer.phoneNumber;
                     if (editCustomerEmailInput) editCustomerEmailInput.value = customer.email || '';
                     if (editCustomerAddressInput) editCustomerAddressInput.value = customer.address || '';
                     if (editCustomerShopNameInput) editCustomerShopNameInput.value = customer.shopName || '';
+
                     if (editCustomerModal) {
                         editCustomerModal.classList.remove('hidden');
                         editCustomerModal.classList.add('show');
@@ -874,6 +1008,7 @@
                     addNotification(`Müşteri düzenleme ekranı yüklenemedi: ${error.message}`, 'error');
                 }
             }
+
             window.closeEditCustomerModal = function() {
                 if (editCustomerModal) {
                     editCustomerModal.classList.remove('show');
@@ -881,6 +1016,7 @@
                 }
                 if (editCustomerForm) editCustomerForm.reset();
             };
+
             if (editCustomerForm) {
                 editCustomerForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -890,24 +1026,31 @@
                     const email = editCustomerEmailInput?.value.trim() || null;
                     const address = editCustomerAddressInput?.value.trim() || null;
                     const shopName = editCustomerShopNameInput?.value.trim() || null;
+
                     if (!name || !phoneNumber) {
                         addNotification('Müşteri adı ve telefon numarası zorunludur.', 'error');
                         return;
                     }
+
                     try {
                         const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, {
                             method: 'PUT',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
                             body: JSON.stringify({ name, phoneNumber, email, address, shopName, userId: getUserId() })
                         });
+
                         const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                             throw new Error(result.message || 'Müşteri güncellenirken hata oluştu.');
                         }
+
                         addNotification('Müşteri başarıyla güncellendi!', 'success');
                         closeEditCustomerModal();
-                        fetchCustomers();
+                        fetchCustomers(); // Listeyi yenile
                     } catch (error) {
                         console.error('Müşteri güncelleme hatası:', error);
                         addNotification(`Müşteri güncellenirken hata: ${error.message}`, 'error');
@@ -915,30 +1058,49 @@
                 });
             }
 
+            // Müşteri Geçmişi Modalı Fonksiyonları
             async function openCustomerHistoryModal(customerId, customerName) {
                 if (historyCustomerNameSpan) historyCustomerNameSpan.textContent = customerName;
                 if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
+
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                    const response = await fetchWithRetry(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
                     const salesHistory = await response.json();
+
                     if (!response.ok) {
-                         if (response.status === 403) { customerSalesHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.</p>`; throw new Error(salesHistory.message || 'Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.'); }
+                         if (response.status === 403) {
+                            customerSalesHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.</p>`;
+                            throw new Error(salesHistory.message || 'Geçmiş satışları görüntülemek için 2FA doğrulaması gerekli.');
+                         }
                         if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                         throw new Error(salesHistory.message || 'Müşteri geçmişi çekilirken hata oluştu.');
                     }
+
                     if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '';
                     if (salesHistory.length === 0) {
                         customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait geçmiş satış bulunamadı.</p>';
                     } else {
                         salesHistory.forEach(sale => {
                             const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
-                            const itemsHtml = sale.saleItems.map(item => `<li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>`).join('');
+                            const itemsHtml = sale.saleItems.map(item => `
+                                <li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
+                            `).join('');
                             const saleEntry = document.createElement('div');
                             saleEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 space-y-2';
-                            saleEntry.innerHTML = `<p class="text-md font-semibold text-blue-300 mb-1">Tarih: ${saleDate} - Toplam: ${sale.totalAmount.toFixed(2)} TL</p><p class="text-sm text-gray-400 mb-1">Ödeme Tipi: ${sale.paymentMethod || 'Belirtilmemiş'}</p>${sale.creditDebt > 0 ? `<p class="text-sm text-red-400 font-semibold">Veresiye: ${sale.creditDebt.toFixed(2)} TL</p>` : ''}<ul class="list-disc list-inside mt-1">${itemsHtml}</ul>`;
+                            saleEntry.innerHTML = `
+                                <p class="text-md font-semibold text-blue-300 mb-1">Tarih: ${saleDate} - Toplam: ${sale.totalAmount.toFixed(2)} TL</p>
+                                <p class="text-sm text-gray-400 mb-1">Ödeme Tipi: ${sale.paymentMethod || 'Belirtilmemiş'}</p>
+                                ${sale.creditDebt > 0 ? `<p class="text-sm text-red-400 font-semibold">Veresiye: ${sale.creditDebt.toFixed(2)} TL</p>` : ''}
+                                <ul class="list-disc list-inside mt-1">
+                                    ${itemsHtml}
+                                </ul>
+                            `;
                             customerSalesHistoryDiv.appendChild(saleEntry);
                         });
                     }
+
                     if (customerHistoryModal) {
                         customerHistoryModal.classList.remove('hidden');
                         customerHistoryModal.classList.add('show');
@@ -948,6 +1110,7 @@
                     addNotification(`Müşteri geçmişi yüklenemedi: ${error.message}`, 'error');
                 }
             }
+
             window.closeCustomerHistoryModal = function() {
                 if (customerHistoryModal) {
                     customerHistoryModal.classList.remove('show');
@@ -955,20 +1118,29 @@
                 }
             };
 
+            // Veresiye İşlemleri Modalı Fonksiyonları
             async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
                 currentOpenCustomerIdForCredit = customerId;
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
                 if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
+
                 try {
-                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
                     const transactions = await response.json();
+
                     if (!response.ok) {
-                         if (response.status === 403) { creditTransactionHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Veresiye işlem geçmişini görüntülemek için 2FA doğrulaması gerekli.</p>`; throw new Error(transactions.message || 'Veresiye işlem geçmişi görüntülemek için 2FA doğrulaması gerekli.'); }
+                         if (response.status === 403) {
+                            creditTransactionHistoryDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Veresiye işlem geçmişini görüntülemek için 2FA doğrulaması gerekli.</p>`;
+                            throw new Error(transactions.message || 'Veresiye işlem geçmişi görüntülemek için 2FA doğrulaması gerekli.');
+                         }
                         if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                         throw new Error(transactions.message || 'Veresiye işlem geçmişi çekilirken hata oluştu.');
                     }
+
                     if (creditTransactionHistoryDiv) creditTransactionHistoryDiv.innerHTML = '';
                     if (transactions.length === 0) {
                         creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait veresiye işlem geçmişi bulunamadı.</p>';
@@ -979,12 +1151,23 @@
                             const txAmount = tx.amount.toFixed(2);
                             const txColor = tx.type === 'payment' ? 'text-green-400' : 'text-red-400';
                             const txIcon = tx.type === 'payment' ? 'fa-arrow-down' : 'fa-arrow-up';
+
                             const txEntry = document.createElement('div');
                             txEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 flex items-center justify-between';
-                            txEntry.innerHTML = `<div class="flex items-center"><i class="fas ${txIcon} mr-3 ${txColor}"></i><div><p class="text-md font-semibold text-gray-200">${txType}: <span class="${txColor}">${txAmount} TL</span></p><p class="text-xs text-gray-400">${tx.description || 'Açıklama yok'}</p></div></div><span class="text-sm text-gray-400">${txDate}</span>`;
+                            txEntry.innerHTML = `
+                                <div class="flex items-center">
+                                    <i class="fas ${txIcon} mr-3 ${txColor}"></i>
+                                    <div>
+                                        <p class="text-md font-semibold text-gray-200">${txType}: <span class="${txColor}">${txAmount} TL</span></p>
+                                        <p class="text-xs text-gray-400">${tx.description || 'Açıklama yok'}</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-gray-400">${txDate}</span>
+                            `;
                             creditTransactionHistoryDiv.appendChild(txEntry);
                         });
                     }
+
                     if (customerCreditTransactionsModal) {
                         customerCreditTransactionsModal.classList.remove('hidden');
                         customerCreditTransactionsModal.classList.add('show');
@@ -994,6 +1177,7 @@
                     addNotification(`Veresiye işlemleri yüklenemedi: ${error.message}`, 'error');
                 }
             }
+
             window.closeCustomerCreditTransactionsModal = function() {
                 if (customerCreditTransactionsModal) {
                     customerCreditTransactionsModal.classList.remove('show');
@@ -1002,6 +1186,8 @@
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
                 currentOpenCustomerIdForCredit = null;
             };
+
+            // Veresiye Ödeme/Borç Ekleme Formu
             if (addCreditPaymentForm) {
                 addCreditPaymentForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -1009,7 +1195,15 @@
                     const amount = parseFloat(creditAmountInput?.value || '0');
                     const type = creditTransactionTypeSelect?.value;
                     const description = creditDescriptionInput?.value.trim() || null;
-                    const requestBody = { customerId, amount: amount, type, description, userId: getUserId() };
+
+                    const requestBody = {
+                        customerId,
+                        amount: amount,
+                        type,
+                        description,
+                        userId: getUserId()
+                    };
+
                     if (!customerId) {
                         addNotification('Müşteri ID bulunamadı. Lütfen modalı kapatıp tekrar açın.', 'error');
                         return;
@@ -1018,20 +1212,28 @@
                         addNotification('Lütfen geçerli ve pozitif bir miktar girin.', 'error');
                         return;
                     }
+
                     try {
                         const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getToken()}`
+                            },
                             body: JSON.stringify(requestBody)
                         });
+
                         const result = await response.json();
                         if (!response.ok) {
                             if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                             throw new Error(result.message || 'Veresiye işlemi kaydedilirken hata oluştu.');
                         }
+
                         addNotification('Veresiye işlemi başarıyla kaydedildi!', 'success');
                         addCreditPaymentForm.reset();
+                        // Güncel veresiye borcunu alıp tekrar modalı açıyoruz
                         await openCreditTransactionsModal(currentOpenCustomerIdForCredit, creditCustomerNameSpan.textContent, result.newDebt);
+                        // Ana sayfadaki müşteri listesini de güncelliyoruz
                         fetchCustomers();
                     } catch (error) {
                         console.error('Veresiye işlemi kaydetme hatası:', error);
@@ -1039,35 +1241,58 @@
                     }
                 });
             }
-            if (applyCustomerFilterBtn) { applyCustomerFilterBtn.addEventListener('click', fetchCustomers); }
+
+            // Müşteri filtreleme ve temizleme
+            if (applyCustomerFilterBtn) {
+                applyCustomerFilterBtn.addEventListener('click', fetchCustomers);
+            }
             if (clearCustomerFilterBtn) {
                 clearCustomerFilterBtn.addEventListener('click', () => {
                     if (searchCustomerInput) searchCustomerInput.value = '';
                     fetchCustomers();
                 });
             }
+
+
+            // Sidebar Fonksiyonları
             const closeSidebar = () => {
-                if (sidebar) { sidebar.classList.remove('open'); sidebar.classList.add('-translate-x-full'); }
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                    sidebar.classList.add('-translate-x-full');
+                }
                 if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+
                 if (window.innerWidth >= 1024) {
                     if (mainContent) mainContent.classList.remove('lg:ml-64');
                     if (appHeader) appHeader.classList.remove('lg:pl-64');
-                    if (headerLeftGroup) { headerLeftGroup.classList.remove('lg:justify-center'); headerLeftGroup.classList.add('lg:justify-start'); }
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-center');
+                        headerLeftGroup.classList.add('lg:justify-start');
+                    }
                 }
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
             };
+
             const openSidebar = () => {
-                if (sidebar) { sidebar.classList.add('open'); sidebar.classList.remove('-translate-x-full'); }
+                if (sidebar) {
+                    sidebar.classList.add('open');
+                    sidebar.classList.remove('-translate-x-full');
+                }
+
                 if (window.innerWidth < 1024) {
                     if (sidebarOverlay) sidebarOverlay.classList.add('active');
                 } else {
                     if (mainContent) mainContent.classList.add('lg:ml-64');
                     if (appHeader) appHeader.classList.add('lg:pl-64');
-                    if (headerLeftGroup) { headerLeftGroup.classList.remove('lg:justify-start'); headerLeftGroup.classList.add('lg:justify-center'); }
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-start');
+                        headerLeftGroup.classList.add('lg:justify-center');
+                    }
                     if (sidebarOverlay) sidebarOverlay.classList.remove('active');
                 }
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
             };
+
             const initializeSidebarState = () => {
                 if (window.innerWidth >= 1024) {
                     openSidebar();
@@ -1076,21 +1301,83 @@
                     if (appHeader) appHeader.classList.remove('lg:pl-64');
                 }
             };
+
             window.addEventListener('resize', initializeSidebarState);
+
             if (sidebarToggleBtn) {
                 sidebarToggleBtn.addEventListener('click', () => {
-                    if (sidebar && sidebar.classList.contains('open')) { closeSidebar(); } else { openSidebar(); }
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
-            if (closeSidebarBtn) { closeSidebarBtn.addEventListener('click', () => { closeSidebar(); }); }
-            if (sidebarOverlay) { sidebarOverlay.addEventListener('click', () => { closeSidebar(); }); }
-            if (goToDashboardBtn) { goToDashboardBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); }); }
-            if (manageProductsBtn) { manageProductsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); }); }
-            if (goToSalesManagementBtn) { goToSalesManagementBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/sales_management.html'; closeSidebar(); }); }
-            if (manageRecurringTransactionsBtn) { manageRecurringTransactionsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); }); }
-            if (viewReportsBtn) { viewReportsBtn.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); }); }
-            if (exportCsvBtn) { exportCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); }); }
-            if (importCsvBtn) { importCsvBtn.addEventListener('click', (e) => { e.preventDefault(); showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); }); }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/index.html';
+                    closeSidebar();
+                });
+            }
+            if (manageProductsBtn) {
+                manageProductsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/products.html';
+                    closeSidebar();
+                });
+            }
+            if (goToSalesManagementBtn) {
+                goToSalesManagementBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/sales_management.html';
+                    closeSidebar();
+                });
+            }
+            if (manageRecurringTransactionsBtn) {
+                manageRecurringTransactionsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/recurring_transactions.html';
+                    closeSidebar();
+                });
+            }
+            if (viewReportsBtn) {
+                viewReportsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/reports.html';
+                    closeSidebar();
+                });
+            }
+            if (exportCsvBtn) {
+                exportCsvBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    closeSidebar();
+                });
+            }
+            if (importCsvBtn) {
+                importCsvBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
+                    closeSidebar();
+                });
+            }
+
+            // Logout Button
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     localStorage.removeItem('jwtToken');
@@ -1100,6 +1387,8 @@
                     window.location.href = 'auth.html';
                 });
             }
+
+            // handleAuthError fonksiyonu
             function handleAuthError() {
                 addNotification('Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.', 'error');
                 localStorage.removeItem('jwtToken');
@@ -1108,6 +1397,8 @@
                 localStorage.removeItem('fingoNotifications');
                 window.location.href = 'auth.html';
             }
+
+            // Bildirim Çanı tıklama olayı
             if (notificationBellBtn) {
                 notificationBellBtn.addEventListener('click', () => {
                     notificationCenter.classList.toggle('active');
@@ -1118,7 +1409,15 @@
                     }
                 });
             }
-            if (closeNotificationsBtn) { closeNotificationsBtn.addEventListener('click', () => { notificationCenter.classList.remove('active'); }); }
+
+            // Bildirim merkezini kapatma butonu
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    notificationCenter.classList.remove('active');
+                });
+            }
+
+            // Tüm bildirimleri temizle butonu
             if (clearNotificationsBtn) {
                 clearNotificationsBtn.addEventListener('click', () => {
                     showConfirmBox('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', () => {
@@ -1130,6 +1429,7 @@
                     });
                 });
             }
+
 
             // --- BURADAKİ KOD YENİ EKLENİYOR ---
             // Periyodik olarak localStorage'ı kontrol et ve müşteri listesini güncelle
@@ -1147,7 +1447,7 @@
 
             // İlk yüklemede de kontrol et (sadece ihtiyat amaçlı)
             checkAndRefreshCustomers();
-            // --- YENİ KOD BİTTİ ---
+            // --- YENİ KOD BİTTİ ---\
 
 
             // Initial calls on page load
