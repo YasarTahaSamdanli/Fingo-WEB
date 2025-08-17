@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo Web Uygulaması</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* Genel Arka Plan ve Metin Stilleri */
@@ -372,7 +376,9 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
+    <!-- Header - Başlık ve Kullanıcı Bilgisi/Çıkış -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex items-center justify-between z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Sol Kısım: Menü Butonu ve Başlık -->
         <div class="flex items-center">
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
@@ -382,11 +388,13 @@
             </h1>
         </div>
 
+        <!-- Sağ Kısım: Bildirimler ve Dropdown Menü -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
+            <!-- Yeni Dropdown Menü -->
             <div class="relative inline-block text-left">
                 <button id="userDropdownBtn" class="bg-blue-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-blue-700 transition-colors text-xs md:text-sm flex items-center">
                     <span id="loggedInUserName">Ayarlar</span>
@@ -404,9 +412,14 @@
         </div>
     </header>
 
-    <div class="flex flex-1 pt-16"> <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
+    <!-- Ana İçerik Alanı -->
+    <div class="flex flex-1 pt-16"> <!-- Header yüksekliği kadar padding-top -->
+
+        <!-- Yan Menü (Sidebar) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar Kapatma Butonu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -439,12 +452,16 @@
             </nav>
         </aside>
 
+        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
+        <!-- Ana İçerik -->
         <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
+            <!-- Ana başlıklar otomatik olarak ortalanacaktır çünkü mainContent mx-auto ve text-center'ı kullanır. -->
             <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Hoş Geldin!</h2>
             <p class="text-base text-gray-400 text-center mb-10 font-light">Finansal işlemlerinizi kolayca yönetin ve takip edin. (v1.5.8)</p>
 
+            <!-- Genel Finansal Özet -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Genel Finansal Özet</h3>
                 <div id="generalSummary" class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
@@ -463,6 +480,7 @@
                 </div>
             </section>
 
+            <!-- Yeni İşlem Ekle Formu -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Yeni İşlem Ekle</h3>
                 <form id="transactionForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -484,7 +502,8 @@
                     <div>
                         <label for="category" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
                         <select id="category" name="category" class="form-select w-full p-3 text-base">
-                            </select>
+                            <!-- Kategoriler JS ile yüklenecek -->
+                        </select>
                     </div>
                     <div>
                         <label for="date" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
@@ -497,6 +516,7 @@
                 </form>
             </section>
 
+            <!-- Kategori Oluştur/Düzenle -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Kategori Oluştur / Düzenle</h3>
                 <form id="categoryForm" class="flex flex-col md:flex-row gap-4 items-center">
@@ -519,6 +539,7 @@
                 </div>
             </section>
 
+            <!-- İşlemleri Filtrele -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">İşlemleri Filtrele</h3>
                 <form id="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
@@ -534,7 +555,8 @@
                         <label for="filterCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
                         <select id="filterCategory" class="form-select w-full p-3 text-base">
                             <option value="">Tümü</option>
-                            </select>
+                            <!-- Kategoriler JS ile yüklenecek -->
+                        </select>
                     </div>
                     <div>
                         <label for="filterDate" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
@@ -570,6 +592,7 @@
                 </div>
             </section>
 
+            <!-- Aylık Özet Grafiği -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Aylık Finansal Özet</h3>
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
@@ -582,6 +605,7 @@
                 </div>
             </section>
 
+            <!-- Yıllık Özet Grafiği -->
             <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                 <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Yıllık Finansal Özet</h3>
                 <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
@@ -596,11 +620,13 @@
         </main>
     </div>
 
+    <!-- Mesaj Kutusu -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
+    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -658,6 +684,38 @@
             window.location.href = '/Fingo-WEB/auth.html';
         } else {
             console.log("Index.html - Authentication check passed. User is authenticated.");
+        }
+
+        // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    // 404 durumunda özel mesaj ver, ancak yeniden deneme yapma
+                    if (response.status === 404 && options.method === 'DELETE') {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'İşlem bulunamadı veya yetkiniz yok.');
+                    }
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        // 401 veya 403 ise doğrudan hata fırlat, yeniden deneme yapma
+                        if (response.status === 401 || response.status === 403) {
+                            handleAuthError();
+                            return; // handleAuthError zaten yönlendirme yapacağı için burada dur
+                        }
+                        // Diğer hatalar için yeniden deneme yap
+                        throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i < retries - 1) {
+                        // console.warn(`Fetch hatası: ${error.message}. Yeniden deniyor... (Deneme ${i + 1}/${retries})`);
+                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                    } else {
+                        throw error; // Son deneme başarısız oldu, hatayı fırlat
+                    }
+                }
+            }
         }
 
         // DOMContentLoaded olayı, tüm HTML yüklendikten sonra tetiklenir
@@ -908,10 +966,10 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/financial-summary/general?userId=${userId}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/general?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor, burada tekrar kontrol etmeye gerek yok
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
@@ -944,10 +1002,10 @@
                 if (filters.date) query += `&date=${filters.date}`;
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/transactions?${query}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions?${query}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'İşlemler çekilemedi.');
@@ -1021,7 +1079,7 @@
                         : `${API_BASE_URL}/transactions`;
 
                     try {
-                        const response = await fetch(url, {
+                        const response = await fetchWithRetry(url, {
                             method: method,
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1031,7 +1089,7 @@
                         });
 
                         const result = await response.json();
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'İşlem başarısız oldu.');
                         }
@@ -1060,10 +1118,10 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/${id}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'İşlem çekilemedi.');
@@ -1096,28 +1154,35 @@
                         return;
                     }
                     try {
-                        const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/${id}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
 
                         const result = await response.json();
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        // fetchWithRetry içinde 401/403 ve DELETE için 404 özel olarak ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'İşlem silinemedi.');
                         }
 
                         addNotification(result.message, 'success');
+                        // İşlem başarıyla silindiyse tüm özetleri ve listeyi güncelle
                         fetchTransactions();
                         fetchGeneralFinancialSummary();
-                        // İşlem silindiğinde aylık ve yıllık özetleri de güncelle
                         const currentYear = new Date().getFullYear();
                         const currentMonth = new Date().getMonth();
-                        fetchMonthlySummary(currentYear, currentMonth); // API'ye 0-tabanlı ay gönderiyoruz, API içinde +1 ile halledilecek
+                        fetchMonthlySummary(currentYear, currentMonth);
                         fetchAnnualSummary(currentYear);
                     } catch (error) {
                         console.error('İşlem silme hatası:', error);
                         addNotification(`İşlem silinirken hata: ${error.message}`, 'error');
+                        // Hata durumunda da UI'ın güncel kalması için verileri tekrar çek
+                        fetchTransactions();
+                        fetchGeneralFinancialSummary();
+                        const currentYear = new Date().getFullYear();
+                        const currentMonth = new Date().getMonth();
+                        fetchMonthlySummary(currentYear, currentMonth);
+                        fetchAnnualSummary(currentYear);
                     }
                 });
             }
@@ -1144,10 +1209,10 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/categories?userId=${userId}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/categories?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Kategoriler çekilemedi.');
@@ -1238,7 +1303,7 @@
                         : `${API_BASE_URL}/categories`;
 
                     try {
-                        const response = await fetch(url, {
+                        const response = await fetchWithRetry(url, {
                             method: method,
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1248,7 +1313,7 @@
                         });
 
                         const result = await response.json();
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'Kategori işlemi başarısız oldu.');
                         }
@@ -1284,13 +1349,13 @@
                         return;
                     }
                     try {
-                        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/categories/${id}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
 
                         const result = await response.json();
-                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        // fetchWithRetry içinde 401/403 ve DELETE için 404 özel olarak ele alınıyor
                         if (!response.ok) {
                             throw new Error(result.message || 'Kategori silinemedi.');
                         }
@@ -1301,6 +1366,9 @@
                     } catch (error) {
                         console.error('Kategori silme hatası:', error);
                         addNotification(`Kategori silinirken hata: ${error.message}`, 'error');
+                        // Hata durumunda da UI'ın güncel kalması için verileri tekrar çek
+                        fetchCategories();
+                        fetchTransactions();
                     }
                 });
             }
@@ -1334,10 +1402,11 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month + 1}&userId=${userId}`, {
+                    // API'ye gönderirken ay değeri 1-tabanlı olmalı, JavaScript'te 0-tabanlı olduğu için +1 ekliyoruz.
+                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/monthly?year=${year}&month=${month + 1}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Aylık özet çekilemedi.');
@@ -1475,10 +1544,10 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/financial-summary/annual?year=${year}&userId=${userId}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/annual?year=${year}&userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Yıllık özet çekilemedi.');
@@ -1657,10 +1726,10 @@
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/users/me?userId=${userId}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/users/me?userId=${userId}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                    // 401 veya 403 zaten fetchWithRetry içinde ele alınıyor
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
@@ -1716,7 +1785,7 @@
             };
 
             window.addEventListener('resize', () => {
-                initializeSidebarState(); // Boyut değiştiğinde sidebar durumunu güncelle
+                initializeSidebarState(); // Boyut değiştiğinde sidebar durumunu ve başlık konumunu güncelle
             });
 
             if (sidebarToggleBtn) {
