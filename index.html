@@ -603,19 +603,11 @@
                 <div class="relative h-96">
                     <canvas id="monthlySummaryChart"></canvas>
                 </div>
-            </section>
-
-            <!-- YENİ EKLENEN: Aylık Gider Kategori Dağılımı (Pasta Grafik) -->
-            <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-                <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Aylık Gider Kategori Dağılımı</h3>
-                <div class="flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
-                    <!-- Ay ve Yıl Seçiciler (Mevcut olanlarla aynı olacak, JS'de kullanılacak) -->
-                    <select id="categoryMonthSelect" class="form-select py-2 px-3 text-base"></select>
-                    <select id="categoryYearSelect" class="form-select py-2 px-3 text-base"></select>
-                    <button id="applyCategoryFilterBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">Uygula</button>
-                </div>
-                <div class="relative h-96 w-full flex items-center justify-center">
-                    <canvas id="monthlyCategoryChart"></canvas>
+                <!-- Aylık Özet Detayları -->
+                <div id="monthlySummaryDetails" class="mt-6 text-center space-y-2">
+                    <p class="text-lg text-gray-300">Seçili Ay Toplam Gelir: <span id="monthlyTotalIncome" class="font-bold text-green-400">0.00 TL</span></p>
+                    <p class="text-lg text-gray-300">Seçili Ay Toplam Gider: <span id="monthlyTotalExpense" class="font-bold text-red-400">0.00 TL</span></p>
+                    <p class="text-lg text-gray-300">Seçili Ay Net Bakiye: <span id="monthlyNetBalance" class="font-bold text-blue-400">0.00 TL</span></p>
                 </div>
             </section>
 
@@ -799,13 +791,10 @@
             const yearSelect = document.getElementById('yearSelect');
             const applyMonthlySummaryFilterBtn = document.getElementById('applyMonthlySummaryFilterBtn');
 
-            // YENİ GRAFİK İÇİN DOM ELEMENTLERİ
-            let monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart') ? document.getElementById('monthlyCategoryChart').getContext('2d') : null;
-            let monthlyCategoryChart; // Yeni grafik objesi
-            const categoryMonthSelect = document.getElementById('categoryMonthSelect'); // Yeni ay seçici
-            const categoryYearSelect = document.getElementById('categoryYearSelect');   // Yeni yıl seçici
-            const applyCategoryFilterBtn = document.getElementById('applyCategoryFilterBtn'); // Yeni uygula butonu
-
+            // Aylık Özet Detayları için DOM elementleri
+            const monthlyTotalIncomeSpan = document.getElementById('monthlyTotalIncome');
+            const monthlyTotalExpenseSpan = document.getElementById('monthlyTotalExpense');
+            const monthlyNetBalanceSpan = document.getElementById('monthlyNetBalance');
 
             const annualYearSelect = document.getElementById('annualYearSelect');
             const applyAnnualSummaryFilterBtn = document.getElementById('applyAnnualSummaryFilterBtn');
@@ -1128,11 +1117,6 @@
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
 
-                        // YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
-                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
-                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
-                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
-
                     } catch (error) {
                         console.error('İşlem ekleme/güncelleme hatası:', error);
                         addNotification(`İşlem eklenirken/güncellenirken hata: ${error.message}`, 'error');
@@ -1207,11 +1191,6 @@
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
 
-                        // YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
-                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
-                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
-                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
-
                     } catch (error) {
                         console.error('İşlem silme hatası:', error);
                         addNotification(`İşlem silinirken hata: ${error.message}`, 'error');
@@ -1226,11 +1205,6 @@
 
                         const selectedYearForAnnual = parseInt(annualYearSelect.value);
                         fetchAnnualSummary(selectedYearForAnnual);
-
-                        // Hata durumunda da YENİ GRAFİK: Kategori dağılım grafiğini de güncelle
-                        const selectedCategoryYear = parseInt(categoryYearSelect.value);
-                        const selectedCategoryMonth = parseInt(categoryMonthSelect.value);
-                        fetchMonthlyCategoryDistribution(selectedCategoryYear, selectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
                     }
                 });
             }
@@ -1495,6 +1469,10 @@
                     if (chartContainer) {
                         chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili ay için finansal özet verisi bulunamadı.</p>';
                     }
+                    // Detayları da sıfırla
+                    if (monthlyTotalIncomeSpan) monthlyTotalIncomeSpan.textContent = '0.00 TL';
+                    if (monthlyTotalExpenseSpan) monthlyTotalExpenseSpan.textContent = '0.00 TL';
+                    if (monthlyNetBalanceSpan) monthlyNetBalanceSpan.textContent = '0.00 TL';
                     return;
                 } else {
                     // Eğer "veri bulunamadı" mesajı varsa, canvas'ı geri getir
@@ -1506,6 +1484,7 @@
                 }
 
                 const chartData = Array.isArray(data) ? data : [data];
+                const currentMonthData = chartData[0]; // Tek bir ayın verisi olduğu için ilk elemanı alıyoruz
 
                 const labels = chartData.map(item => {
                     const monthName = new Date(item.year, item.month - 1).toLocaleString('tr-TR', { month: 'long' });
@@ -1559,13 +1538,30 @@
                                 display: true,
                                 text: 'Aylık Gelir, Gider ve Net Bakiye',
                                 color: '#E2E8F0'
+                            },
+                             tooltip: { // Tooltip'leri daha bilgilendirici yap
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    color: '#A0AEC0'
+                                    color: '#A0AEC0',
+                                    callback: function(value) {
+                                        return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                    }
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
@@ -1582,131 +1578,12 @@
                         }
                     }
                 });
+
+                // Aylık özet detaylarını güncelle
+                if (monthlyTotalIncomeSpan) monthlyTotalIncomeSpan.textContent = `${currentMonthData.income.toFixed(2)} TL`;
+                if (monthlyTotalExpenseSpan) monthlyTotalExpenseSpan.textContent = `${currentMonthData.expense.toFixed(2)} TL`;
+                if (monthlyNetBalanceSpan) monthlyNetBalanceSpan.textContent = `${currentMonthData.netBalance.toFixed(2)} TL`;
             }
-
-            // YENİ FONKSİYON: Aylık Kategori Dağılım Grafiği (Giderler için)
-            async function fetchMonthlyCategoryDistribution(year, month, type) {
-                const token = getToken();
-                const userId = getUserId();
-                if (!token || !userId) {
-                    handleAuthError();
-                    return;
-                }
-                try {
-                    // Ay 1-tabanlı olarak gönderiliyor (örn: Ağustos için 8)
-                    const response = await fetchWithRetry(`${API_BASE_URL}/financial-summary/monthly-category-distribution?year=${year}&month=${month}&type=${type}&userId=${userId}`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Aylık kategori dağılımı çekilemedi.');
-                    }
-                    const data = await response.json();
-                    console.log("[FRONTEND DEBUG] fetchMonthlyCategoryDistribution - Alınan Veri:", data);
-                    renderMonthlyCategoryChart(data);
-                } catch (error) {
-                    console.error('Aylık kategori dağılımı çekilirken hata:', error);
-                    addNotification(`Aylık kategori dağılımı yüklenirken hata: ${error.message}`, 'error');
-                }
-            }
-
-            function renderMonthlyCategoryChart(data) {
-                console.log("[FRONTEND DEBUG] renderMonthlyCategoryChart çağrıldı, veri:", data);
-                if (!monthlyCategoryChartCtx) {
-                    console.error("monthlyCategoryChart canvas context not found. Attempting to re-initialize.");
-                    const canvasElement = document.getElementById('monthlyCategoryChart');
-                    if (canvasElement) {
-                        monthlyCategoryChartCtx = canvasElement.getContext('2d');
-                    } else {
-                        const chartContainer = document.querySelector('section.mb-10 canvas#monthlyCategoryChart')?.parentElement;
-                        if (chartContainer) {
-                            chartContainer.innerHTML = '<canvas id="monthlyCategoryChart"></canvas>';
-                            monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart')?.getContext('2d');
-                        }
-                    }
-                    if (!monthlyCategoryChartCtx) {
-                        console.error("Failed to get monthlyCategoryChart canvas context after re-initialization attempt.");
-                        return;
-                    }
-                }
-
-                if (monthlyCategoryChart) {
-                    monthlyCategoryChart.destroy();
-                }
-
-                // Veri yoksa veya sıfır değerler dönüyorsa mesaj göster
-                if (data.length === 0 || (data.length === 1 && data[0].totalAmount === 0)) {
-                    console.log("Aylık kategori dağılımı için veri yok veya sıfır değerler döndü.");
-                    const chartContainer = monthlyCategoryChartCtx.canvas.parentElement;
-                    if (chartContainer) {
-                        chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili ay için gider kategori dağılımı verisi bulunamadı.</p>';
-                    }
-                    return;
-                } else {
-                    // Eğer "veri bulunamadı" mesajı varsa, canvas'ı geri getir
-                    const chartContainer = monthlyCategoryChartCtx.canvas.parentElement;
-                    if (chartContainer && chartContainer.querySelector('p')) {
-                        chartContainer.innerHTML = '<canvas id="monthlyCategoryChart"></canvas>';
-                        monthlyCategoryChartCtx = document.getElementById('monthlyCategoryChart').getContext('2d');
-                    }
-                }
-
-                const labels = data.map(item => item.category);
-                const amounts = data.map(item => item.totalAmount);
-
-                // Renk paleti oluştur (daha fazla kategori için genişletilebilir)
-                const backgroundColors = [
-                    '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E', '#10B981', '#06B6D4',
-                    '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
-                ];
-
-                monthlyCategoryChart = new Chart(monthlyCategoryChartCtx, {
-                    type: 'doughnut', // Pasta grafik
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: amounts,
-                            backgroundColor: backgroundColors.slice(0, labels.length), // Kategori sayısına göre renk kullan
-                            borderColor: '#0d1117', // Arkadaşın arka plan rengi
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'right', // Legend'ı sağa al
-                                labels: {
-                                    color: '#E2E8F0',
-                                    boxWidth: 20,
-                                    padding: 15
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Aylık Gider Kategori Dağılımı',
-                                color: '#E2E8F0'
-                            },
-                            tooltip: { // Tooltip'leri daha bilgilendirici yap
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        if (context.parsed !== null) {
-                                            label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(context.parsed);
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
 
             // Yıllık Özet Grafiği
             async function fetchAnnualSummary(year) {
@@ -1820,13 +1697,30 @@
                                 display: true,
                                 text: 'Yıllık Gelir, Gider ve Net Bakiye',
                                 color: '#E2E8F0'
+                            },
+                            tooltip: { // Tooltip'leri daha bilgilendirici yap
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    color: '#A0AEC0'
+                                    color: '#A0AEC0',
+                                    callback: function(value) {
+                                        return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                                    }
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)'
@@ -1851,7 +1745,6 @@
                 const currentMonth = new Date().getMonth(); // 0-11 arası
 
                 if (monthSelect) monthSelect.innerHTML = '';
-                if (categoryMonthSelect) categoryMonthSelect.innerHTML = ''; // Yeni grafik için
                 const months = [
                     "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
                     "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
@@ -1861,25 +1754,20 @@
                     option.value = index + 1; // Ayı 1-tabanlı olarak kaydet (API'ye gönderirken)
                     option.textContent = month;
                     if (monthSelect) monthSelect.appendChild(option);
-                    if (categoryMonthSelect) categoryMonthSelect.appendChild(option.cloneNode(true)); // Yeni grafik için
                 });
                 if (monthSelect) monthSelect.value = currentMonth + 1; // Başlangıçta güncel ayı seç
-                if (categoryMonthSelect) categoryMonthSelect.value = currentMonth + 1; // Yeni grafik için
 
                 if (yearSelect) yearSelect.innerHTML = '';
                 if (annualYearSelect) annualYearSelect.innerHTML = '';
-                if (categoryYearSelect) categoryYearSelect.innerHTML = ''; // Yeni grafik için
                 for (let i = currentYear - 5; i <= currentYear + 1; i++) {
                     const optionYear = document.createElement('option');
                     optionYear.value = i;
                     optionYear.textContent = i;
                     if (yearSelect) yearSelect.appendChild(optionYear);
                     if (annualYearSelect) annualYearSelect.appendChild(optionYear.cloneNode(true));
-                    if (categoryYearSelect) categoryYearSelect.appendChild(optionYear.cloneNode(true)); // Yeni grafik için
                 }
                 if (yearSelect) yearSelect.value = currentYear;
                 if (annualYearSelect) annualYearSelect.value = currentYear;
-                if (categoryYearSelect) categoryYearSelect.value = currentYear; // Yeni grafik için
             }
 
             // Yıllık ve Aylık Özet için Uygula butonlarına olay dinleyicileri ekle
@@ -1895,15 +1783,6 @@
                 applyAnnualSummaryFilterBtn.addEventListener('click', () => {
                     const selectedYear = annualYearSelect ? parseInt(annualYearSelect.value) : new Date().getFullYear();
                     fetchAnnualSummary(selectedYear);
-                });
-            }
-
-            // YENİ GRAFİK: Kategori Dağılımı için Uygula butonu
-            if (applyCategoryFilterBtn) {
-                applyCategoryFilterBtn.addEventListener('click', () => {
-                    const selectedYear = categoryYearSelect ? parseInt(categoryYearSelect.value) : new Date().getFullYear();
-                    const selectedMonth = categoryMonthSelect ? parseInt(categoryMonthSelect.value) : (new Date().getMonth() + 1); // 1-tabanlı
-                    fetchMonthlyCategoryDistribution(selectedYear, selectedMonth, 'expense'); // Varsayılan olarak giderleri göster
                 });
             }
 
@@ -2104,11 +1983,6 @@
 
             const initialSelectedYearForAnnual = parseInt(annualYearSelect.value);
             fetchAnnualSummary(initialSelectedYearForAnnual);
-
-            // YENİ GRAFİK: Kategori dağılım grafiğini de başlangıçta yükle
-            const initialSelectedCategoryYear = parseInt(categoryYearSelect.value);
-            const initialSelectedCategoryMonth = parseInt(categoryMonthSelect.value);
-            fetchMonthlyCategoryDistribution(initialSelectedCategoryYear, initialSelectedCategoryMonth, 'expense'); // Varsayılan olarak giderleri göster
 
             fetchCategories();
             fetchUser2FAStatus();
