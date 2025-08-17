@@ -568,7 +568,7 @@
             const clearStockSearchBtn = document.getElementById('clearStockSearchBtn');
             const stockProductsListDiv = document.getElementById('stockProductsList');
             const stockProductsLoadingOverlay = document.getElementById('stockProductsLoadingOverlay');
-            const goToProductsPageBtn = document.getElementById('goToProductsPageBtn');
+            const goToProductsPageBtn = document.getElementById('goToProductsPageBtn'); // Bu butonun referansı
 
             // Barcode Scanner Modal Elements
             const barcodeScannerModal = document.getElementById('barcodeScannerModal');
@@ -933,11 +933,11 @@
                                 ${product.barcode ? `<p class="text-sm text-gray-400">Barkod: <span class="font-mono text-gray-200">${product.barcode}</span></p>` : ''}
                             </div>
                             <div class="flex items-center space-x-2 mt-3 md:mt-0">
-                                <button class="stock-decrease-btn p-2 rounded-full bg-red-800 hover:bg-red-700 text-red-100 transition-colors duration-200 transform hover:scale-110 shadow-sm" data-id="${product._id}">
+                                <button class="stock-decrease-btn p-2 rounded-full bg-gradient-to-r from-red-800 to-red-900 hover:from-red-700 hover:to-red-800 text-red-100 transition-all duration-200 transform hover:scale-110 shadow-sm" data-id="${product._id}">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <span class="current-stock-display text-xl font-bold text-gray-100">${product.quantity}</span>
-                                <button class="stock-increase-btn p-2 rounded-full bg-green-800 hover:bg-green-700 text-green-100 transition-colors duration-200 transform hover:scale-110 shadow-sm" data-id="${product._id}">
+                                <button class="stock-increase-btn p-2 rounded-full bg-gradient-to-r from-green-800 to-green-900 hover:from-green-700 hover:to-green-800 text-green-100 transition-all duration-200 transform hover:scale-110 shadow-sm" data-id="${product._id}">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -1164,6 +1164,16 @@
                     closeSidebar();
                 });
             }
+            // Ürün Yönetimine Geri Dön butonu için özel dinleyici
+            if (goToProductsPageBtn) {
+                goToProductsPageBtn.addEventListener('click', (e) => {
+                    console.log("[DEBUG] Ürün Yönetimine Geri Dön butonuna tıklandı."); // Hata ayıklama için log
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/products.html'; // Bu yolu kontrol edin
+                    closeSidebar();
+                });
+            }
+            // Sidebar'daki Ürün Yönetimi linki için
             if (manageProductsBtn) {
                 manageProductsBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1171,6 +1181,7 @@
                     closeSidebar();
                 });
             }
+
             if (goToSalesManagementBtn) {
                 goToSalesManagementBtn.addEventListener('click', (e) => {
                     e.preventDefault();
