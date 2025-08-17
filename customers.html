@@ -529,7 +529,7 @@
             <button class="modal-close-btn" onclick="closeCustomerCreditTransactionsModal()">&times;</button>
             <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veresiye İşlemleri: <span id="creditCustomerName" class="text-blue-200"></span></h3>
             <div class="mb-5 p-4 bg-gray-700 rounded-md shadow-inner">
-                <p class="text-lg font-semibold text-gray-200">Mevcut Veresiye Borcu: <span id="currentCreditDebt" class="text-red-400 ml-2">0.00 TL</span></p>
+                <p class="text-lg font-semibold text-gray-200">Mevcut Veresiye Borcu: <span class="text-red-400 ml-2"><span id="currentCreditDebt">0.00</span> TL</span></p>
             </div>
             <form id="addCreditPaymentForm" class="space-y-4 mb-6 p-4 bg-gray-800 rounded-md border border-gray-700">
                 <h4 class="text-lg font-semibold text-gray-200 mb-3">Yeni Ödeme/Borç Ekle</h4>
@@ -565,11 +565,35 @@
         const initialUserId = localStorage.getItem('userId');
         const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
 
-        // Redirect if not logged in
-        if (!initialJwtToken || !initialUserId) {
-            window.location.href = 'auth.html';
+        // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.status === 404 && options.method === 'DELETE') {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Kaynak bulunamadı.');
+                    }
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        if (response.status === 401 || response.status === 403) {
+                            handleAuthError();
+                            return;
+                        }
+                        throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i < retries - 1) {
+                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                    } else {
+                        throw error;
+                    }
+                }
+            }
         }
 
+        // Redirect if not logged in
         // JWT Token'ı parse eden yardımcı fonksiyon
         function parseJwt (token) {
             try {
@@ -586,7 +610,7 @@
         };
 
         const decodedToken = parseJwt(initialJwtToken);
-        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
+        if (!initialJwtToken || !initialUserId || !decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== initialUserId) {
             console.warn("JWT invalid or expired. Redirecting to login.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
@@ -606,7 +630,7 @@
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
             const appHeader = document.getElementById('appHeader');
-            const headerLeftGroup = document.getElementById('headerLeftGroup'); // Yeni: header sol grubu
+            const headerLeftGroup = document.getElementById('headerLeftGroup');
 
             // Customer Form Elements
             const newCustomerForm = document.getElementById('newCustomerForm');
@@ -640,7 +664,7 @@
             const customerCreditTransactionsModal = document.getElementById('customerCreditTransactionsModal');
             const creditCustomerNameSpan = document.getElementById('creditCustomerName');
             const currentCreditDebtSpan = document.getElementById('currentCreditDebt');
-            const creditCustomerIdInput = document.getElementById('creditCustomerId'); // Hidden input for customerId
+            const creditCustomerIdInput = document.getElementById('creditCustomerId');
             const addCreditPaymentForm = document.getElementById('addCreditPaymentForm');
             const creditAmountInput = document.getElementById('creditAmount');
             const creditTransactionTypeSelect = document.getElementById('creditTransactionType');
@@ -819,7 +843,7 @@
                     }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/customers`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/customers`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -871,7 +895,7 @@
                 url += `&timestamp=${Date.now()}`; // Cache busting
 
                 try {
-                    const response = await fetch(url, {
+                    const response = await fetchWithRetry(url, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
@@ -985,7 +1009,7 @@
 
                 document.querySelectorAll('.delete-customer-btn').forEach(button => {
                     console.log(`[DEBUG-LISTENER-ATTACH] 'Sil' butonuna dinleyici eklendi - ID: ${button.dataset.customerId}, Ad: ${button.dataset.customerName}`);
-                    button.addEventListener('click', (e) => {
+                    button.addEventListener('click', async (e) => { // async eklendi
                         const clickedButton = e.target.closest('button');
                         if (!clickedButton) return;
                         const customerId = clickedButton.dataset.customerId;
@@ -993,7 +1017,7 @@
                         console.log(`[DEBUG-CLICK] 'Sil' butonuna tıklandı - Okunan ID: ${customerId}, Okunan Ad: ${customerName}`);
                         showConfirmBox(`'${customerName}' adlı müşteriyi silmek istediğinizden emin misiniz?`, async () => {
                             try {
-                                const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+                                const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, { // fetchWithRetry kullanıldı
                                     method: 'DELETE',
                                     headers: { 'Authorization': `Bearer ${getToken()}` }
                                 });
@@ -1017,7 +1041,7 @@
             async function openEditCustomerModal(customerId) {
                 console.log(`[DEBUG] openEditCustomerModal çağrıldı, ID: ${customerId}`);
                 try {
-                    const response = await fetch(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}?userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const customer = await response.json();
@@ -1069,7 +1093,7 @@
                     }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/customers/${customerId}`, { // fetchWithRetry kullanıldı
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1102,7 +1126,7 @@
                 if (customerSalesHistoryDiv) customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Yükleniyor...</p>';
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/sales?customerId=${customerId}&userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const salesHistory = await response.json();
@@ -1121,6 +1145,7 @@
                         customerSalesHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait geçmiş satış bulunamadı.</p>';
                     } else {
                         salesHistory.forEach(sale => {
+                            // DÜZELTME: saleDate'i UTC olarak kaydettiğimizi varsayarsak, toLocaleDateString ile doğru formatta gösteririz.
                             const saleDate = new Date(sale.saleDate).toLocaleDateString('tr-TR');
                             const itemsHtml = sale.saleItems.map(item => `
                                 <li class="text-xs text-gray-300 ml-4">${item.productName} (${item.quantity} ${item.unit}) - ${item.totalPrice.toFixed(2)} TL</li>
@@ -1162,8 +1187,7 @@
             async function openCreditTransactionsModal(customerId, customerName, currentDebt) {
                 console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
 
-                // currentOpenCustomerIdForCredit'i set ediyoruz
-                currentOpenCustomerIdForCredit = customerId;
+                currentOpenCustomerIdForCredit = customerId; // Global değişkeni set ediyoruz
 
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
@@ -1172,7 +1196,7 @@
 
                 try {
                     // Veresiye geçmişini çekmek için doğru endpoint'i kullanıyoruz
-                    const response = await fetch(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, {
+                    const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit/${customerId}?userId=${getUserId()}`, { // fetchWithRetry kullanıldı
                         headers: { 'Authorization': `Bearer ${getToken()}` }
                     });
                     const transactions = await response.json();
@@ -1191,11 +1215,12 @@
                         creditTransactionHistoryDiv.innerHTML = '<p class="text-center text-gray-400 py-2">Bu müşteriye ait veresiye işlem geçmişi bulunamadı.</p>';
                     } else {
                         transactions.forEach(tx => {
+                            // DÜZELTME: tx.date'i UTC olarak kaydettiğimizi varsayarsak, toLocaleDateString ile doğru formatta gösteririz.
                             const txDate = new Date(tx.date).toLocaleDateString('tr-TR');
                             const txType = tx.type === 'payment' ? 'Ödeme' : 'Borç Eklendi';
                             const txAmount = tx.amount.toFixed(2);
                             const txColor = tx.type === 'payment' ? 'text-green-400' : 'text-red-400';
-                            const txIcon = tx.type === 'payment' ? 'fa-arrow-down' : 'fa-arrow-up'; // Ödeme: para girişi, Borç: para çıkışı
+                            const txIcon = tx.type === 'payment' ? 'fa-arrow-down' : 'fa-arrow-up';
 
                             const txEntry = document.createElement('div');
                             txEntry.className = 'bg-gray-800 p-4 rounded-md border border-gray-700 flex items-center justify-between';
@@ -1231,14 +1256,13 @@
                     console.log("[DEBUG] Customer Credit Transactions Modal kapatıldı.");
                 }
                 if (addCreditPaymentForm) addCreditPaymentForm.reset();
-                currentOpenCustomerIdForCredit = null; // Modalı kapatırken global değişkeni temizle
+                currentOpenCustomerIdForCredit = null;
             };
 
             // Veresiye Ödeme/Borç Ekleme Formu
             if (addCreditPaymentForm) {
                 addCreditPaymentForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    // customerId artık global değişkenden alınıyor
                     const customerId = currentOpenCustomerIdForCredit;
                     const amount = parseFloat(creditAmountInput?.value || '0');
                     const type = creditTransactionTypeSelect?.value;
@@ -1246,7 +1270,7 @@
 
                     console.log("[DEBUG] Veresiye işlemi gönderme girişimi.");
                     const requestBody = {
-                        customerId, // Global değişkenden gelen customerId'yi kullan
+                        customerId,
                         amount: amount,
                         type,
                         description,
@@ -1266,7 +1290,7 @@
                     }
 
                     try {
-                        const response = await fetch(`${API_BASE_URL}/transactions/credit`, {
+                        const response = await fetchWithRetry(`${API_BASE_URL}/transactions/credit`, { // fetchWithRetry kullanıldı
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -1497,4 +1521,3 @@
     </script>
 </body>
 </html>
-

@@ -11,8 +11,8 @@ router.get('/users/me', authenticateToken, async (req, res) => {
     try {
         const db = getDb();
         const user = await db.collection('users').findOne(
-            { _id: new ObjectId(req.user.userId) },
-            { projection: { password: 0, twoFactorSecret: 0, recoveryCodes: 0, verificationToken: 0, verificationTokenExpires: 0 } } // Hassas bilgileri gönderme
+            { _id: new ObjectId(req.user.userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
+            { projection: { password: 0, twoFactorSecret: 0, recoveryCodes: 0, verificationToken: 0, verificationTokenExpires: 0 } }
         );
 
         if (!user) {
@@ -33,10 +33,10 @@ router.post('/users/disable-2fa', authenticateToken, async (req, res) => {
     try {
         const db = getDb();
         const result = await db.collection('users').updateOne(
-            { _id: new ObjectId(userId) },
+            { _id: new ObjectId(userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
             {
-                $set: { is2FAEnabled: false, twoFactorSecret: null }, // 2FA'yı kapat ve gizli anahtarı sil
-                $unset: { recoveryCodes: "" } // Kurtarma kodlarını da sil
+                $set: { is2FAEnabled: false, twoFactorSecret: null },
+                $unset: { recoveryCodes: "" }
             }
         );
 
@@ -50,6 +50,5 @@ router.post('/users/disable-2fa', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
     }
 });
-
 
 module.exports = router;

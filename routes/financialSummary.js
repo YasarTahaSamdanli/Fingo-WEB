@@ -47,15 +47,15 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
-        // DÜZELTME: Date.UTC yerine yerel saat dilimine göre tarih oluşturuldu.
-        const startOfYear = new Date(parseInt(year), 0, 1);
-        const endOfYear = new Date(parseInt(year) + 1, 0, 1);
+        // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
+        const startOfYear = new Date(Date.UTC(parseInt(year), 0, 1)); // Yılın ilk günü, 00:00:00 UTC
+        const endOfYear = new Date(Date.UTC(parseInt(year) + 1, 0, 1)); // Bir sonraki yılın ilk günü, 00:00:00 UTC
 
         const annualSummary = await db.collection('transactions').aggregate([
             {
                 $match: {
                     userId: new ObjectId(userId),
-                    date: { $gte: startOfYear, $lt: endOfYear }
+                    date: { $gte: startOfYear, $lt: endOfYear } // $lt kullanmak daha güvenlidir
                 }
             },
             {
@@ -103,17 +103,17 @@ router.get('/financial-summary/monthly', authenticateToken, async (req, res) => 
 
     try {
         const db = getDb();
-        // DÜZELTME: Date.UTC yerine yerel saat dilimine göre tarih oluşturuldu.
-        const startOfMonth = new Date(parseInt(year), parseInt(month), 1);
-        const endOfMonth = new Date(parseInt(year), parseInt(month) + 1, 1);
+        // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
+        const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1)); // Ayın ilk günü, 00:00:00 UTC
+        const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) + 1, 1)); // Bir sonraki ayın ilk günü, 00:00:00 UTC
 
-        console.log(`Backend: Aylık özet isteği - Yıl: ${year}, Ay (API'den Gelen): ${month}, MongoDB için Başlangıç Tarihi: ${startOfMonth}, Bitiş Tarihi: ${endOfMonth}`); // Debug log
+        console.log(`Backend: Aylık özet isteği - Yıl: ${year}, Ay (API'den Gelen): ${month}, MongoDB için Başlangıç Tarihi (UTC): ${startOfMonth}, Bitiş Tarihi (UTC): ${endOfMonth}`); // Debug log
 
         const monthlySummary = await db.collection('transactions').aggregate([
             {
                 $match: {
                     userId: new ObjectId(userId),
-                    date: { $gte: startOfMonth, $lt: endOfMonth }
+                    date: { $gte: startOfMonth, $lt: endOfMonth } // $lt kullanmak daha güvenlidir
                 }
             },
             {
@@ -178,9 +178,9 @@ router.get('/financial-summary/monthly-category-distribution', authenticateToken
         return res.status(400).json({ message: 'Geçerli bir "type" (income veya expense) belirtmelisiniz.' });
     }
 
-    // DÜZELTME: Date.UTC yerine yerel saat dilimine göre tarih oluşturuldu.
-    const startOfMonth = new Date(parseInt(year), parseInt(month), 1);
-    const endOfMonth = new Date(parseInt(year), parseInt(month) + 1, 1);
+    // DÜZELTME: Tarihleri UTC olarak oluşturmaya devam ediyoruz.
+    const startOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month), 1));
+    const endOfMonth = new Date(Date.UTC(parseInt(year), parseInt(month) + 1, 1));
 
     let matchQuery = {
         userId: new ObjectId(userId),
