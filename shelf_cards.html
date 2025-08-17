@@ -6,7 +6,7 @@
     <title>Fingo - Reyon Kartları</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons (Dönüş butonu için) -->
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,16 +16,11 @@
             background-color: #0d1117; /* Ana koyu ton */
             color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
 
-            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            /* customers.html'den kopyalanan kozmik arka plan */
             background-image:
-                /* Büyük, yumuşak, mavimsi bulutsu */
                 radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
-                /* Büyük, yumuşak, morumsu bulutsu */
                 radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
-                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
                 radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
-
-                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
                 radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
                 radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
                 radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
@@ -33,27 +28,26 @@
                 radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
                 radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
 
-            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
-            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
-            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
-            overflow-x: hidden; /* Yatay kaydırmayı engelle */
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+            background-attachment: fixed;
+            overflow-x: hidden;
         }
 
-        /* Input ve Select Elementleri için Tema Uyumu */
+        /* customers.html'den kopyalanan form ve mesaj kutusu stilleri */
         .form-input, .form-select {
-            background-color: #1A202C; /* Koyu input arkaplanı */
-            color: #E2E8F0; /* Açık metin rengi */
-            border-color: #4A5568; /* Koyu border */
+            background-color: #1A202C;
+            color: #E2E8F0;
+            border-color: #4A5568;
+            border-radius: 0.5rem; /* rounded-lg */
         }
         .form-input::placeholder {
-            color: #A0AEC0; /* Açık placeholder */
+            color: #A0AEC0;
         }
         .form-input:focus, .form-select:focus {
-            border-color: #60A5FA; /* Mavi odaklama rengi */
-            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5); /* Mavi halka */
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
         }
-
-        /* Message Box stilleri */
         .message-box {
             position: fixed;
             top: 20px;
@@ -75,14 +69,13 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .message-box.success { background-color: #10B981; } /* Tailwind green-500 */
-        .message-box.error { background-color: #EF4444; } /* Tailwind red-500 */
-        .message-box.info { background-color: #3B82F6; } /* Tailwind blue-500 */
-        .message-box.warning { background-color: #F59E0B; } /* Tailwind amber-500 */
+        .message-box.success { background-color: #10B981; }
+        .message-box.error { background-color: #EF4444; }
+        .message-box.info { background-color: #3B82F6; }
+        .message-box.warning { background-color: #F59E0B; }
         .message-box.confirm {
-            background-color: #607D8B; /* Tailwind blue-gray-500 */
-            min-width: 300px;
-            flex-direction: column; /* Butonları alt alta sırala */
+            background-color: #607D8B;
+            flex-direction: column;
             align-items: center;
         }
         .message-box-close {
@@ -93,12 +86,101 @@
             cursor: pointer;
             margin-left: 15px;
             line-height: 1;
-        }
-        .message-box.confirm .message-box-close {
-            position: absolute;
+            position: absolute; /* Confirm box için konumlandırma */
             top: 5px;
             right: 10px;
         }
+        .notification-center {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 320px;
+            max-height: 80vh;
+            background-color: #2D3748;
+            color: #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 900;
+            transform: translateX(110%);
+            opacity: 0;
+            visibility: hidden;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+        .notification-center.active {
+            transform: translateX(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .notification-header {
+            padding: 15px;
+            border-bottom: 1px solid #4A5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #e2e8f0;
+        }
+        .notification-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px 15px;
+        }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: flex-start;
+        }
+        .notification-item.unread {
+            background-color: #1A202C;
+            border-left: 4px solid #6366F1;
+            color: #E2E8F0;
+        }
+        .notification-item.read {
+            background-color: #2D3748;
+            border-left: 4px solid #4A5568;
+            color: #A0AEC0;
+        }
+        .notification-item.success { border-left-color: #34D399; }
+        .notification-item.error { border-left-color: #F87171; }
+        .notification-item.warning { border-left-color: #FBBF24; }
+        .notification-item.info { border-left-color: #60A5FA; }
+
+        .notification-item-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            color: #A0AEC0;
+        }
+        .notification-item.success .notification-item-icon { color: #34D399; }
+        .notification-item.error .notification-item-icon { color: #F87171; }
+        .notification-item.warning .notification-item-icon { color: #FBBF24; }
+        .notification-item.info .notification-item-icon { color: #60A5FA; }
+
+        .notification-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #4A5568;
+            text-align: center;
+        }
+        .notification-count-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+        }
+
         /* Spinner CSS */
         .spinner {
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -113,22 +195,70 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Sadece yazıcı çıktısı için özel stiller - HEM DİKEY HEM YATAY İÇİN GÜNCELLEDİM */
+        /* customers.html'den kopyalanan sidebar ve scrollbar stilleri */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            width: 256px;
+            z-index: 50;
+            overflow-y: auto;
+        }
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebarOverlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        #sidebarOverlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out;
+            flex-grow: 1;
+            padding-top: 16px;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2D3748;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366F1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4F46E5;
+        }
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: #6366F1 #2D3748;
+        }
+
+        /* Sadece yazıcı çıktısı için özel stiller - HEM DİKEY HEM YATAY İÇİN GÜNCELLEMELER */
         @media print {
             body {
-                background-color: #fff;
+                background-color: #fff !important; /* Yazdırma için beyaz arka plan */
                 margin: 0;
                 padding: 0;
+                color: #000 !important; /* Yazdırma için siyah metin */
             }
+            /* Yazdırma sırasında gizlenecek elementler */
             header,
             main .filter-section,
             main .product-selection-section,
             main .print-button-container,
             #messageBox,
-            #goToDashboardBtn,
-            #logoutBtn,
-            #loggedInUser,
-            #cardOrientationSelect {
+            #notificationCenter,
+            #sidebar,
+            #sidebarOverlay {
                 display: none !important;
             }
 
@@ -139,20 +269,21 @@
                 justify-content: flex-start;
                 align-items: flex-start;
                 width: 100%;
+                height: auto; /* İçeriğe göre yükseklik ayarla */
                 margin: 0;
                 padding: 0;
             }
 
-            /* Dikey Kart Stilleri (ESKİ HALİNE DÖNDÜRÜLDÜ - Resimsiz, Barkodsuz) */
+            /* Dikey Kart Stilleri */
             .vertical-shelf-card-wrapper {
                 width: 33.33% !important; /* A4 kağıdında yan yana 3 kart */
                 flex: 0 0 33.33% !important;
                 box-sizing: border-box;
-                padding: 5mm;
+                padding: 5mm; /* Kartlar arası boşluk */
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                page-break-inside: avoid;
+                page-break-inside: avoid; /* Kartın ortadan bölünmesini engelle */
             }
             .vertical-shelf-card {
                 border: 1px dashed #ccc;
@@ -170,12 +301,13 @@
                 border-radius: 0;
             }
 
-            .vertical-shelf-card h3 {
+            .vertical-shelf-card h3.product-name {
                 font-size: 16pt;
                 font-weight: bold;
                 text-align: center;
                 margin-bottom: 5mm;
                 color: #000;
+                line-height: 1.2;
             }
             .vertical-shelf-card .price {
                 font-size: 28pt;
@@ -197,9 +329,9 @@
                 margin-top: auto;
             }
 
-            /* YATAY KART STİLLERİ - ULTRA KOMPAKT V2 (FİYAT GÜNCELLEME TARİHİ EKLENDİ) */
+            /* YATAY KART STİLLERİ - ULTRA KOMPAKT V2 */
             .horizontal-shelf-card-wrapper {
-                width: 50% !important; /* A4 kağıdında yan yana 2 kart için - Değişmez */
+                width: 50% !important; /* A4 kağıdında yan yana 2 kart */
                 flex: 0 0 50% !important;
                 box-sizing: border-box;
                 padding: 0mm; /* Genel dış boşluğu SIFIRLA */
@@ -310,7 +442,6 @@
             }
             .horizontal-shelf-card .price-per-kg {
                 text-align: right;
-                /* flex-grow: 1;  Eğer boşluk kalsın istersen açabilirsin, şimdilik kapatıyorum */
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -329,101 +460,167 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header - Başlık ve Navigasyon -->
-    <header class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0">
-        <div class="flex items-center">
-            <!-- Ana Sayfa Butonu -->
-            <button id="goToDashboardBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
-                <i class="fas fa-home text-white text-xl"></i>
+    <!-- Header (customers.html'den kopyalandı) -->
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+        <!-- Left group: menu button and title -->
+        <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
+            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
+            <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
+                <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-2xl md:text-3xl font-bold text-blue-300">Fingo Reyon Kartları Oluştur</h1>
+            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
+            <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Reyon Kartları</h1>
         </div>
+        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
-            <span id="loggedInUser" class="text-gray-200 text-sm md:text-base font-medium hidden md:block"></span>
+            <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
+                <i class="fas fa-bell text-white text-xl"></i>
+                <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
+            </button>
+            <!-- Hoş Geldin metni kaldırıldı -->
             <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
     <!-- Ana İçerik Alanı -->
-    <main class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl pt-20"> <!-- Header yüksekliği kadar padding-top -->
-        <p class="text-lg text-gray-400 text-center mb-10 font-light">Yazdırmak istediğiniz ürünleri seçin ve reyon kartlarını oluşturun.</p>
+    <div class="flex flex-1 pt-16">
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Sol Sütun: Ürün Arama ve Seçim -->
-            <div class="lg:col-span-1 filter-section">
-                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-                    <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Ürünleri Seçin</h2>
-                    <div class="grid grid-cols-1 gap-4 mb-4">
-                        <div>
-                            <label for="searchProductInput" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
-                            <input type="text" id="searchProductInput" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
-                        </div>
-                        <div>
-                            <label for="filterCategorySelect" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
-                            <select id="filterCategorySelect" class="form-select w-full p-3 text-base shadow-sm">
-                                <option value="">Tüm Kategoriler</option>
-                                <!-- Kategoriler JS ile yüklenecek -->
-                            </select>
-                        </div>
-                         <!-- Kart Oryantasyonu Seçimi -->
-                        <div>
-                            <label for="cardOrientationSelect" class="block text-gray-300 text-sm font-semibold mb-2">Kart Oryantasyonu:</label>
-                            <select id="cardOrientationSelect" class="form-select w-full p-3 text-base shadow-sm">
-                                <option value="vertical">Dikey</option>
-                                <option value="horizontal">Yatay</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="flex space-x-3 mt-6 mb-4">
-                        <button id="applyFilterBtn" class="flex-1 bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Filtrele</button>
-                        <button id="clearFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-colors shadow-md font-semibold text-lg">Filtreleri Temizle</button>
-                    </div>
+        <!-- Sidebar (customers.html'den kopyalandı) -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
+            <div class="flex items-center justify-between mb-4 mt-4">
+                <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
+                <!-- Sidebar kapatma tuşu -->
+                <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="space-y-3">
+                <a href="/Fingo-WEB/index.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-home"></i> <span class="text-gray-200">Ana Sayfa</span>
+                </a>
+                <a href="/Fingo-WEB/customers.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-users"></i> <span class="text-gray-200">Müşteri Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/products.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-box"></i> <span class="text-gray-200">Ürün Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/sales_management.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-shopping-cart"></i><span class="text-gray-200">Satış Yönetimi</span>
+                </a>
+                <a href="/Fingo-WEB/recurring_transactions.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-redo"></i> <span class="text-gray-200">Tekrarlayan İşlemler</span>
+                </a>
+                <a href="/Fingo-WEB/reports.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-chart-line"></i> <span class="text-gray-200">Raporları Görüntüle</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
+                    <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
+                </a>
+            </nav>
+        </aside>
 
-                    <div id="availableProductsList" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1 relative">
-                        <!-- Ürünler buraya JS ile yüklenecek -->
-                        <p class="text-center text-gray-400 py-4">Ürünler yükleniyor...</p>
-                        <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
-                            <p class="text-center text-gray-300 text-lg">
-                                <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
-                                Yükleniyor...
-                            </p>
+        <!-- Sidebar Overlay (customers.html'den kopyalandı) -->
+        <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+        <!-- Reyon Kartları Ana İçerik Alanı -->
+        <main id="mainContent" class="flex-1 p-4 md:p-8 lg:p-8 rounded-2xl shadow-xl border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-blue-300 mb-6 text-center">Reyon Kartları Oluştur</h2>
+            <p class="text-lg text-gray-400 text-center mb-8 font-light">Yazdırmak istediğiniz ürünleri seçin ve reyon kartlarını oluşturun.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Sol Sütun: Ürün Arama ve Seçim -->
+                <div class="lg:col-span-1 filter-section">
+                    <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
+                        <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Ürünleri Seçin</h2>
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <div>
+                                <label for="searchProductInput" class="block text-gray-300 text-sm font-semibold mb-2">Ürün Adı Ara:</label>
+                                <input type="text" id="searchProductInput" placeholder="Ürün adına göre ara" class="form-input w-full p-3 text-base shadow-sm">
+                            </div>
+                            <div>
+                                <label for="filterCategorySelect" class="block text-gray-300 text-sm font-semibold mb-2">Kategoriye Göre Filtrele:</label>
+                                <select id="filterCategorySelect" class="form-select w-full p-3 text-base shadow-sm">
+                                    <option value="">Tüm Kategoriler</option>
+                                    <!-- Kategoriler JS ile yüklenecek -->
+                                </select>
+                            </div>
+                             <!-- Kart Oryantasyonu Seçimi -->
+                            <div>
+                                <label for="cardOrientationSelect" class="block text-gray-300 text-sm font-semibold mb-2">Kart Oryantasyonu:</label>
+                                <select id="cardOrientationSelect" class="form-select w-full p-3 text-base shadow-sm">
+                                    <option value="vertical">Dikey</option>
+                                    <option value="horizontal">Yatay</option>
+                                </select>
+                            </div>
                         </div>
+                        <div class="flex space-x-3 mt-6 mb-4">
+                            <button id="applyFilterBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white p-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Filtrele</button>
+                            <button id="clearFilterBtn" class="flex-1 bg-gray-700 text-white p-3 rounded-lg hover:bg-gray-600 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Filtreleri Temizle</button>
+                        </div>
+
+                        <div id="availableProductsList" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1 relative">
+                            <!-- Ürünler buraya JS ile yüklenecek -->
+                            <p class="text-center text-gray-400 py-4">Ürünler yükleniyor...</p>
+                            <div id="productsLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
+                                <p class="text-center text-gray-300 text-lg">
+                                    <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
+                                    Yükleniyor...
+                                </p>
+                            </div>
+                        </div>
+                        <button id="addAllToCardsBtn" class="mt-6 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-3 rounded-lg hover:from-indigo-700 hover:to-indigo-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Tüm Filtrelenenleri Kartlara Ekle</button>
                     </div>
-                    <button id="addAllToCardsBtn" class="mt-6 bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md font-semibold text-lg">Tüm Filtrelenenleri Kartlara Ekle</button>
+                </div>
+
+                <!-- Sağ Sütun: Seçilen Kartlar ve Yazdırma -->
+                <div class="lg:col-span-1 product-selection-section">
+                    <div class="p-6 bg-gray-800 rounded-2xl border border-gray-700 shadow-lg h-full flex flex-col">
+                        <h2 class="text-2xl font-bold text-green-300 mb-6 text-center">Yazdırılacak Reyon Kartları</h2>
+                        <div id="selectedProductsForCards" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1">
+                            <p class="text-center text-gray-400 py-4" id="noSelectedProductsMessage">Henüz seçilen ürün yok.</p>
+                            <!-- Seçilen ürünler buraya JS ile yüklenecek -->
+                        </div>
+                        <button id="clearSelectedProductsBtn" class="mt-6 bg-gradient-to-r from-red-600 to-red-800 text-white p-3 rounded-lg hover:from-red-700 hover:to-red-900 transition-all duration-300 ease-in-out shadow-md font-semibold text-lg">Tüm Seçilenleri Temizle</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Sağ Sütun: Seçilen Kartlar ve Yazdırma -->
-            <div class="lg:col-span-1 product-selection-section">
-                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-                    <h2 class="text-2xl font-bold text-green-300 mb-6 text-center">Yazdırılacak Reyon Kartları</h2>
-                    <div id="selectedProductsForCards" class="space-y-4 max-h-[400px] overflow-y-auto p-3 bg-gray-900 rounded-xl border border-gray-700 flex-1">
-                        <p class="text-center text-gray-400 py-4" id="noSelectedProductsMessage">Henüz seçilen ürün yok.</p>
-                        <!-- Seçilen ürünler buraya JS ile yüklenecek -->
-                    </div>
-                    <button id="clearSelectedProductsBtn" class="mt-6 bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition-colors shadow-md font-semibold text-lg">Tüm Seçilenleri Temizle</button>
-                </div>
+            <!-- Yazdırma Butonu Konteyneri -->
+            <div class="mt-8 text-center print-button-container">
+                <button id="printShelfCardsBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out text-lg font-semibold shadow-xl">
+                    <i class="fas fa-print mr-2"></i> Kartları Yazdır
+                </button>
             </div>
-        </div>
 
-        <!-- Yazdırma Butonu Konteyneri -->
-        <div class="mt-8 text-center print-button-container">
-            <button id="printShelfCardsBtn" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold shadow-xl">
-                <i class="fas fa-print mr-2"></i> Kartları Yazdır
-            </button>
-        </div>
+            <!-- Reyon Kartları Önizleme Alanı (Yazdırıldığında görünür olacak) -->
+            <div class="shelf-cards-container hidden">
+                <!-- Reyon kartları buraya dinamik olarak eklenecek -->
+            </div>
 
-        <!-- Reyon Kartları Önizleme Alanı (Yazdırıldığında görünür olacak) -->
-        <div class="shelf-cards-container hidden">
-            <!-- Reyon kartları buraya dinamik olarak eklenecek -->
-        </div>
+        </main>
+    </div>
 
-    </main>
-
-    <!-- Mesaj Kutusu -->
+    <!-- Message Box (customers.html'den kopyalandı) -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
+    </div>
+
+    <!-- Bildirim Merkezi Paneli (customers.html'den kopyalandı) -->
+    <div id="notificationCenter" class="notification-center">
+        <div class="notification-header">
+            <span>Bildirimler</span>
+            <button id="clearNotificationsBtn" class="text-blue-400 hover:text-blue-200 text-sm">Tümünü Temizle</button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>
+        </div>
+        <div class="notification-footer">
+            <button id="closeNotificationsBtn" class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 text-sm">Kapat</button>
+        </div>
     </div>
 
     <script type="module">
@@ -462,13 +659,38 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOMContentLoaded fired. Initializing Shelf Cards application...");
 
-            // DOM Elementleri
-            const goToDashboardBtn = document.getElementById('goToDashboardBtn');
+            // Header and Sidebar Elements (customers.html'den kopyalandı)
+            const appHeader = document.getElementById('appHeader');
+            const headerLeftGroup = document.getElementById('headerLeftGroup');
+            const headerTitle = document.getElementById('headerTitle'); // Header başlığı
+            const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mainContent = document.getElementById('mainContent');
+
+            // Navigation buttons (sidebar'dan)
+            const goToDashboardBtn = document.querySelector('a[href="/Fingo-WEB/index.html"]');
+            const manageCustomersBtn = document.querySelector('a[href="/Fingo-WEB/customers.html"]');
+            const manageProductsBtn = document.querySelector('a[href="/Fingo-WEB/products.html"]');
+            const goToSalesManagementBtn = document.querySelector('a[href="/Fingo-WEB/sales_management.html"]');
+            const manageRecurringTransactionsBtn = document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]');
+            const viewReportsBtn = document.querySelector('a[href="/Fingo-WEB/reports.html"]');
+            const exportCsvBtn = document.querySelector('a[id="exportCsvBtn"]');
+            const importCsvBtn = document.querySelector('a[id="importCsvBtn"]');
             const logoutBtn = document.getElementById('logoutBtn');
-            const loggedInUserSpan = document.getElementById('loggedInUser');
+
+            // Message Box and Notification Center Elements (customers.html'den kopyalandı)
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
+            const notificationBellBtn = document.getElementById('notificationBellBtn');
+            const notificationCountBadge = document.getElementById('notificationCountBadge');
+            const notificationCenter = document.getElementById('notificationCenter');
+            const notificationList = document.getElementById('notificationList');
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            const closeNotificationsBtn = document.getElementById('closeNotificationsBtn');
 
+            // Shelf Cards Page Specific DOM Elements
             const searchProductInput = document.getElementById('searchProductInput');
             const filterCategorySelect = document.getElementById('filterCategorySelect');
             const applyFilterBtn = document.getElementById('applyFilterBtn');
@@ -482,12 +704,13 @@
             const clearSelectedProductsBtn = document.getElementById('clearSelectedProductsBtn');
             const printShelfCardsBtn = document.getElementById('printShelfCardsBtn');
             const shelfCardsContainer = document.querySelector('.shelf-cards-container');
-            const cardOrientationSelect = document.getElementById('cardOrientationSelect'); // Yeni dropdown
+            const cardOrientationSelect = document.getElementById('cardOrientationSelect');
 
-            let allProducts = []; // Tüm ürünleri saklayacağız
-            let selectedProducts = []; // Yazdırılacak ürünleri saklayacağız
+            let allProducts = [];
+            let selectedProducts = [];
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 
-            // Genel Mesaj Gösterici
+            // Genel Mesaj Gösterici (customers.html'den kopyalandı)
             function showMessage(message, type = 'success') {
                 if (!messageBox || !messageText) {
                     console.error("Message box elements not found!");
@@ -506,7 +729,7 @@
                 }
             }
 
-            // Yetkilendirme Hatası Yönetimi
+            // Yetkilendirme Hatası Yönetimi (customers.html'den kopyalandı)
             function handleAuthError() {
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('userId');
@@ -515,6 +738,111 @@
                 setTimeout(() => {
                     window.location.href = 'auth.html';
                 }, 1500);
+            }
+
+            // Bildirim Fonksiyonları (customers.html'den kopyalandı)
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead });
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+                showMessage(message, type); // showMessageBox yerine showMessage kullanıldı
+            }
+
+            function renderNotifications() {
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p class="text-center text-gray-400 py-4">Henüz bildirim yok.</p>';
+                    return;
+                }
+
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index;
+
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
+                    notificationList.appendChild(notificationItem);
+
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
+                });
+            }
+
+            function updateNotificationCount() {
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
+
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    // showConfirmBox fonksiyonu messageBox'ı kendi yönettiği için burada tekrar tanımlanmasına gerek yok
+                    showMessage('Tüm bildirimleri temizlemek istediğinizden emin misiniz?', 'confirm');
+                    document.getElementById('confirmYes').onclick = () => {
+                        notifications = [];
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                        showMessage('Tüm bildirimler temizlendi.', 'info');
+                    };
+                    document.getElementById('confirmNo').onclick = () => {
+                        showMessage('İşlem iptal edildi.', 'info');
+                    };
+                });
+            }
+
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    notificationCenter.classList.toggle('active');
+                    if (notificationCenter.classList.contains('active')) {
+                        notifications.forEach(n => n.isRead = true);
+                        saveNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
+
+            if (closeNotificationsBtn) {
+                closeNotificationsBtn.addEventListener('click', () => {
+                    notificationCenter.classList.remove('active');
+                });
             }
 
             // Ürünleri Çekme ve Listeleme (Sol Taraftaki Seçim Listesi İçin)
@@ -541,16 +869,17 @@
                         if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
                         throw new Error(`HTTP hata! Durum: ${response.status}`);
                     }
-                    allProducts = await response.json(); // Tüm ürünleri hafızada tut
+                    allProducts = await response.json();
 
                     if (allProducts.length === 0) {
                         if (availableProductsListDiv) availableProductsListDiv.innerHTML = '<p class="text-center text-gray-400 py-4">Filtrelere uygun ürün bulunmamaktadır.</p>';
                     } else {
                         renderAvailableProducts();
                         // Sayfa yüklendiğinde veya ürünler filtrelendiğinde, tüm ürünleri otomatik olarak seçilenlere ekle
-                        selectedProducts = [...allProducts]; // Derin kopya ile atama yapıldı
-                        renderSelectedProducts(); // Seçilen ürünleri tekrar render et
-                        updateCheckboxStates(); // Checkbox durumlarını güncelle
+                        // Bu kısım kaldırıldı, artık sadece manuel ekleme veya "Tüm Filtrelenenleri Kartlara Ekle" butonu ile eklenecek.
+                        // selectedProducts = [...allProducts];
+                        // renderSelectedProducts();
+                        // updateCheckboxStates();
                     }
 
                 } catch (error) {
@@ -574,7 +903,7 @@
                                 ${product.name} (${product.price.toFixed(2)} TL / ${product.displayGrammage || product.unit})
                             </span>
                         </label>
-                        <button data-id="${product._id}" class="add-to-card-btn bg-blue-600 text-white text-xs px-2 py-1 rounded-md hover:bg-blue-700 transition-colors ml-2">Ekle</button>
+                        <button data-id="${product._id}" class="add-to-card-btn bg-gradient-to-r from-blue-600 to-blue-800 text-white text-xs px-2 py-1 rounded-md hover:from-blue-700 hover:to-blue-900 transition-all duration-300 ease-in-out shadow-sm">Ekle</button>
                     `;
                     availableProductsListDiv.appendChild(productItem);
                 });
@@ -639,7 +968,7 @@
                             <span class="text-gray-200 font-medium text-sm">
                                 ${product.name}
                             </span>
-                            <button data-id="${product._id}" class="remove-from-card-btn bg-red-600 text-white text-xs px-2 py-1 rounded-md hover:bg-red-700 transition-colors ml-2">Kaldır</button>
+                            <button data-id="${product._id}" class="remove-from-card-btn bg-gradient-to-r from-red-600 to-red-800 text-white text-xs px-2 py-1 rounded-md hover:from-red-700 hover:to-red-900 transition-all duration-300 ease-in-out shadow-sm">Kaldır</button>
                         `;
                         selectedProductsForCardsDiv.appendChild(productItem);
                     });
@@ -689,6 +1018,12 @@
             }
 
             // Olay Dinleyicileri
+            if (searchProductInput) {
+                searchProductInput.addEventListener('input', () => {
+                    fetchProducts(); // Arama inputuna yazıldıkça filtrele
+                });
+            }
+
             if (applyFilterBtn) {
                 applyFilterBtn.addEventListener('click', fetchProducts);
             }
@@ -701,7 +1036,6 @@
             }
             if (addAllToCardsBtn) {
                 addAllToCardsBtn.addEventListener('click', () => {
-                    // Sadece filtre uygulanmış ürünleri ekle
                     let addedCount = 0;
                     allProducts.forEach(product => {
                         if (!selectedProducts.some(p => p._id === product._id)) {
@@ -724,10 +1058,16 @@
                         showMessage('Kartlar zaten boş.', 'info');
                         return;
                     }
-                    selectedProducts = [];
-                    renderSelectedProducts();
-                    updateCheckboxStates();
-                    showMessage('Tüm seçilen ürünler kartlardan kaldırıldı.', 'success');
+                    showMessage('Tüm seçilen ürünleri kartlardan kaldırmak istediğinizden emin misiniz?', 'confirm');
+                    document.getElementById('confirmYes').onclick = () => {
+                        selectedProducts = [];
+                        renderSelectedProducts();
+                        updateCheckboxStates();
+                        showMessage('Tüm seçilen ürünler kartlardan kaldırıldı.', 'success');
+                    };
+                    document.getElementById('confirmNo').onclick = () => {
+                        showMessage('İşlem iptal edildi.', 'info');
+                    };
                 });
             }
 
@@ -822,17 +1162,96 @@
                 window.print();
             }
 
-            // Anasayfaya Dön Butonu
-            if (goToDashboardBtn) {
-                goToDashboardBtn.addEventListener('click', () => {
-                    window.location.href = 'index.html';
-                });
-            } else { console.error("Go to Dashboard button not found!"); }
+            // Sidebar Fonksiyonları (customers.html ve products.html ile senkronize)
+            const closeSidebar = () => {
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                    sidebar.classList.add('-translate-x-full');
+                }
+                if (sidebarOverlay) sidebarOverlay.classList.remove('active');
 
-            // Kullanıcı Adı Bilgisi
-            if (loggedInUserSpan && decodedToken && decodedToken.email) {
-                loggedInUserSpan.textContent = `Hoş Geldin, ${decodedToken.email.split('@')[0]}...`;
-            } else { console.error("Logged in user span or decoded token not found!"); }
+                if (window.innerWidth >= 1024) {
+                    if (mainContent) mainContent.classList.remove('lg:ml-64');
+                    if (appHeader) appHeader.classList.remove('lg:pl-64');
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-center');
+                        headerLeftGroup.classList.add('lg:justify-start');
+                    }
+                    if (headerTitle) headerTitle.classList.remove('lg:hidden');
+                }
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.remove('hidden');
+            };
+
+            const openSidebar = () => {
+                if (sidebar) {
+                    sidebar.classList.add('open');
+                    sidebar.classList.remove('-translate-x-full');
+                }
+
+                if (window.innerWidth < 1024) {
+                    if (sidebarOverlay) sidebarOverlay.classList.add('active');
+                } else {
+                    if (mainContent) mainContent.classList.add('lg:ml-64');
+                    if (appHeader) appHeader.classList.add('lg:pl-64');
+                    if (headerLeftGroup) {
+                        headerLeftGroup.classList.remove('lg:justify-start');
+                        headerLeftGroup.classList.add('lg:justify-center');
+                    }
+                    if (headerTitle) headerTitle.classList.add('lg:hidden');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                }
+                if (sidebarToggleBtn) sidebarToggleBtn.classList.add('hidden');
+            };
+
+            const initializeSidebarState = () => {
+                if (window.innerWidth >= 1024) {
+                    openSidebar();
+                } else {
+                    closeSidebar();
+                }
+            };
+
+            window.addEventListener('resize', initializeSidebarState);
+
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', () => {
+                    if (sidebar && sidebar.classList.contains('open')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
+                });
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    closeSidebar();
+                });
+            }
+
+            // Yönlendirme Butonları (customers.html ve products.html ile senkronize)
+            document.querySelector('a[href="/Fingo-WEB/index.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/index.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/customers.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/customers.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/products.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/products.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/sales_management.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/sales_management.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/recurring_transactions.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/recurring_transactions.html'; closeSidebar(); });
+            document.querySelector('a[href="/Fingo-WEB/reports.html"]')?.addEventListener('click', (e) => { e.preventDefault(); window.location.href = '/Fingo-WEB/reports.html'; closeSidebar(); });
+            document.querySelector('a[id="exportCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessage('Veri dışa aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
+            document.querySelector('a[id="importCsvBtn"]')?.addEventListener('click', (e) => { e.preventDefault(); showMessage('Veri içe aktarma özelliği geliştiriliyor...', 'info'); closeSidebar(); });
+
+            // Anasayfaya Dön Butonu (Header'daki)
+            if (goToDashboardBtn) {
+                goToDashboardBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.location.href = '/Fingo-WEB/index.html';
+                });
+            }
 
             // Çıkış Yap Butonu
             if (logoutBtn) {
@@ -840,14 +1259,16 @@
                     localStorage.removeItem('jwtToken');
                     localStorage.removeItem('userId');
                     localStorage.removeItem('userEmail');
-                    localStorage.removeItem('fingoNotifications'); // Bildirimleri de temizle
+                    localStorage.removeItem('fingoNotifications');
                     window.location.href = 'auth.html';
                 });
-            } else { console.error("Logout button not found!"); }
+            }
 
             // Sayfa yüklendiğinde çalışacak fonksiyonlar
             populateCategoryDropdowns();
             fetchProducts();
+            loadNotifications(); // Bildirimleri yükle
+            initializeSidebarState(); // Sayfa yüklendiğinde sidebar durumunu ayarla
         });
     </script>
 </body>
