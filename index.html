@@ -372,6 +372,13 @@
             border-bottom-right-radius: 0.5rem;
         }
 
+        /* İşlem Geçmişi Tablosu için Scrollbar */
+        #transactionList {
+            max-height: 400px; /* Yaklaşık 8 satır + başlık için yeterli yükseklik */
+            overflow-y: auto; /* Dikey kaydırmayı etkinleştir */
+            overflow-x: hidden; /* Yatay kaydırmayı devre dışı bırak (zaten vardı, emin olmak için) */
+        }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
