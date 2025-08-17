@@ -975,6 +975,7 @@
                         throw new Error(errorData.message || 'Genel özet çekilemedi.');
                     }
                     const summary = await response.json();
+                    console.log("[FRONTEND DEBUG] fetchGeneralFinancialSummary - Alınan Veri:", summary); // NEW LOG
                     if (totalIncomeSpan) totalIncomeSpan.textContent = `${parseFloat(summary.totalRevenue).toFixed(2)} TL`;
                     if (totalExpenseSpan) totalExpenseSpan.textContent = `${parseFloat(summary.totalExpenses).toFixed(2)} TL`;
                     if (netBalanceSpan) netBalanceSpan.textContent = `${parseFloat(summary.currentBalance).toFixed(2)} TL`;
@@ -1011,6 +1012,7 @@
                         throw new Error(errorData.message || 'İşlemler çekilemedi.');
                     }
                     const transactions = await response.json();
+                    console.log("[FRONTEND DEBUG] fetchTransactions - Alınan Veri:", transactions); // NEW LOG
 
                     if (transactionsTableBody) transactionsTableBody.innerHTML = '';
 
@@ -1131,6 +1133,7 @@
                         throw new Error(errorData.message || 'İşlem çekilemedi.');
                     }
                     const transaction = await response.json();
+                    console.log("[FRONTEND DEBUG] editTransaction - Alınan Veri:", transaction); // NEW LOG
 
                     if (document.getElementById('type')) document.getElementById('type').value = transaction.type;
                     if (document.getElementById('amount')) document.getElementById('amount').value = transaction.amount;
@@ -1231,6 +1234,7 @@
                         throw new Error(errorData.message || 'Kategoriler çekilemedi.');
                     }
                     const categories = await response.json();
+                    console.log("[FRONTEND DEBUG] fetchCategories - Alınan Veri:", categories); // NEW LOG
                     renderCategories(categories);
                     populateCategoryDropdowns(categories);
                 } catch (error) {
@@ -1425,7 +1429,7 @@
                         throw new Error(errorData.message || 'Aylık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("[DEBUG] Aylık Özet Verisi Alındı:", data); // Debug log eklendi
+                    console.log("[FRONTEND DEBUG] fetchMonthlySummary - Alınan Veri:", data); // NEW LOG
                     renderMonthlySummaryChart(data);
                 } catch (error) {
                     console.error('Aylık özet çekilirken hata:', error);
@@ -1434,7 +1438,7 @@
             }
 
             function renderMonthlySummaryChart(data) {
-                console.log("[DEBUG] renderMonthlySummaryChart çağrıldı, veri:", data); // Debug log eklendi
+                console.log("[FRONTEND DEBUG] renderMonthlySummaryChart çağrıldı, veri:", data); // Debug log eklendi
                 if (!monthlySummaryChartCtx) {
                     console.error("monthlySummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('monthlySummaryChart');
@@ -1457,8 +1461,8 @@
                     monthlyChart.destroy();
                 }
 
-                if (data.length === 0) {
-                    console.log("Aylık özet için veri yok.");
+                if (data.length === 0 || (data.length === 1 && data[0].income === 0 && data[0].expense === 0 && data[0].netBalance === 0)) {
+                    console.log("Aylık özet için veri yok veya sıfır değerler döndü.");
                     const chartContainer = monthlySummaryChartCtx.canvas.parentElement;
                     if (chartContainer) {
                         chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili ay için finansal özet verisi bulunamadı.</p>';
@@ -1472,13 +1476,16 @@
                     }
                 }
 
-                const labels = data.map(item => {
+                // Veri tek bir obje olarak geliyorsa, onu Chart.js'in beklediği dizi formatına dönüştür
+                const chartData = Array.isArray(data) ? data : [data];
+
+                const labels = chartData.map(item => {
                     const monthName = new Date(item.year, item.month - 1).toLocaleString('tr-TR', { month: 'long' });
                     return `${monthName} ${item.year}`;
                 });
-                const incomeData = data.map(item => item.income);
-                const expenseData = data.map(item => item.expense);
-                const netBalanceData = data.map(item => item.netBalance);
+                const incomeData = chartData.map(item => item.income);
+                const expenseData = chartData.map(item => item.expense);
+                const netBalanceData = chartData.map(item => item.netBalance);
 
                 monthlyChart = new Chart(monthlySummaryChartCtx, {
                     type: 'line',
@@ -1567,7 +1574,7 @@
                         throw new Error(errorData.message || 'Yıllık özet çekilemedi.');
                     }
                     const data = await response.json();
-                    console.log("[DEBUG] Yıllık Özet Verisi Alındı:", data); // Debug log eklendi
+                    console.log("[FRONTEND DEBUG] fetchAnnualSummary - Alınan Veri:", data); // NEW LOG
                     renderAnnualSummaryChart(data);
                 } catch (error) {
                     console.error('Yıllık özet çekilirken hata:', error);
@@ -1576,7 +1583,7 @@
             }
 
             function renderAnnualSummaryChart(data) {
-                console.log("[DEBUG] renderAnnualSummaryChart çağrıldı, veri:", data); // Debug log eklendi
+                console.log("[FRONTEND DEBUG] renderAnnualSummaryChart çağrıldı, veri:", data); // Debug log eklendi
                 if (!annualSummaryChartCtx) {
                     console.error("annualSummaryChart canvas context not found. Attempting to re-initialize.");
                     const canvasElement = document.getElementById('annualSummaryChart');
@@ -1599,8 +1606,8 @@
                     annualChart.destroy();
                 }
 
-                if (data.length === 0) {
-                    console.log("Yıllık özet için veri yok.");
+                if (data.length === 0 || (data.length === 1 && data[0].income === 0 && data[0].expense === 0 && data[0].netBalance === 0)) {
+                    console.log("Yıllık özet için veri yok veya sıfır değerler döndü.");
                     const chartContainer = annualSummaryChartCtx.canvas.parentElement;
                     if (chartContainer) {
                         chartContainer.innerHTML = '<p class="text-center text-gray-400 py-10">Seçili yıl için finansal özet verisi bulunamadı.</p>';
@@ -1614,10 +1621,13 @@
                     }
                 }
 
-                const labels = data.map(item => item.year);
-                const incomeData = data.map(item => item.income);
-                const expenseData = data.map(item => item.expense);
-                const netBalanceData = data.map(item => item.netBalance);
+                // Veri tek bir obje olarak geliyorsa, onu Chart.js'in beklediği dizi formatına dönüştür
+                const chartData = Array.isArray(data) ? data : [data];
+
+                const labels = chartData.map(item => item.year);
+                const incomeData = chartData.map(item => item.income);
+                const expenseData = chartData.map(item => item.expense);
+                const netBalanceData = chartData.map(item => item.netBalance);
 
                 annualChart = new Chart(annualSummaryChartCtx, {
                     type: 'bar',
@@ -1750,6 +1760,7 @@
                         throw new Error(errorData.message || 'Kullanıcı bilgileri çekilemedi.');
                     }
                     const data = await response.json();
+                    console.log("[FRONTEND DEBUG] fetchUser2FAStatus - Alınan Veri:", data); // NEW LOG
                 } catch (error) {
                     console.error('Kullanıcı bilgileri çekilirken hata:', error);
                 }
