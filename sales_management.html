@@ -507,7 +507,7 @@
                                 <!-- Product Selection for Sale -->
                                 <div>
                                     <div class="pt-2 pb-2 mb-2 -mx-6 px-6 rounded-lg"> <!-- bg-gray-900 ve shadow-inner kaldırıldı -->
-                                        <h4 class="text-xl font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
+                                        <h4 class="text-base font-bold text-gray-200 mb-2 text-center">Ürün Ekle</h4>
                                         <div class="relative mb-2">
                                             <label for="productSearchInput" class="block text-gray-300 text-sm font-semibold mb-1">Ürün Adı veya Barkod:</label>
                                             <input type="text" id="productSearchInput" placeholder="Ürün adı veya barkod girin..." class="form-input w-full p-1.5 text-sm shadow-sm">
@@ -531,7 +531,7 @@
 
                                 <!-- Sale Items List -->
                                 <div>
-                                    <h4 class="text-xl font-bold text-gray-200 mb-10 text-center">Satış Sepeti</h4>
+                                    <h4 class="text-xl font-bold text-gray-200 mb-3 text-center">Satış Sepeti</h4>
                                     <div id="saleItemsList" class="space-y-1 max-h-28 overflow-y-auto p-1.5 bg-gray-900 rounded-md border border-gray-700 shadow-sm">
                                         <p class="text-center text-gray-400 py-1 text-sm">Henüz ürün eklenmedi.</p>
                                     </div>
@@ -592,7 +592,7 @@
                                 </div>
                                 <!-- Loading Overlay -->
                                 <div id="salesLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
-                                    <p class="text-center text-gray-300 text-sm">
+                                    <p class="text-center text-gray-300 text-lg">
                                         <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
                                         Yükleniyor...
                                     </p>
@@ -878,11 +878,15 @@
                     onConfirm();
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
 
                 document.getElementById('confirmNo').onclick = () => {
                     messageBox.classList.remove('show', 'confirm');
                     messageBox.classList.add('hidden');
+                    // Orijinal mesaj kutusu içeriğini geri yükle
+                    messageBox.innerHTML = '<span id="messageText"></span><button class="message-box-close" onclick="document.getElementById(\'messageBox\').classList.add(\'hidden\');">&times;</button>';
                 };
             }
 
@@ -1560,6 +1564,7 @@
                 if (productSearchInput && productSuggestions && !productSearchInput.contains(event.target) && !productSuggestions.contains(event.target)) {
                     productSuggestions.classList.add('hidden');
                 }
+                // Bildirim merkezini kapatma mantığı burada
                 if (notificationCenter && !notificationBellBtn.contains(event.target) && !notificationCenter.contains(event.target)) {
                     notificationCenter.classList.remove('active');
                 }
@@ -1705,7 +1710,7 @@
                 } catch (error) {
                     console.error('Geçmiş satışları çekerken hata:', error);
                     addNotification(`Geçmiş satışlar yüklenirken bir hata oluştu: ${error.message}`, 'error');
-                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">Geçmiş satışlar yüklenemedi.</p>`;
+                    if (pastSalesListDiv) pastSalesListDiv.innerHTML = `<p class="px-6 py-4 text-center text-red-400">2FA doğrulaması gerekli.</p>`;
                 } finally {
                     if (salesLoadingOverlay) salesLoadingOverlay.classList.add('hidden');
                 }
