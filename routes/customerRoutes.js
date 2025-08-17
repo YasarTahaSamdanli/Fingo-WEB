@@ -20,21 +20,21 @@ router.post('/customers', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
-        const existingCustomer = await db.collection('customers').findOne({ userId: userId, phoneNumber: phoneNumber });
+        const existingCustomer = await db.collection('customers').findOne({ userId: new ObjectId(userId), phoneNumber: phoneNumber });
         if (existingCustomer) {
             console.warn(`[DEBUG-BACKEND-CUSTOMER] Mevcut müşteri bulundu (telefon numarası çakışması): ${phoneNumber}`);
             return res.status(409).json({ message: 'Bu telefon numarası ile kayıtlı bir müşteri zaten var.' });
         }
 
         const newCustomer = {
-            userId: userId, // Buradaki userId, req.user.userId'den geliyor
+            userId: new ObjectId(userId), // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
             name,
             shopName: shopName || null,
             phoneNumber,
             email: email || null,
             address: address || null,
-            totalCreditDebt: 0, // Yeni eklendi: Toplam veresiye borcu
-            creditTransactions: [], // Yeni eklendi: Veresiye hareket geçmişi
+            totalCreditDebt: 0,
+            creditTransactions: [],
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -56,10 +56,10 @@ router.get('/customers', authenticateToken, async (req, res) => {
 
     console.log(`[DEBUG-BACKEND-CUSTOMER] Tüm müşterileri çekme isteği: userId: ${userId}, Arama: ${name || 'Yok'}, Telefon: ${phoneNumber || 'Yok'}`);
 
-    let query = { userId: userId };
+    let query = { userId: new ObjectId(userId) }; // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
     if (name) {
-        query.name = { $regex: name, $options: 'i' }; // Case-insensitive arama
+        query.name = { $regex: name, $options: 'i' };
     }
     if (phoneNumber) {
         query.phoneNumber = { $regex: phoneNumber, $options: 'i' };
@@ -85,7 +85,7 @@ router.get('/customers/:id', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
-        const customer = await db.collection('customers').findOne({ _id: new ObjectId(id), userId: userId });
+        const customer = await db.collection('customers').findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) }); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
         if (!customer) {
             console.warn(`[DEBUG-BACKEND-CUSTOMER] Müşteri bulunamadı veya bu kullanıcıya ait değil: ID: ${id}, userId: ${userId}`);
@@ -115,7 +115,7 @@ router.put('/customers/:id', authenticateToken, async (req, res) => {
     try {
         const db = getDb();
         const result = await db.collection('customers').updateOne(
-            { _id: new ObjectId(id), userId: userId }, // Güncelleme yaparken de userId kontrolü yapıyoruz
+            { _id: new ObjectId(id), userId: new ObjectId(userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
             {
                 $set: {
                     name,
@@ -149,7 +149,7 @@ router.delete('/customers/:id', authenticateToken, verify2FA, async (req, res) =
 
     try {
         const db = getDb();
-        const result = await db.collection('customers').deleteOne({ _id: new ObjectId(id), userId: userId });
+        const result = await db.collection('customers').deleteOne({ _id: new ObjectId(id), userId: new ObjectId(userId) }); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
         if (result.deletedCount === 0) {
             console.warn(`[DEBUG-BACKEND-CUSTOMER] Müşteri silinemedi (eşleşme yok): ID: ${id}, userId: ${userId}`);
@@ -163,13 +163,12 @@ router.delete('/customers/:id', authenticateToken, verify2FA, async (req, res) =
     }
 });
 
-// Veresiye İşlemi Ekleme Rotası (Borçlandırma veya Tahsilat) - Müşterinin kendi koleksiyonunda tutulan veresiye işlemleri için (DEPRECATED)
-// BU ROTA ARTIK customers.html TARAFINDAN KULLANILMIYOR, TRANSACTIONS.JS KULLANILIYOR
+// Veresiye İşlemi Ekleme Rotası (Borçlandırma veya Tahsilat)
 router.post('/customers/:id/credit-transaction', authenticateToken, async (req, res) => {
     console.warn('[DEBUG-BACKEND-CUSTOMER] /customers/:id/credit-transaction rotası çağrıldı. Bu rota artık kullanılmamalı, /transactions/credit kullanılmalı.');
     const { id } = req.params;
     const userId = req.user.userId;
-    const { type, amount, description } = req.body; // type: "Sale" (Borç) veya "Payment" (Tahsilat)
+    const { type, amount, description } = req.body;
 
     if (!type || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
         return res.status(400).json({ message: 'İşlem tipi ve geçerli bir miktar gerekli.' });
@@ -180,7 +179,7 @@ router.post('/customers/:id/credit-transaction', authenticateToken, async (req, 
 
     try {
         const db = getDb();
-        const customer = await db.collection('customers').findOne({ _id: new ObjectId(id), userId: userId });
+        const customer = await db.collection('customers').findOne({ _id: new ObjectId(id), userId: new ObjectId(userId) }); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
         if (!customer) {
             return res.status(404).json({ message: 'Müşteri bulunamadı veya bu kullanıcıya ait değil.' });
@@ -191,7 +190,7 @@ router.post('/customers/:id/credit-transaction', authenticateToken, async (req, 
             newCreditDebt += transactionAmount;
         } else if (transactionType === 'Payment') {
             newCreditDebt -= transactionAmount;
-            if (newCreditDebt < 0) newCreditDebt = 0; // Borç sıfırın altına düşmesin
+            if (newCreditDebt < 0) newCreditDebt = 0;
         } else {
             return res.status(400).json({ message: 'Geçersiz işlem tipi. "Sale" veya "Payment" olmalı.' });
         }
@@ -205,7 +204,7 @@ router.post('/customers/:id/credit-transaction', authenticateToken, async (req, 
         };
 
         const result = await db.collection('customers').updateOne(
-            { _id: new ObjectId(id), userId: userId },
+            { _id: new ObjectId(id), userId: new ObjectId(userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
             {
                 $set: { totalCreditDebt: newCreditDebt, updatedAt: new Date() },
                 $push: { creditTransactions: newTransaction }
@@ -228,8 +227,7 @@ router.post('/customers/:id/credit-transaction', authenticateToken, async (req, 
     }
 });
 
-// Belirli Bir Müşterinin Veresiye Geçmişini Getirme Rotası (DEPRECATED)
-// BU ROTA ARTIK customers.html TARAFINDAN KULLANILMIYOR, TRANSACTIONS.JS KULLANILIYOR
+// Belirli Bir Müşterinin Veresiye Geçmişini Getirme Rotası
 router.get('/customers/:id/credit-history', authenticateToken, async (req, res) => {
     console.warn('[DEBUG-BACKEND-CUSTOMER] /customers/:id/credit-history rotası çağrıldı. Bu rota artık kullanılmamalı, /transactions/credit/:customerId kullanılmalı.');
     const { id } = req.params;
@@ -238,8 +236,8 @@ router.get('/customers/:id/credit-history', authenticateToken, async (req, res) 
     try {
         const db = getDb();
         const customer = await db.collection('customers').findOne(
-            { _id: new ObjectId(id), userId: userId },
-            { projection: { creditTransactions: 1, _id: 0 } } // Sadece creditTransactions alanını getir
+            { _id: new ObjectId(id), userId: new ObjectId(userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
+            { projection: { creditTransactions: 1, _id: 0 } }
         );
 
         if (!customer) {

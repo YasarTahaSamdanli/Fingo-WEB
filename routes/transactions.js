@@ -1,6 +1,6 @@
 // routes/transactions.js
 const express = require('express');
-const { ObjectId } = require('mongodb'); // ObjectId'ı import ettiğinden emin ol
+const { ObjectId } = require('mongodb');
 const { getDb } = require('../db');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
@@ -9,7 +9,7 @@ const router = express.Router();
 // Yeni işlem ekleme rotası (genel işlemler için)
 router.post('/transactions', authenticateToken, async (req, res) => {
     const { type, amount, description, category, date } = req.body;
-    const userId = req.user.userId; // JWT'den gelen kullanıcı ID'si
+    const userId = req.user.userId;
 
     if (!type || !amount || !description || !date) {
         return res.status(400).json({ message: 'Lütfen tüm gerekli alanları doldurun.' });
@@ -25,8 +25,8 @@ router.post('/transactions', authenticateToken, async (req, res) => {
             type,
             amount: parseFloat(amount),
             description,
-            category: category || null, // Kategori opsiyonel
-            date: new Date(date), // Tarih string'ini Date nesnesine dönüştür
+            category: category || null,
+            date: new Date(date),
             createdAt: new Date()
         };
 
@@ -41,22 +41,32 @@ router.post('/transactions', authenticateToken, async (req, res) => {
 // Tüm işlemleri getirme rotası (filtreleme ile)
 router.get('/transactions', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
+    const { type, category, date, startDate, endDate } = req.query; // Yeni query parametreleri eklendi
 
     try {
         const db = getDb();
         const query = { userId: new ObjectId(userId) }; // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
-        // ... Diğer filtreleme koşulları buraya gelecek ...
-        // Örneğin:
-        // if (req.query.type) { query.type = req.query.type; }
-        // if (req.query.category) { query.category = req.query.category; }
-        // if (req.query.date) {
-        //     const filterDate = new Date(req.query.date);
-        //     const startOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate());
-        //     const endOfDay = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate() + 1);
-        //     query.date = { $gte: startOfDay, $lt: endOfDay };
-        // }
+        if (type) { query.type = type; }
+        if (category) { query.category = category; }
 
+        if (date) {
+            const filterDate = new Date(date);
+            // Tarih aralığını UTC olarak belirle
+            const startOfDay = new Date(Date.UTC(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate()));
+            const endOfDay = new Date(Date.UTC(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate() + 1));
+            query.date = { $gte: startOfDay, $lt: endOfDay };
+        } else if (startDate || endDate) {
+            query.date = {};
+            if (startDate) {
+                const start = new Date(startDate);
+                query.date.$gte = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
+            }
+            if (endDate) {
+                const end = new Date(endDate);
+                query.date.$lt = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate() + 1));
+            }
+        }
 
         const transactions = await db.collection('transactions').find(query).sort({ date: -1, createdAt: -1 }).toArray();
         res.status(200).json(transactions);
@@ -128,10 +138,10 @@ router.delete('/transactions/:id', authenticateToken, async (req, res) => {
 router.post('/transactions/import-csv', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
 
-    if (!req.body.csvData) { // csvData'yı doğrudan req.body'den al
+    if (!req.body.csvData) {
         return res.status(400).json({ message: 'CSV verisi bulunamadı.' });
     }
-    const csvData = req.body.csvData; // req.body.csvData olarak düzeltildi
+    const csvData = req.body.csvData;
 
     const lines = csvData.split('\n').filter(line => line.trim() !== '');
     const transactionsToInsert = [];
@@ -142,7 +152,6 @@ router.post('/transactions/import-csv', authenticateToken, async (req, res) => {
         const line = lines[i];
         const parts = line.split(',');
 
-        // Beklenen format: Tarih (GG.AA.YYYY),Tip (Gelir/Gider),Miktar,Kategori,Açıklama
         if (parts.length < 5) {
             failedRecords.push({ line: i + 1, reason: 'Eksik veri sütunları.', data: line });
             continue;
@@ -150,7 +159,6 @@ router.post('/transactions/import-csv', authenticateToken, async (req, res) => {
 
         const [dateStr, type, amountStr, category, description] = parts;
 
-        // Tarih formatı GG.AA.YYYY olduğu için YYYY-AA-GG'ye çevir
         const dateParts = dateStr.split('.');
         if (dateParts.length !== 3) {
             failedRecords.push({ line: i + 1, reason: 'Geçersiz tarih formatı (GG.AA.YYYY bekleniyor).', data: line });
@@ -212,14 +220,14 @@ router.get('/transactions/export-csv', authenticateToken, async (req, res) => {
         const db = getDb();
         const transactions = await db.collection('transactions').find({ userId: new ObjectId(userId) }).sort({ date: 1 }).toArray(); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
-        let csvContent = "Tarih,Tip,Miktar,Kategori,Açıklama\n"; // CSV başlıkları
+        let csvContent = "Tarih,Tip,Miktar,Kategori,Açıklama\n";
 
         transactions.forEach(tx => {
-            const date = new Date(tx.date).toLocaleDateString('tr-TR'); // GG.AA.YYYY formatı
+            const date = new Date(tx.date).toLocaleDateString('tr-TR');
             const type = tx.type;
             const amount = tx.amount.toFixed(2);
             const category = tx.category || '';
-            const description = tx.description ? tx.description.replace(/"/g, '""') : ''; // Çift tırnakları kaçış karakteriyle değiştir
+            const description = tx.description ? tx.description.replace(/"/g, '""') : '';
 
             csvContent += `"${date}","${type}",${amount},"${category}","${description}"\n`;
         });
@@ -235,7 +243,6 @@ router.get('/transactions/export-csv', authenticateToken, async (req, res) => {
 });
 
 // Müşterinin veresiye borcuna yeni bir işlem (ödeme veya borç ekleme) ekleme
-// POST /api/transactions/credit
 router.post('/transactions/credit', authenticateToken, async (req, res) => {
     const { customerId, amount, type, description } = req.body;
     const userId = req.user.userId;
@@ -271,13 +278,11 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Geçersiz ID formatı.' });
         }
 
-        // Müşteriyi bul: Hem _id hem de userId ile doğrula
-        console.log(`[DEBUG-BACKEND-TRANSACTION] Müşteri aranıyor: { _id: ObjectId("${customerObjectId}"), userId: ObjectId("${userId}") }`); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
+        console.log(`[DEBUG-BACKEND-TRANSACTION] Müşteri aranıyor: { _id: ObjectId("${customerObjectId}"), userId: ObjectId("${userId}") }`);
         const customer = await db.collection('customers').findOne({ _id: customerObjectId, userId: new ObjectId(userId) }); // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
 
         if (!customer) {
             console.error('[DEBUG-BACKEND-TRANSACTION] Müşteri bulunamadı. Sorgu parametreleri:', { _id: customerObjectId.toString(), userId: userId });
-            // Ekstra kontrol: Sadece _id ile var mı diye bak, sadece debug amaçlı
             const customerByIdOnly = await db.collection('customers').findOne({ _id: customerObjectId });
             if (customerByIdOnly) {
                 console.warn(`[DEBUG-BACKEND-TRANSACTION] Müşteri ID ile bulundu (${customerByIdOnly._id}), ancak userId eşleşmiyor. Müşterinin veritabanındaki userId: ${customerByIdOnly.userId}`);
@@ -301,9 +306,8 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
 
         console.log(`[DEBUG-BACKEND-TRANSACTION] Müşteri ${customer.name} (${customerId}) için eski borç: ${customer.currentDebt}, İşlem miktarı: ${parsedAmount}, İşlem tipi: ${type}, Yeni borç hesaplandı: ${newDebtAmount}`);
 
-        // Müşterinin güncel borcunu güncelle
         const updateResult = await db.collection('customers').updateOne(
-            { _id: customerObjectId, userId: new ObjectId(userId) }, // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
+            { _id: customerObjectId, userId: new ObjectId(userId) },
             { $set: { currentDebt: newDebtAmount, updatedAt: new Date() } }
         );
         console.log(`[DEBUG-BACKEND-TRANSACTION] Müşteri güncelleme sonucu: matchedCount: ${updateResult.matchedCount}, modifiedCount: ${updateResult.modifiedCount}`);
@@ -313,15 +317,14 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
              return res.status(500).json({ message: 'Müşteri güncellenemedi. Lütfen tekrar deneyin.' });
         }
 
-        // İşlem kaydını 'transactions' koleksiyonuna ekle
         const newTransaction = {
-            userId: new ObjectId(userId), // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
-            customerId: customerObjectId, // Bu işlem hangi müşteriye ait
-            customerName: customer.name, // Raporlama kolaylığı için müşteri adını da kaydet
-            type: type, // 'payment' veya 'debt'
+            userId: new ObjectId(userId),
+            customerId: customerObjectId,
+            customerName: customer.name,
+            type: type,
             amount: parsedAmount,
             description: description || (type === 'payment' ? 'Veresiye Ödemesi' : 'Manuel Borç Ekleme'),
-            date: new Date(), // İşlem tarihi (backend'de oluşturuluyor, UTC'ye dikkat)
+            date: new Date(),
             createdAt: new Date()
         };
         const transactionInsertResult = await db.collection('transactions').insertOne(newTransaction);
@@ -329,7 +332,7 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
 
         res.status(200).json({
             message: 'Veresiye işlemi başarıyla kaydedildi ve borç güncellendi.',
-            newDebt: newDebtAmount // Frontend'e yeni borcu gönder
+            newDebt: newDebtAmount
         });
 
     } catch (error) {
@@ -339,7 +342,6 @@ router.post('/transactions/credit', authenticateToken, async (req, res) => {
 });
 
 // Müşteriye ait veresiye işlemlerini getirme
-// GET /api/transactions/credit/:customerId
 router.get('/transactions/credit/:customerId', authenticateToken, async (req, res) => {
     const { customerId } = req.params;
     const userId = req.user.userId;
@@ -359,8 +361,8 @@ router.get('/transactions/credit/:customerId', authenticateToken, async (req, re
 
         const creditTransactions = await db.collection('transactions').find({
             userId: new ObjectId(userId), // DÜZELTME: userId'yi ObjectId'ye dönüştürüyoruz
-            customerId: customerObjectId, // Müşteri ID'sine göre filtrele
-            type: { $in: ['payment', 'debt'] } // Sadece ödeme veya borç ekleme işlemleri
+            customerId: customerObjectId,
+            type: { $in: ['payment', 'debt'] }
         }).sort({ date: -1, createdAt: -1 }).toArray();
 
         console.log(`[DEBUG-BACKEND-TRANSACTION] Müşteri ${customerId} için ${creditTransactions.length} veresiye işlemi bulundu.`);
