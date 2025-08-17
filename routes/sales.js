@@ -70,21 +70,24 @@ router.post('/sales', authenticateToken, async (req, res) => {
 
         const saleResult = await db.collection('sales').insertOne(newSale);
 
-        // **BURASI KRİTİK NOKTA:** Müşterinin toplam veresiye borcunu güncelle
+        // **KRİTİK GÜNCELLEME:** Müşterinin toplam veresiye borcunu güncelle
         console.log(`[DEBUG-BACKEND-SALES] Satış kaydedildi. Borç kontrolü yapılıyor.`);
         console.log(`[DEBUG-BACKEND-SALES] Kontrol Edilen: creditDebt: ${newSale.creditDebt}, customerId: ${newSale.customerId}`);
 
         if (newSale.creditDebt > 0 && newSale.customerId) {
             console.log(`[DEBUG-BACKEND-SALES] Koşul sağlandı: Veresiye borcu güncelleniyor.`);
 
-            const customerUpdateResult = await db.collection('customers').updateOne(
-                { _id: newSale.customerId, userId: userId },
-                { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
-            );
-            console.log(`[DEBUG-BACKEND-SALES] Müşteri güncelleme sonucu: Eşleşen belge sayısı: ${customerUpdateResult.matchedCount}, Değiştirilen belge sayısı: ${customerUpdateResult.modifiedCount}`);
+            // GÜVENLİK KONTROLÜ: Müşterinin bu kullanıcıya ait olduğundan emin ol
+            const customerToUpdate = await db.collection('customers').findOne({ _id: newSale.customerId, userId: userId });
 
-            if (customerUpdateResult.modifiedCount === 0) {
-                 console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Belki müşteri ID'si veya userId eşleşmedi.`);
+            if (customerToUpdate) {
+                const customerUpdateResult = await db.collection('customers').updateOne(
+                    { _id: newSale.customerId }, // Sadece _id ile güncelle
+                    { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
+                );
+                console.log(`[DEBUG-BACKEND-SALES] Müşteri güncelleme sonucu: Eşleşen belge sayısı: ${customerUpdateResult.matchedCount}, Değiştirilen belge sayısı: ${customerUpdateResult.modifiedCount}`);
+            } else {
+                console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Müşteri ID'si ${newSale.customerId} veya userId ${userId} ile eşleşmiyor.`);
             }
         } else {
             console.log(`[DEBUG-BACKEND-SALES] Koşul sağlanmadı: Müşteri seçili değil veya veresiye borcu yok.`);
