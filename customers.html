@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Müşteri Yönetimi</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -87,15 +84,6 @@
             min-width: 300px;
             flex-direction: column; /* Butonları alt alta sırala */
             align-items: center;
-        }
-        .message-box-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            margin-left: 15px;
-            line-height: 1;
         }
         .message-box.confirm .message-box-close {
             position: absolute;
@@ -322,20 +310,13 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <!-- Header -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
-        <!-- Left group: menu button and title -->
-        <!-- flex-1 ekleyerek bu div'in kullanılabilir tüm yatay alanı doldurmasını sağlıyoruz -->
-        <!-- lg:justify-start varsayılan hizalama, JavaScript ile lg:justify-center'a geçecek -->
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
-            <!-- Sidebar açma tuşu: sidebar açıkken gizle, kapalıyken göster -->
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
             <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Müşteri Yönetimi</h1>
         </div>
-        <!-- Right group: notifications and logout -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
@@ -346,14 +327,11 @@
         </div>
     </header>
 
-    <!-- Ana İçerik Alanı -->
     <div class="flex flex-1 pt-16">
 
-        <!-- Sidebar -->
         <aside id="sidebar" class="fixed top-0 left-0 h-full bg-blue-900 text-white w-64 p-4 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-lg pt-4">
             <div class="flex items-center justify-between mb-4 mt-4">
                 <h2 class="text-xl font-bold text-blue-300">Fingo</h2>
-                <!-- Sidebar kapatma tuşu -->
                 <button id="closeSidebarBtn" class="p-2 rounded-md hover:bg-blue-800 text-white text-2xl">
                     <i class="fas fa-times"></i>
                 </button>
@@ -386,17 +364,14 @@
             </nav>
         </aside>
 
-        <!-- Sidebar Overlay -->
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-        <!-- Müşteri Yönetimi Ana İçerik Alanı -->
         <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
             <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center"></h2>
             <p class="text-base text-gray-400 text-center mb-10 font-light">Müşterilerinizi ekleyin, düzenleyin ve geçmişlerini görüntüleyin.</p>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-                <!-- Left Column (Yeni Müşteri Ekle) -->
                 <div class="lg:col-span-1">
                     <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni Müşteri Ekle</h3>
@@ -424,12 +399,8 @@
                             <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Müşteri Ekle</button>
                         </form>
                     </div>
-                </div> <!-- Left Column End -->
+                </div> <div class="lg:col-span-1 space-y-10">
 
-                <!-- Right Column (Müşteri Listesi) -->
-                <div class="lg:col-span-1 space-y-10">
-
-                    <!-- Müşteri Ara -->
                     <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşteri Ara</h3>
                         <div class="relative">
@@ -442,13 +413,11 @@
                         </div>
                     </div>
 
-                    <!-- Müşteri Listesi -->
                     <div id="customerListContainer" class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg relative">
                         <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Müşterileriniz</h3>
                         <div id="customerList" class="space-y-5 max-h-[500px] overflow-y-auto pr-3">
                             <p class="text-center text-gray-400 py-4">Müşteri bulunamadı.</p>
                         </div>
-                        <!-- Loading Overlay -->
                         <div id="customerLoadingOverlay" class="absolute inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden rounded-xl">
                             <p class="text-center text-gray-300 text-lg">
                                 <span class="inline-block h-6 w-6 border-4 border-t-4 border-gray-400 rounded-full animate-spin mr-3"></span>
@@ -456,19 +425,14 @@
                             </p>
                         </div>
                     </div>
-                </div> <!-- Right Column End -->
-
-            </div> <!-- Main Content Grid End -->
-        </main>
+                </div> </div> </main>
     </div>
 
-    <!-- Mesaj Kutusu -->
     <div id="messageBox" class="message-box hidden">
         <span id="messageText"></span>
         <button class="message-box-close" onclick="document.getElementById('messageBox').classList.add('hidden');">&times;</button>
     </div>
 
-    <!-- Bildirim Merkezi Paneli -->
     <div id="notificationCenter" class="notification-center">
         <div class="notification-header">
             <span>Bildirimler</span>
@@ -482,7 +446,6 @@
         </div>
     </div>
 
-    <!-- Müşteri Düzenleme Modalı -->
     <div id="editCustomerModal" class="modal-overlay hidden">
         <div class="modal-content relative">
             <button class="modal-close-btn" onclick="closeEditCustomerModal()">&times;</button>
@@ -513,7 +476,6 @@
             </form>
         </div>
     </div>
-    <!-- Müşteri Geçmişi Modalı -->
     <div id="customerHistoryModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerHistoryModal()">&times;</button>
@@ -523,7 +485,6 @@
             </div>
         </div>
     </div>
-    <!-- Veresiye İşlemleri Modalı -->
     <div id="customerCreditTransactionsModal" class="modal-overlay hidden">
         <div class="modal-content relative max-w-2xl w-full">
             <button class="modal-close-btn" onclick="closeCustomerCreditTransactionsModal()">&times;</button>
@@ -1192,6 +1153,9 @@
                 console.log(`[DEBUG] openCreditTransactionsModal çağrıldı, ID: ${customerId}, Ad: ${customerName}, Borç: ${currentDebt}`);
 
                 currentOpenCustomerIdForCredit = customerId; // Global değişkeni set ediyoruz
+
+                // ** DÜZELTME: Gizli input alanına müşteri ID'sini atayın.
+                if (creditCustomerIdInput) creditCustomerIdInput.value = customerId;
 
                 if (creditCustomerNameSpan) creditCustomerNameSpan.textContent = customerName;
                 if (currentCreditDebtSpan) currentCreditDebtSpan.textContent = `${currentDebt.toFixed(2)} TL`;
