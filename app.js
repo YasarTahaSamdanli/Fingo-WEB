@@ -3,7 +3,8 @@ require('dotenv').config(); // .env dosyasını yükler
 const express = require('express');
 const cors = require('cors');
 
-const { connectDB } = require('./db');
+// Yeni oluşturduğumuz modülleri içe aktarıyoruz
+const { connectDB } = require('./db'); // db.js dosyasından connectDB fonksiyonunu al
 
 // Rota modüllerini içe aktarıyoruz
 const authRoutes = require('./routes/auth');
@@ -24,15 +25,17 @@ const app = express();
 
 console.log('Uygulama başlatılıyor...');
 
+// ÖNEMLİ: CORS middleware'i, diğer tüm middleware'lerden ve rota tanımlamalarından ÖNCE gelmeli.
+// Daha agresif CORS seçenekleri
 const corsOptions = {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: '*', // Tüm kaynaklardan gelen isteklere izin ver
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // İzin verilen HTTP metotları
+    allowedHeaders: ['Content-Type', 'Authorization'], // İzin verilen başlıklar
+    credentials: true // Kimlik bilgileriyle (örneğin çerezler, HTTP kimlik doğrulaması) gelen isteklere izin ver
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json()); // JSON body parsing için
 
 // API rotalarını kullan
 app.use('/api', authRoutes);
@@ -62,6 +65,8 @@ app.use((req, res) => {
     res.status(404).send('Sayfa Bulunamadı.');
 });
 
+// Veritabanı bağlantısını başlat ve sonra sunucuyu dinlemeye başla
+// BURADAKİ DÜZELTME: connectDB'ye MONGODB_URI'yi parametre olarak geçiyoruz
 connectDB(process.env.MONGODB_URI).then(() => {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
@@ -70,5 +75,5 @@ connectDB(process.env.MONGODB_URI).then(() => {
     });
 }).catch(err => {
     console.error('Veritabanı bağlantı hatası:', err);
-    process.exit(1);
+    process.exit(1); // Uygulamayı sonlandır
 });
