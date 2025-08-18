@@ -52,6 +52,21 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api', customerRoutes);
 console.log('Tüm API rotaları /api altında kaydedildi.');
 
+// Debug: Express tarafından kaydedilen tüm rotaları listele
+app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+        console.log(`[ROUTE-DEBUG] Yol: ${r.route.path}, Metot: ${Object.keys(r.route.methods)[0].toUpperCase()}`);
+    } else if (r.name === 'router' && r.handle.stack) {
+        r.handle.stack.forEach(function(hr) {
+            if (hr.route && hr.route.path) {
+                const fullPath = r.regexp.source.replace(/\\\//g, '/').replace(/\/\(\?\:\/\.\*\)/g, '').slice(0, -1) + hr.route.path;
+                console.log(`[ROUTE-DEBUG] Alt Yol: ${fullPath}, Metot: ${Object.keys(hr.route.methods)[0].toUpperCase()}`);
+            }
+        });
+    }
+});
+console.log('[ROUTE-DEBUG] Rota listeleme tamamlandı.');
+
 
 // Tanımlanmamış API rotaları için 404 JSON yanıtı döndür
 app.use('/api/*', (req, res) => {
