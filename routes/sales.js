@@ -71,8 +71,21 @@ router.post('/sales', authenticateToken, async (req, res) => {
 
         // YENİ EKLENEN KISIM: Müşterinin toplam veresiye borcunu güncelle
         if (newSale.creditDebt > 0 && newSale.customerId) {
+            // DÜZELTME: Veresiye işlemini 'transactions' koleksiyonuna da ekliyoruz
+            const creditTransaction = {
+                userId: new ObjectId(userId),
+                customerId: new ObjectId(newSale.customerId),
+                customerName: newSale.customerName,
+                type: 'debt', // Satıştan kaynaklı borç
+                amount: newSale.creditDebt,
+                description: 'Veresiye Satış İşlemi',
+                date: new Date(),
+                createdAt: new Date()
+            };
+            await db.collection('transactions').insertOne(creditTransaction);
+
             await db.collection('customers').updateOne(
-                { _id: new ObjectId(newSale.customerId), userId: userId },
+                { _id: new ObjectId(newSale.customerId), userId: new ObjectId(userId) },
                 { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
             );
             console.log(`Müşteri ${newSale.customerName} için veresiye borcu güncellendi: ${newSale.creditDebt} TL eklendi.`);
@@ -84,7 +97,7 @@ router.post('/sales', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Satış işlemi hatası:', error);
         // Hata durumunda stokları geri alma (işlemi geri alma - opsiyonel ama iyi bir uygulama)
-        // Bu kısım daha karmaşık bir \"işlem yönetimi\" gerektirebilir.
+        // Bu kısım daha karmaşık bir "işlem yönetimi" gerektirebilir.
         res.status(500).json({ message: error.message || 'Satış işlemi sırasında bir hata oluştu.' });
     }
 });
