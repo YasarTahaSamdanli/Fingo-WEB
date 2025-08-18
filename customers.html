@@ -208,7 +208,6 @@
         #mainContent {
             transition: margin-left 0.3s ease-in-out;
             flex-grow: 1;
-            padding-top: 16px; /* Header yüksekliği kadar padding-top (pt-16 tailwind sınıfına karşılık gelir) */
         }
 
         /* Modal Stilleri (Ortak) */
@@ -310,7 +309,7 @@
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
 
-    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
+    <header id="appHeader" class="bg-blue-900 shadow-lg p-4 h-16 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
         <div id="headerLeftGroup" class="flex items-center flex-1 lg:justify-start">
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
