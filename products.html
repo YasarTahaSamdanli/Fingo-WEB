@@ -31,7 +31,6 @@
             background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
             background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
             background-attachment: fixed;
-            overflow-x: hidden;
         }
 
         /* customers.html'den kopyalanan form ve mesaj kutusu stilleri */
@@ -295,7 +294,7 @@
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
+<body class="flex flex-col min-h-screen font-sans">
 
     <!-- Header (customers.html'den kopyalandı) -->
     <header id="appHeader" class="bg-blue-900 shadow-lg p-4 flex justify-between items-center z-40 fixed w-full top-0 transition-all duration-300 ease-in-out">
@@ -385,7 +384,7 @@
                                 </div>
 
                                 <!-- Fiyat Hesaplama Bölümü -->
-                                <div class="border-t-2 border-b-2 border-blue-700 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
+                                <div class="border-t-2 border-b-2 border-blue-700 pt-5 pb-5 mb-4 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner overflow-hidden">
                                     <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Fiyat Hesaplama</h3>
                                     <div>
                                         <label for="costPriceInput" class="block text-gray-300 text-sm font-semibold mb-2">Maliyet Fiyatı (Toptancı) (₺):</label>
@@ -413,7 +412,7 @@
                                 </div>
 
                                 <!-- Barkod Bölümü -->
-                                <div class="border-t-2 border-blue-700 pt-5 mt-5 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner">
+                                <div class="border-t-2 border-blue-700 pt-5 mt-5 -mx-6 px-6 bg-gray-700 bg-opacity-50 rounded-lg shadow-inner overflow-hidden">
                                     <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Barkod Bilgisi</h3>
                                     <div>
                                         <label for="productBarcodeInput" class="block text-gray-300 text-sm font-semibold mb-2">Barkod Numarası (Opsiyonel):</label>
