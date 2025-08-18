@@ -11,9 +11,6 @@ router.post('/sales', authenticateToken, async (req, res) => {
     const { saleItems, customerId, customerName, saleDate, paymentMethod, cashPaid, cardPaid } = req.body;
     const userId = req.user.userId;
 
-    console.log("[DEBUG-BACKEND-SALES] Yeni satış isteği alındı.");
-    console.log("[DEBUG-BACKEND-SALES] Gelen Body:", req.body);
-
     if (!saleItems || !Array.isArray(saleItems) || saleItems.length === 0) {
         return res.status(400).json({ message: 'Satış öğeleri boş olamaz.' });
     }
@@ -70,38 +67,22 @@ router.post('/sales', authenticateToken, async (req, res) => {
 
         const saleResult = await db.collection('sales').insertOne(newSale);
 
-        // **KRİTİK GÜNCELLEME:** Müşterinin toplam veresiye borcunu güncelle
-        console.log(`[DEBUG-BACKEND-SALES] Satış kaydedildi. Borç kontrolü yapılıyor.`);
-        console.log(`[DEBUG-BACKEND-SALES] Kontrol Edilen: creditDebt: ${newSale.creditDebt}, customerId: ${newSale.customerId}`);
-
+        // Müşterinin toplam veresiye borcunu güncelle
         if (newSale.creditDebt > 0 && newSale.customerId) {
-            console.log(`[DEBUG-BACKEND-SALES] Koşul sağlandı: Veresiye borcu güncelleniyor.`);
+            const customerUpdateResult = await db.collection('customers').updateOne(
+                { _id: newSale.customerId, userId: userId }, // CORRECTED: userId is a string
+                { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
+            );
 
-            // GÜVENLİK KONTROLÜ: Müşterinin bu kullanıcıya ait olduğundan emin ol
-            const customerToUpdate = await db.collection('customers').findOne({ _id: newSale.customerId, userId: userId });
-
-            if (customerToUpdate) {
-                const customerUpdateResult = await db.collection('customers').updateOne(
-                    { _id: newSale.customerId }, // Sadece _id ile güncelle
-                    { $inc: { currentDebt: newSale.creditDebt }, $set: { updatedAt: new Date() } }
-                );
-                console.log(`[DEBUG-BACKEND-SALES] Müşteri güncelleme sonucu: Eşleşen belge sayısı: ${customerUpdateResult.matchedCount}, Değiştirilen belge sayısı: ${customerUpdateResult.modifiedCount}`);
-                if(customerUpdateResult.modifiedCount > 0){
-                    console.log(`[DEBUG-BACKEND-SALES] Müşterinin borcu başarıyla güncellendi.`);
-                } else {
-                     console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Belki de borç zaten aynıydı.`);
-                }
-            } else {
-                console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Müşteri ID'si ${newSale.customerId} veya userId ${userId} ile eşleşmiyor.`);
+            if (customerUpdateResult.modifiedCount === 0) {
+                 console.warn(`[DEBUG-BACKEND-SALES] Müşterinin borcu güncellenemedi. Belki müşteri ID'si veya userId eşleşmedi.`);
             }
-        } else {
-            console.log(`[DEBUG-BACKEND-SALES] Koşul sağlanmadı: Müşteri seçili değil veya veresiye borcu yok.`);
         }
 
         res.status(201).json({ message: 'Satış başarıyla kaydedildi!', sale: newSale });
 
     } catch (error) {
-        console.error('[DEBUG-BACKEND-SALES] Satış işlemi hatası:', error);
+        console.error('Satış işlemi hatası:', error);
         res.status(500).json({ message: error.message || 'Satış işlemi sırasında bir hata oluştu.' });
     }
 });
@@ -110,13 +91,12 @@ router.post('/sales', authenticateToken, async (req, res) => {
 router.get('/sales', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
     const { customerName, startDate, endDate, customerId } = req.query;
-    console.log("[DEBUG-BACKEND-SALES] Satışları çekme rotası çağrıldı.");
 
     if (!req.user.is2FAVerified) {
         return res.status(403).json({ message: 'Satış geçmişini görüntülemek için 2FA doğrulaması gerekli.' });
     }
 
-    let query = { userId: userId };
+    let query = { userId: userId }; // CORRECTED: userId is a string
 
     if (customerName) {
         query.customerName = { $regex: customerName, $options: 'i' };
@@ -125,7 +105,6 @@ router.get('/sales', authenticateToken, async (req, res) => {
         try {
             query.customerId = new ObjectId(customerId);
         } catch (e) {
-            console.error('[DEBUG-BACKEND-SALES] Geçersiz customerId formatı (GET):', customerId, e);
             return res.status(400).json({ message: 'Geçersiz müşteri ID formatı.' });
         }
     }
@@ -143,7 +122,6 @@ router.get('/sales', authenticateToken, async (req, res) => {
     try {
         const db = getDb();
         const sales = await db.collection('sales').find(query).sort({ saleDate: -1, createdAt: -1 }).toArray();
-        console.log(`[DEBUG-BACKEND-SALES] ${sales.length} satış kaydı bulundu.`);
         res.status(200).json(sales);
     } catch (error) {
         console.error('Satışları çekerken hata:', error);
