@@ -500,9 +500,21 @@
                     <div class="relative h-80 mb-4">
                         <canvas id="stockMovementsChart"></canvas>
                     </div>
-                    <div class="mb-4 flex items-center gap-3">
-                        <label for="stockProductFilter" class="block text-gray-300 text-sm font-medium">Ürün:</label>
-                        <select id="stockProductFilter" class="form-select w-full md:w-64 p-2 text-sm"></select>
+                    <div class="mb-4 flex flex-col md:flex-row md:items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <label for="stockProductFilter" class="block text-gray-300 text-sm font-medium">Ürün:</label>
+                            <input id="stockProductSearch" type="text" placeholder="Ara..." class="form-input p-2 text-sm w-48" />
+                        </div>
+                        <select id="stockProductFilter" multiple size="8" class="form-select w-full md:w-80 p-2 text-sm"></select>
+                        <div class="flex items-center gap-2">
+                            <label for="stockTopN" class="block text-gray-300 text-sm font-medium">Top N:</label>
+                            <select id="stockTopN" class="form-select p-2 text-sm w-24">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-gray-900 bg-opacity-70 border border-gray-700 rounded-lg report-table">
@@ -683,6 +695,8 @@
             const stockMovementsChartCanvas = document.getElementById('stockMovementsChart');
             let stockMovementsChartInstance = null;
             const stockProductFilterSelect = document.getElementById('stockProductFilter');
+            const stockProductSearchInput = document.getElementById('stockProductSearch');
+            const stockTopNSelect = document.getElementById('stockTopN');
             let stockMovementsData = [];
 
             // Mesaj ve Bildirim Elementleri
@@ -1626,31 +1640,30 @@
 
             function populateStockProductFilter(data) {
                 if (!stockProductFilterSelect) return;
-                const current = stockProductFilterSelect.value;
+                const currentSelected = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
                 const names = Array.from(new Set((data || []).map(i => i.productName || 'Bilinmeyen'))).sort((a, b) => a.localeCompare(b, 'tr'));
                 stockProductFilterSelect.innerHTML = '';
-                const allOption = document.createElement('option');
-                allOption.value = '';
-                allOption.textContent = 'Tümü';
-                stockProductFilterSelect.appendChild(allOption);
                 names.forEach(n => {
                     const opt = document.createElement('option');
                     opt.value = n;
                     opt.textContent = n;
                     stockProductFilterSelect.appendChild(opt);
                 });
-                // Restore selection if still present
-                if (current && names.includes(current)) {
-                    stockProductFilterSelect.value = current;
-                } else {
-                    stockProductFilterSelect.value = '';
+                // Restore previously selected values if available
+                if (currentSelected && currentSelected.length > 0) {
+                    Array.from(stockProductFilterSelect.options).forEach(o => {
+                        if (currentSelected.includes(o.value)) o.selected = true;
+                    });
                 }
+                filterStockProductOptions();
             }
 
             function getFilteredStockMovements() {
-                if (!stockProductFilterSelect || !stockProductFilterSelect.value) return stockMovementsData;
-                const selected = stockProductFilterSelect.value;
-                return (stockMovementsData || []).filter(i => (i.productName || 'Bilinmeyen') === selected);
+                if (!stockProductFilterSelect) return stockMovementsData;
+                const selectedValues = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
+                if (selectedValues.length === 0) return stockMovementsData;
+                const selectedSet = new Set(selectedValues);
+                return (stockMovementsData || []).filter(i => selectedSet.has(i.productName || 'Bilinmeyen'));
             }
 
             function renderStockMovementsTable() {
@@ -1682,11 +1695,18 @@
                 });
             }
 
+            if (stockTopNSelect) {
+                stockTopNSelect.addEventListener('change', () => {
+                    renderStockMovementsChart(getFilteredStockMovements());
+                });
+            }
+
             function renderStockMovementsChart(rows) {
                 if (!stockMovementsChartCanvas) {
                     console.error('Stock Movements Chart canvas not found!');
                     return;
                 }
+                const topCount = Math.max(1, parseInt((stockTopNSelect && stockTopNSelect.value) ? stockTopNSelect.value : '10', 10) || 10);
                 // Aggregate quantities per product
                 const totalsMap = new Map();
                 rows.forEach(item => {
@@ -1695,7 +1715,7 @@
                     totalsMap.set(name, (totalsMap.get(name) || 0) + qty);
                 });
                 const sorted = Array.from(totalsMap.entries()).sort((a, b) => b[1] - a[1]);
-                const top = sorted.slice(0, 10);
+                const top = sorted.slice(0, topCount);
                 const labels = top.map(e => e[0]);
                 const quantities = top.map(e => e[1]);
 
@@ -1726,7 +1746,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'En Çok Satılan Ürünler (Top 10)',
+                                text: `En Çok Satılan Ürünler (Top ${topCount})`,
                                 color: '#E2E8F0'
                             }
                         },
@@ -1743,6 +1763,21 @@
                             }
                         }
                     }
+                });
+            }
+
+            function filterStockProductOptions() {
+                if (!stockProductFilterSelect || !stockProductSearchInput) return;
+                const q = stockProductSearchInput.value.toLowerCase().trim();
+                Array.from(stockProductFilterSelect.options).forEach(opt => {
+                    const match = opt.textContent.toLowerCase().includes(q);
+                    opt.hidden = q ? !match : false;
+                });
+            }
+
+            if (stockProductSearchInput) {
+                stockProductSearchInput.addEventListener('input', () => {
+                    filterStockProductOptions();
                 });
             }
 
