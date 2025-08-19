@@ -437,6 +437,13 @@
                         <label for="balanceHistoryMonth" class="block text-gray-300 text-sm font-medium mb-1">Ay:</label>
                         <select id="balanceHistoryMonth" class="form-select w-full p-2 text-sm"></select>
                     </div>
+                    <div id="dateShortcutsRow" class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-wrap gap-2">
+                        <button id="btnToday" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Bugün</button>
+                        <button id="btnLast7" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Son 7 Gün</button>
+                        <button id="btnThisMonth" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Bu Ay</button>
+                        <button id="btnLastMonth" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Geçen Ay</button>
+                        <button id="btnClearDates" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Temizle</button>
+                    </div>
                 </div>
                 <div class="flex justify-center mt-6">
                     <button id="generateReportBtn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors shadow-md text-lg">Rapor Oluştur</button>
@@ -649,6 +656,7 @@
             const reportBalanceHistoryMonthDiv = document.getElementById('reportBalanceHistoryMonth');
             const balanceHistoryMonthSelect = document.getElementById('balanceHistoryMonth');
             const generateReportBtn = document.getElementById('generateReportBtn');
+            const dateShortcutsRow = document.getElementById('dateShortcutsRow');
 
             const categorySummaryReportDiv = document.getElementById('categorySummaryReport');
             const categorySummaryChartCanvas = document.getElementById('categorySummaryChart');
@@ -967,7 +975,7 @@
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    exportVisibleReportToCSV();
                     closeSidebar();
                 });
             }
@@ -977,6 +985,123 @@
                     showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
+            }
+
+            function formatDateYMD(d) {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+
+            function initDateShortcuts() {
+                const btnToday = document.getElementById('btnToday');
+                const btnLast7 = document.getElementById('btnLast7');
+                const btnThisMonth = document.getElementById('btnThisMonth');
+                const btnLastMonth = document.getElementById('btnLastMonth');
+                const btnClearDates = document.getElementById('btnClearDates');
+
+                if (btnToday) {
+                    btnToday.addEventListener('click', () => {
+                        const now = new Date();
+                        const d = formatDateYMD(now);
+                        if (reportStartDateInput) reportStartDateInput.value = d;
+                        if (reportEndDateInput) reportEndDateInput.value = d;
+                    });
+                }
+
+                if (btnLast7) {
+                    btnLast7.addEventListener('click', () => {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setDate(end.getDate() - 6);
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnThisMonth) {
+                    btnThisMonth.addEventListener('click', () => {
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                        const end = now;
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnLastMonth) {
+                    btnLastMonth.addEventListener('click', () => {
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnClearDates) {
+                    btnClearDates.addEventListener('click', () => {
+                        if (reportStartDateInput) reportStartDateInput.value = '';
+                        if (reportEndDateInput) reportEndDateInput.value = '';
+                    });
+                }
+            }
+
+            function tableElementToCSV(table) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                const csv = rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('th, td')).map(cell => {
+                        let text = cell.innerText.replace(/\s+/g, ' ').trim();
+                        text = text.replace(/"/g, '""');
+                        return `"${text}"`;
+                    });
+                    return cells.join(',');
+                }).join('\r\n');
+                return csv;
+            }
+
+            function downloadCSV(csv, filename) {
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.setAttribute('download', filename);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function exportVisibleReportToCSV() {
+                let table = null;
+                let filename = `rapor-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+
+                if (categorySummaryReportDiv && !categorySummaryReportDiv.classList.contains('hidden')) {
+                    table = categorySummaryTableBody ? categorySummaryTableBody.closest('table') : null;
+                    filename = `kategori-ozet-${filename}`;
+                } else if (balanceHistoryReportDiv && !balanceHistoryReportDiv.classList.contains('hidden')) {
+                    table = balanceHistoryTableBody ? balanceHistoryTableBody.closest('table') : null;
+                    filename = `bakiye-gecmisi-${filename}`;
+                } else if (stockMovementsReportDiv && !stockMovementsReportDiv.classList.contains('hidden')) {
+                    table = stockMovementsTableBody ? stockMovementsTableBody.closest('table') : null;
+                    filename = `stok-hareketleri-${filename}`;
+                }
+
+                if (!table) {
+                    showMessageBox('Dışa aktarılacak tablo bulunamadı.', 'warning');
+                    return;
+                }
+
+                const bodyRows = table.querySelector('tbody');
+                if (!bodyRows || bodyRows.children.length === 0) {
+                    showMessageBox('Tabloda dışa aktarılacak veri yok.', 'warning');
+                    return;
+                }
+
+                const csv = tableElementToCSV(table);
+                downloadCSV(csv, filename);
+                showMessageBox('CSV indirildi.', 'success');
             }
 
             // Dropdown Menü Fonksiyonları
@@ -1025,6 +1150,7 @@
                 if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
                 if (reportStartDateInput) reportStartDateInput.parentElement.classList.add('hidden'); // Tarih inputunun div'ini gizle
                 if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden'); // Tarih inputunun div'ini gizle
+                if (dateShortcutsRow) dateShortcutsRow.classList.add('hidden');
 
 
                 // Seçilen rapora göre ilgili bölümleri ve filtreleri göster
@@ -1034,6 +1160,7 @@
                     // Kategori özetinde tarih aralığı da kullanıldığı için göster
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 } else if (selectedReportType === 'balanceHistory') {
                     if (balanceHistoryReportDiv) balanceHistoryReportDiv.classList.remove('hidden');
                     if (reportBalanceHistoryPeriodDiv) reportBalanceHistoryPeriodDiv.classList.remove('hidden');
@@ -1044,6 +1171,7 @@
                     // Stok hareketlerinde tarih aralığı da kullanıldığı için göster
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 }
             }
 
@@ -1053,6 +1181,7 @@
                 if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
                 if (reportStartDateInput) reportStartDateInput.parentElement.classList.add('hidden');
                 if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden');
+                if (dateShortcutsRow) dateShortcutsRow.classList.add('hidden');
 
                 if (selectedPeriod === 'monthly') {
                     if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.remove('hidden');
@@ -1062,6 +1191,7 @@
                 } else if (selectedPeriod === 'custom') {
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 }
             }
 
@@ -1494,6 +1624,7 @@
             // Sayfa yüklendiğinde varsayılan raporu göster ve filtreleri doldur
             populateYearMonthDropdowns();
             updateReportVisibility(); // Varsayılan raporu göster
+            initDateShortcuts();
             generateReportBtn.click(); // Sayfa yüklendiğinde ilk raporu otomatik oluştur
             loadNotifications();
             initializeSidebarState();
