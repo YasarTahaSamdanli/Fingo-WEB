@@ -497,6 +497,9 @@
 
                 <div id="stockMovementsReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700 hidden">
                     <h3 class="text-2xl font-semibold text-red-300 mb-4 text-center">Stok Hareketleri</h3>
+                    <div class="relative h-80 mb-4">
+                        <canvas id="stockMovementsChart"></canvas>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-gray-900 bg-opacity-70 border border-gray-700 rounded-lg report-table">
                             <thead>
@@ -673,6 +676,8 @@
             const stockMovementsReportDiv = document.getElementById('stockMovementsReport');
             const stockMovementsTableBody = document.getElementById('stockMovementsTableBody');
             const stockMovementsNoData = document.getElementById('stockMovementsNoData');
+            const stockMovementsChartCanvas = document.getElementById('stockMovementsChart');
+            let stockMovementsChartInstance = null;
 
             // Mesaj ve Bildirim Elementleri
             const messageBox = document.getElementById('messageBox');
@@ -1567,6 +1572,10 @@
             async function fetchStockMovementReport(startDate, endDate) {
                 if (stockMovementsTableBody) stockMovementsTableBody.innerHTML = '';
                 if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
+                if (stockMovementsChartInstance) {
+                    stockMovementsChartInstance.destroy();
+                    stockMovementsChartInstance = null;
+                }
 
                 try {
                     const queryParams = new URLSearchParams();
@@ -1590,6 +1599,10 @@
 
                     if (data.length === 0) {
                         if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                        if (stockMovementsChartInstance) {
+                            stockMovementsChartInstance.destroy();
+                            stockMovementsChartInstance = null;
+                        }
                         return;
                     }
 
@@ -1605,6 +1618,8 @@
                         `;
                     });
 
+                    renderStockMovementsChart(data);
+
                 } catch (error) {
                     console.error('Stok hareketleri verilerini çekerken hata:', error);
                     showMessageBox(`Stok hareketleri raporu yüklenirken hata oluştu: ${error.message}`, 'error');
@@ -1612,6 +1627,69 @@
                 }
             }
 
+            function renderStockMovementsChart(rows) {
+                if (!stockMovementsChartCanvas) {
+                    console.error('Stock Movements Chart canvas not found!');
+                    return;
+                }
+                // Aggregate quantities per product
+                const totalsMap = new Map();
+                rows.forEach(item => {
+                    const name = item.productName || 'Bilinmeyen';
+                    const qty = Number(item.quantitySold) || 0;
+                    totalsMap.set(name, (totalsMap.get(name) || 0) + qty);
+                });
+                const sorted = Array.from(totalsMap.entries()).sort((a, b) => b[1] - a[1]);
+                const top = sorted.slice(0, 10);
+                const labels = top.map(e => e[0]);
+                const quantities = top.map(e => e[1]);
+
+                if (stockMovementsChartInstance) {
+                    stockMovementsChartInstance.destroy();
+                }
+
+                const ctx = stockMovementsChartCanvas.getContext('2d');
+                stockMovementsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Satılan Miktar',
+                            data: quantities,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                                labels: { color: '#A0AEC0' }
+                            },
+                            title: {
+                                display: true,
+                                text: 'En Çok Satılan Ürünler (Top 10)',
+                                color: '#E2E8F0'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Adet', color: '#A0AEC0' },
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
 
             // Olay Dinleyicileri ve Başlangıç Ayarları
             if (reportTypeSelect) {
