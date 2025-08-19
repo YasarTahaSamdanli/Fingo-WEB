@@ -1729,16 +1729,16 @@
                 }
                 if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
                 rows.forEach(item => {
-                    const row = stockMovementsTableBody.insertRow();
+                        const row = stockMovementsTableBody.insertRow();
                     row.className = 'border-b border-gray-700 report-table-row';
-                    const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
-                    row.innerHTML = `
-                        <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
-                        <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
-                        <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
-                        <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
-                    `;
-                });
+                        const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
+                        `;
+                    });
             }
 
             if (stockProductFilterSelect) {
