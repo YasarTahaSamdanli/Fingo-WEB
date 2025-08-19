@@ -500,6 +500,10 @@
                     <div class="relative h-80 mb-4">
                         <canvas id="stockMovementsChart"></canvas>
                     </div>
+                    <div class="mb-4 flex items-center gap-3">
+                        <label for="stockProductFilter" class="block text-gray-300 text-sm font-medium">Ürün:</label>
+                        <select id="stockProductFilter" class="form-select w-full md:w-64 p-2 text-sm"></select>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-gray-900 bg-opacity-70 border border-gray-700 rounded-lg report-table">
                             <thead>
@@ -678,6 +682,8 @@
             const stockMovementsNoData = document.getElementById('stockMovementsNoData');
             const stockMovementsChartCanvas = document.getElementById('stockMovementsChart');
             let stockMovementsChartInstance = null;
+            const stockProductFilterSelect = document.getElementById('stockProductFilter');
+            let stockMovementsData = [];
 
             // Mesaj ve Bildirim Elementleri
             const messageBox = document.getElementById('messageBox');
@@ -1606,25 +1612,74 @@
                         return;
                     }
 
-                    data.forEach(item => {
-                        const row = stockMovementsTableBody.insertRow();
-                        row.className = 'border-b border-gray-700 report-table-row'; // Yeni Tailwind sınıfları
-                        const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
-                        row.innerHTML = `
-                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
-                            <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
-                        `;
-                    });
-
-                    renderStockMovementsChart(data);
+                    stockMovementsData = Array.isArray(data) ? data : [];
+                    populateStockProductFilter(stockMovementsData);
+                    renderStockMovementsTable();
+                    renderStockMovementsChart(stockMovementsData);
 
                 } catch (error) {
                     console.error('Stok hareketleri verilerini çekerken hata:', error);
                     showMessageBox(`Stok hareketleri raporu yüklenirken hata oluştu: ${error.message}`, 'error');
                     if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
                 }
+            }
+
+            function populateStockProductFilter(data) {
+                if (!stockProductFilterSelect) return;
+                const current = stockProductFilterSelect.value;
+                const names = Array.from(new Set((data || []).map(i => i.productName || 'Bilinmeyen'))).sort((a, b) => a.localeCompare(b, 'tr'));
+                stockProductFilterSelect.innerHTML = '';
+                const allOption = document.createElement('option');
+                allOption.value = '';
+                allOption.textContent = 'Tümü';
+                stockProductFilterSelect.appendChild(allOption);
+                names.forEach(n => {
+                    const opt = document.createElement('option');
+                    opt.value = n;
+                    opt.textContent = n;
+                    stockProductFilterSelect.appendChild(opt);
+                });
+                // Restore selection if still present
+                if (current && names.includes(current)) {
+                    stockProductFilterSelect.value = current;
+                } else {
+                    stockProductFilterSelect.value = '';
+                }
+            }
+
+            function getFilteredStockMovements() {
+                if (!stockProductFilterSelect || !stockProductFilterSelect.value) return stockMovementsData;
+                const selected = stockProductFilterSelect.value;
+                return (stockMovementsData || []).filter(i => (i.productName || 'Bilinmeyen') === selected);
+            }
+
+            function renderStockMovementsTable() {
+                if (!stockMovementsTableBody) return;
+                const rows = getFilteredStockMovements();
+                stockMovementsTableBody.innerHTML = '';
+                if (!rows || rows.length === 0) {
+                    if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                    return;
+                }
+                if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
+                rows.forEach(item => {
+                    const row = stockMovementsTableBody.insertRow();
+                    row.className = 'border-b border-gray-700 report-table-row';
+                    const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
+                    row.innerHTML = `
+                        <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
+                        <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
+                        <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
+                        <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
+                    `;
+                });
+            }
+
+            if (stockProductFilterSelect) {
+                stockProductFilterSelect.addEventListener('change', () => {
+                    renderStockMovementsTable();
+                    renderStockMovementsChart(getFilteredStockMovements());
+                });
             }
 
             function renderStockMovementsChart(rows) {
