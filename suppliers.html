@@ -617,6 +617,9 @@
 
 <script type="module">
     document.addEventListener('DOMContentLoaded', () => {
+        // API Base URL - Render'daki backend için
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api';
+        
         // DOM Elements
         const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
         const sidebar = document.getElementById('sidebar');
@@ -837,13 +840,13 @@
         // ----- Supplier Management Functions -----
         async function loadSuppliers() {
             try {
-                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
+                const token = localStorage.getItem('jwtToken');
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
                 }
 
-                const response = await fetch('/api/suppliers', {
+                const response = await fetch(`${API_BASE_URL}/suppliers`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -911,13 +914,13 @@
 
         async function addSupplier(formData) {
             try {
-                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
+                const token = localStorage.getItem('jwtToken');
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
                 }
 
-                const response = await fetch('/api/suppliers', {
+                const response = await fetch(`${API_BASE_URL}/suppliers`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -944,14 +947,14 @@
 
         async function editSupplier(supplierId) {
             try {
-                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
+                const token = localStorage.getItem('jwtToken');
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
                 }
 
                 // Mevcut tedarikçi bilgilerini getir
-                const response = await fetch(`/api/suppliers/${supplierId}`, {
+                const response = await fetch(`${API_BASE_URL}/suppliers/${supplierId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -1028,8 +1031,8 @@
                 const data = Object.fromEntries(formData.entries());
                 
                 try {
-                    const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
-                    const response = await fetch(`/api/suppliers/${supplier._id}`, {
+                    const token = localStorage.getItem('jwtToken');
+                    const response = await fetch(`${API_BASE_URL}/suppliers/${supplier._id}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -1058,13 +1061,13 @@
         async function deleteSupplier(supplierId, supplierName) {
             showConfirmBox(`"${supplierName}" adlı tedarikçiyi silmek istediğinizden emin misiniz?`, async () => {
                 try {
-                    const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
+                    const token = localStorage.getItem('jwtToken');
                     if (!token) {
                         showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                         return;
                     }
 
-                    const response = await fetch(`/api/suppliers/${supplierId}`, {
+                    const response = await fetch(`${API_BASE_URL}/suppliers/${supplierId}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
