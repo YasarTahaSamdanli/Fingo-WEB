@@ -633,6 +633,8 @@
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
         const resetFormBtn = document.getElementById('resetFormBtn');
+        const supplierForm = document.getElementById('supplierForm');
+        const suppliersTableBody = document.getElementById('suppliersTableBody');
 
         // Notifications array (load from localStorage)
         let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
@@ -832,9 +834,283 @@
             document.getElementById('supplierForm').reset();
         });
 
+        // ----- Supplier Management Functions -----
+        async function loadSuppliers() {
+            try {
+                const token = localStorage.getItem('fingoToken');
+                if (!token) {
+                    showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                    return;
+                }
+
+                const response = await fetch('/api/suppliers', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const suppliers = await response.json();
+                    renderSuppliers(suppliers);
+                } else {
+                    throw new Error('Tedarikçiler yüklenemedi');
+                }
+            } catch (error) {
+                console.error('Tedarikçi yükleme hatası:', error);
+                showMessageBox('Tedarikçiler yüklenirken hata oluştu.', 'error');
+            }
+        }
+
+        function renderSuppliers(suppliers) {
+            suppliersTableBody.innerHTML = '';
+            
+            if (suppliers.length === 0) {
+                suppliersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 px-6 text-center text-gray-400">
+                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                            Henüz tedarikçi eklenmemiş
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            suppliers.forEach(supplier => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 hover:bg-gray-800 transition-colors';
+                row.innerHTML = `
+                    <td class="py-4 px-6">
+                        <div class="font-medium text-blue-300">${supplier.name}</div>
+                    </td>
+                    <td class="py-4 px-6">${supplier.contactPerson || '-'}</td>
+                    <td class="py-4 px-6">
+                        ${supplier.email ? `<a href="mailto:${supplier.email}" class="text-blue-400 hover:text-blue-300">${supplier.email}</a>` : '-'}
+                    </td>
+                    <td class="py-4 px-6">
+                        ${supplier.phone ? `<a href="tel:${supplier.phone}" class="text-blue-400 hover:text-blue-300">${supplier.phone}</a>` : '-'}
+                    </td>
+                    <td class="py-4 px-6 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="editSupplier('${supplier._id}')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md transition-colors text-sm">
+                                <i class="fas fa-edit mr-1"></i>Düzenle
+                            </button>
+                            <button onclick="deleteSupplier('${supplier._id}', '${supplier.name}')" 
+                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md transition-colors text-sm">
+                                <i class="fas fa-trash mr-1"></i>Sil
+                            </button>
+                        </div>
+                    </td>
+                `;
+                suppliersTableBody.appendChild(row);
+            });
+        }
+
+        async function addSupplier(formData) {
+            try {
+                const token = localStorage.getItem('fingoToken');
+                if (!token) {
+                    showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                    return;
+                }
+
+                const response = await fetch('/api/suppliers', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showMessageBox(result.message, 'success');
+                    addNotification(`Yeni tedarikçi eklendi: ${formData.name}`, 'success');
+                    supplierForm.reset();
+                    loadSuppliers(); // Listeyi yenile
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Tedarikçi eklenemedi');
+                }
+            } catch (error) {
+                console.error('Tedarikçi ekleme hatası:', error);
+                showMessageBox(error.message || 'Tedarikçi eklenirken hata oluştu.', 'error');
+            }
+        }
+
+        async function editSupplier(supplierId) {
+            try {
+                const token = localStorage.getItem('fingoToken');
+                if (!token) {
+                    showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                    return;
+                }
+
+                // Mevcut tedarikçi bilgilerini getir
+                const response = await fetch(`/api/suppliers/${supplierId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const supplier = await response.json();
+                    showEditModal(supplier);
+                } else {
+                    throw new Error('Tedarikçi bilgileri alınamadı');
+                }
+            } catch (error) {
+                console.error('Tedarikçi bilgileri alma hatası:', error);
+                showMessageBox('Tedarikçi bilgileri alınırken hata oluştu.', 'error');
+            }
+        }
+
+        function showEditModal(supplier) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay show';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+                    <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Tedarikçi Düzenle</h3>
+                    <form id="editSupplierForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-300 text-sm font-semibold mb-2">Tedarikçi Adı:</label>
+                                <input type="text" name="name" value="${supplier.name}" class="form-input w-full p-3" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm font-semibold mb-2">İlgili Kişi:</label>
+                                <input type="text" name="contactPerson" value="${supplier.contactPerson || ''}" class="form-input w-full p-3" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm font-semibold mb-2">E-posta:</label>
+                                <input type="email" name="email" value="${supplier.email || ''}" class="form-input w-full p-3">
+                            </div>
+                            <div>
+                                <label class="block text-gray-300 text-sm font-semibold mb-2">Telefon:</label>
+                                <input type="tel" name="phone" value="${supplier.phone || ''}" class="form-input w-full p-3">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">Adres:</label>
+                            <input type="text" name="address" value="${supplier.address || ''}" class="form-input w-full p-3">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 text-sm font-semibold mb-2">Notlar:</label>
+                            <textarea name="notes" rows="3" class="form-input w-full p-3">${supplier.notes || ''}</textarea>
+                        </div>
+                        <div class="flex justify-end space-x-4 pt-4">
+                            <button type="button" onclick="this.closest('.modal-overlay').remove()" 
+                                    class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-md transition-colors">
+                                İptal
+                            </button>
+                            <button type="submit" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-md transition-colors">
+                                Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Form submit handler
+            document.getElementById('editSupplierForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                try {
+                    const token = localStorage.getItem('fingoToken');
+                    const response = await fetch(`/api/suppliers/${supplier._id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        showMessageBox(result.message, 'success');
+                        addNotification(`Tedarikçi güncellendi: ${data.name}`, 'success');
+                        modal.remove();
+                        loadSuppliers(); // Listeyi yenile
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Güncelleme başarısız');
+                    }
+                } catch (error) {
+                    console.error('Güncelleme hatası:', error);
+                    showMessageBox(error.message || 'Güncelleme sırasında hata oluştu.', 'error');
+                }
+            });
+        }
+
+        async function deleteSupplier(supplierId, supplierName) {
+            showConfirmBox(`"${supplierName}" adlı tedarikçiyi silmek istediğinizden emin misiniz?`, async () => {
+                try {
+                    const token = localStorage.getItem('fingoToken');
+                    if (!token) {
+                        showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                        return;
+                    }
+
+                    const response = await fetch(`/api/suppliers/${supplierId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        showMessageBox(result.message, 'success');
+                        addNotification(`Tedarikçi silindi: ${supplierName}`, 'success');
+                        loadSuppliers(); // Listeyi yenile
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Silme başarısız');
+                    }
+                } catch (error) {
+                    console.error('Silme hatası:', error);
+                    showMessageBox(error.message || 'Silme sırasında hata oluştu.', 'error');
+                }
+            });
+        }
+
+        // Global functions for onclick handlers
+        window.editSupplier = editSupplier;
+        window.deleteSupplier = deleteSupplier;
+
+        // ----- Form Event Listeners -----
+        supplierForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validation
+            if (!data.name.trim() || !data.contactPerson.trim()) {
+                showMessageBox('Tedarikçi adı ve ilgili kişi alanları zorunludur.', 'warning');
+                return;
+            }
+
+            await addSupplier(data);
+        });
+
         // ----- Initialization -----
         initializeSidebarState();
         loadNotifications();
+        loadSuppliers(); // Tedarikçileri yükle
     });
 </script>
 </body>
