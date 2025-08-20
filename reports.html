@@ -437,6 +437,13 @@
                         <label for="balanceHistoryMonth" class="block text-gray-300 text-sm font-medium mb-1">Ay:</label>
                         <select id="balanceHistoryMonth" class="form-select w-full p-2 text-sm"></select>
                     </div>
+                    <div id="dateShortcutsRow" class="col-span-1 md:col-span-2 lg:col-span-3 flex flex-wrap gap-2">
+                        <button id="btnToday" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Bugün</button>
+                        <button id="btnLast7" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Son 7 Gün</button>
+                        <button id="btnThisMonth" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Bu Ay</button>
+                        <button id="btnLastMonth" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Geçen Ay</button>
+                        <button id="btnClearDates" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">Temizle</button>
+                    </div>
                 </div>
                 <div class="flex justify-center mt-6">
                     <button id="generateReportBtn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors shadow-md text-lg">Rapor Oluştur</button>
@@ -490,6 +497,58 @@
 
                 <div id="stockMovementsReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700 hidden">
                     <h3 class="text-2xl font-semibold text-red-300 mb-4 text-center">Stok Hareketleri</h3>
+                    <div class="relative h-80 mb-4">
+                        <canvas id="stockMovementsChart"></canvas>
+                    </div>
+                    <div class="mb-4 bg-gray-900 bg-opacity-60 border border-gray-700 rounded-lg p-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label for="stockProductSearch" class="block text-gray-300 text-sm font-medium mb-1">Ürün Ara</label>
+                                <div class="relative">
+                                    <input id="stockProductSearch" type="text" placeholder="Ürün adı ara..." class="form-input w-full p-2 pr-9 text-sm" />
+                                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                </div>
+                                <label for="stockProductFilter" class="block text-gray-300 text-sm font-medium mt-3 mb-1">Ürün Seç (çoklu)</label>
+                                <select id="stockProductFilter" multiple size="8" class="form-select w-full p-2 text-sm"></select>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <button id="stockSelectAllBtn" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1 rounded">Hepsini Seç</button>
+                                    <button id="stockClearBtn" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1 rounded">Temizle</button>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-300 text-sm font-medium mb-1" for="stockTopN">Top N</label>
+                                        <select id="stockTopN" class="form-select p-2 text-sm w-28">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                        </select>
+                                        <p class="text-xs text-gray-400 mt-2">Grafikte gösterilecek en çok satılan ürün sayısı.</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-300 text-sm font-medium mb-1">Seçilen Ürünler</label>
+                                        <div id="stockSelectedBadges" class="min-h-[40px] flex flex-wrap gap-2 bg-gray-800 border border-gray-700 rounded p-2"></div>
+                                        <p class="text-xs text-gray-400 mt-2">Rozetlere tıklayarak seçimden kaldırabilirsiniz.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end mb-3 gap-2">
+                        <label for="stockSortBy" class="text-gray-300 text-sm">Sırala:</label>
+                        <select id="stockSortBy" class="form-select p-2 text-sm w-56">
+                            <option value="dateDesc" selected>Tarihe Göre (Yeni → Eski)</option>
+                            <option value="dateAsc">Tarihe Göre (Eski → Yeni)</option>
+                            <option value="qtyDesc">Satılan Miktar (Azalan)</option>
+                            <option value="qtyAsc">Satılan Miktar (Artan)</option>
+                            <option value="amtDesc">Toplam Tutar (Azalan)</option>
+                            <option value="amtAsc">Toplam Tutar (Artan)</option>
+                        </select>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-gray-900 bg-opacity-70 border border-gray-700 rounded-lg report-table">
                             <thead>
@@ -649,6 +708,7 @@
             const reportBalanceHistoryMonthDiv = document.getElementById('reportBalanceHistoryMonth');
             const balanceHistoryMonthSelect = document.getElementById('balanceHistoryMonth');
             const generateReportBtn = document.getElementById('generateReportBtn');
+            const dateShortcutsRow = document.getElementById('dateShortcutsRow');
 
             const categorySummaryReportDiv = document.getElementById('categorySummaryReport');
             const categorySummaryChartCanvas = document.getElementById('categorySummaryChart');
@@ -665,6 +725,16 @@
             const stockMovementsReportDiv = document.getElementById('stockMovementsReport');
             const stockMovementsTableBody = document.getElementById('stockMovementsTableBody');
             const stockMovementsNoData = document.getElementById('stockMovementsNoData');
+            const stockMovementsChartCanvas = document.getElementById('stockMovementsChart');
+            let stockMovementsChartInstance = null;
+            const stockProductFilterSelect = document.getElementById('stockProductFilter');
+            const stockProductSearchInput = document.getElementById('stockProductSearch');
+            const stockTopNSelect = document.getElementById('stockTopN');
+            const stockSelectedBadges = document.getElementById('stockSelectedBadges');
+            const stockSelectAllBtn = document.getElementById('stockSelectAllBtn');
+            const stockClearBtn = document.getElementById('stockClearBtn');
+            const stockSortBySelect = document.getElementById('stockSortBy');
+            let stockMovementsData = [];
 
             // Mesaj ve Bildirim Elementleri
             const messageBox = document.getElementById('messageBox');
@@ -967,7 +1037,7 @@
             if (exportCsvBtn) {
                 exportCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    showMessageBox('Veri dışa aktarma özelliği geliştiriliyor...', 'info');
+                    exportVisibleReportToCSV();
                     closeSidebar();
                 });
             }
@@ -977,6 +1047,123 @@
                     showMessageBox('Veri içe aktarma özelliği geliştiriliyor...', 'info');
                     closeSidebar();
                 });
+            }
+
+            function formatDateYMD(d) {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+
+            function initDateShortcuts() {
+                const btnToday = document.getElementById('btnToday');
+                const btnLast7 = document.getElementById('btnLast7');
+                const btnThisMonth = document.getElementById('btnThisMonth');
+                const btnLastMonth = document.getElementById('btnLastMonth');
+                const btnClearDates = document.getElementById('btnClearDates');
+
+                if (btnToday) {
+                    btnToday.addEventListener('click', () => {
+                        const now = new Date();
+                        const d = formatDateYMD(now);
+                        if (reportStartDateInput) reportStartDateInput.value = d;
+                        if (reportEndDateInput) reportEndDateInput.value = d;
+                    });
+                }
+
+                if (btnLast7) {
+                    btnLast7.addEventListener('click', () => {
+                        const end = new Date();
+                        const start = new Date();
+                        start.setDate(end.getDate() - 6);
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnThisMonth) {
+                    btnThisMonth.addEventListener('click', () => {
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                        const end = now;
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnLastMonth) {
+                    btnLastMonth.addEventListener('click', () => {
+                        const now = new Date();
+                        const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const end = new Date(now.getFullYear(), now.getMonth(), 0);
+                        if (reportStartDateInput) reportStartDateInput.value = formatDateYMD(start);
+                        if (reportEndDateInput) reportEndDateInput.value = formatDateYMD(end);
+                    });
+                }
+
+                if (btnClearDates) {
+                    btnClearDates.addEventListener('click', () => {
+                        if (reportStartDateInput) reportStartDateInput.value = '';
+                        if (reportEndDateInput) reportEndDateInput.value = '';
+                    });
+                }
+            }
+
+            function tableElementToCSV(table) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                const csv = rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('th, td')).map(cell => {
+                        let text = cell.innerText.replace(/\s+/g, ' ').trim();
+                        text = text.replace(/"/g, '""');
+                        return `"${text}"`;
+                    });
+                    return cells.join(',');
+                }).join('\r\n');
+                return csv;
+            }
+
+            function downloadCSV(csv, filename) {
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.setAttribute('download', filename);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function exportVisibleReportToCSV() {
+                let table = null;
+                let filename = `rapor-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+
+                if (categorySummaryReportDiv && !categorySummaryReportDiv.classList.contains('hidden')) {
+                    table = categorySummaryTableBody ? categorySummaryTableBody.closest('table') : null;
+                    filename = `kategori-ozet-${filename}`;
+                } else if (balanceHistoryReportDiv && !balanceHistoryReportDiv.classList.contains('hidden')) {
+                    table = balanceHistoryTableBody ? balanceHistoryTableBody.closest('table') : null;
+                    filename = `bakiye-gecmisi-${filename}`;
+                } else if (stockMovementsReportDiv && !stockMovementsReportDiv.classList.contains('hidden')) {
+                    table = stockMovementsTableBody ? stockMovementsTableBody.closest('table') : null;
+                    filename = `stok-hareketleri-${filename}`;
+                }
+
+                if (!table) {
+                    showMessageBox('Dışa aktarılacak tablo bulunamadı.', 'warning');
+                    return;
+                }
+
+                const bodyRows = table.querySelector('tbody');
+                if (!bodyRows || bodyRows.children.length === 0) {
+                    showMessageBox('Tabloda dışa aktarılacak veri yok.', 'warning');
+                    return;
+                }
+
+                const csv = tableElementToCSV(table);
+                downloadCSV(csv, filename);
+                showMessageBox('CSV indirildi.', 'success');
             }
 
             // Dropdown Menü Fonksiyonları
@@ -1025,6 +1212,7 @@
                 if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
                 if (reportStartDateInput) reportStartDateInput.parentElement.classList.add('hidden'); // Tarih inputunun div'ini gizle
                 if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden'); // Tarih inputunun div'ini gizle
+                if (dateShortcutsRow) dateShortcutsRow.classList.add('hidden');
 
 
                 // Seçilen rapora göre ilgili bölümleri ve filtreleri göster
@@ -1034,6 +1222,7 @@
                     // Kategori özetinde tarih aralığı da kullanıldığı için göster
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 } else if (selectedReportType === 'balanceHistory') {
                     if (balanceHistoryReportDiv) balanceHistoryReportDiv.classList.remove('hidden');
                     if (reportBalanceHistoryPeriodDiv) reportBalanceHistoryPeriodDiv.classList.remove('hidden');
@@ -1044,6 +1233,7 @@
                     // Stok hareketlerinde tarih aralığı da kullanıldığı için göster
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 }
             }
 
@@ -1053,6 +1243,7 @@
                 if (reportBalanceHistoryMonthDiv) reportBalanceHistoryMonthDiv.classList.add('hidden');
                 if (reportStartDateInput) reportStartDateInput.parentElement.classList.add('hidden');
                 if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden');
+                if (dateShortcutsRow) dateShortcutsRow.classList.add('hidden');
 
                 if (selectedPeriod === 'monthly') {
                     if (reportBalanceHistoryYearDiv) reportBalanceHistoryYearDiv.classList.remove('hidden');
@@ -1062,6 +1253,7 @@
                 } else if (selectedPeriod === 'custom') {
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 }
             }
 
@@ -1437,6 +1629,10 @@
             async function fetchStockMovementReport(startDate, endDate) {
                 if (stockMovementsTableBody) stockMovementsTableBody.innerHTML = '';
                 if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
+                if (stockMovementsChartInstance) {
+                    stockMovementsChartInstance.destroy();
+                    stockMovementsChartInstance = null;
+                }
 
                 try {
                     const queryParams = new URLSearchParams();
@@ -1460,20 +1656,17 @@
 
                     if (data.length === 0) {
                         if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                        if (stockMovementsChartInstance) {
+                            stockMovementsChartInstance.destroy();
+                            stockMovementsChartInstance = null;
+                        }
                         return;
                     }
 
-                    data.forEach(item => {
-                        const row = stockMovementsTableBody.insertRow();
-                        row.className = 'border-b border-gray-700 report-table-row'; // Yeni Tailwind sınıfları
-                        const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
-                        row.innerHTML = `
-                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
-                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
-                            <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
-                        `;
-                    });
+                    stockMovementsData = Array.isArray(data) ? data : [];
+                    populateStockProductFilter(stockMovementsData);
+                    renderStockMovementsTable();
+                    renderStockMovementsChart(stockMovementsData);
 
                 } catch (error) {
                     console.error('Stok hareketleri verilerini çekerken hata:', error);
@@ -1482,6 +1675,165 @@
                 }
             }
 
+            function populateStockProductFilter(data) {
+                if (!stockProductFilterSelect) return;
+                const currentSelected = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
+                const names = Array.from(new Set((data || []).map(i => i.productName || 'Bilinmeyen'))).sort((a, b) => a.localeCompare(b, 'tr'));
+                stockProductFilterSelect.innerHTML = '';
+                names.forEach(n => {
+                    const opt = document.createElement('option');
+                    opt.value = n;
+                    opt.textContent = n;
+                    stockProductFilterSelect.appendChild(opt);
+                });
+                // Restore previously selected values if available
+                if (currentSelected && currentSelected.length > 0) {
+                    Array.from(stockProductFilterSelect.options).forEach(o => {
+                        if (currentSelected.includes(o.value)) o.selected = true;
+                    });
+                }
+                filterStockProductOptions();
+                updateSelectedBadges();
+            }
+
+            function getFilteredStockMovements() {
+                if (!stockProductFilterSelect) return stockMovementsData;
+                const selectedValues = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
+                if (selectedValues.length === 0) return stockMovementsData;
+                const selectedSet = new Set(selectedValues);
+                return (stockMovementsData || []).filter(i => selectedSet.has(i.productName || 'Bilinmeyen'));
+            }
+
+            function renderStockMovementsTable() {
+                if (!stockMovementsTableBody) return;
+                let rows = getFilteredStockMovements();
+                // Apply sorting
+                if (stockSortBySelect) {
+                    const sort = stockSortBySelect.value || 'dateDesc';
+                    rows = [...rows];
+                    if (sort === 'dateDesc' || sort === 'dateAsc') {
+                        rows.sort((a, b) => new Date(a.saleDate) - new Date(b.saleDate));
+                        if (sort === 'dateDesc') rows.reverse();
+                    } else if (sort === 'qtyDesc' || sort === 'qtyAsc') {
+                        rows.sort((a, b) => (a.quantitySold || 0) - (b.quantitySold || 0));
+                        if (sort === 'qtyDesc') rows.reverse();
+                    } else if (sort === 'amtDesc' || sort === 'amtAsc') {
+                        rows.sort((a, b) => (a.totalAmount || 0) - (b.totalAmount || 0));
+                        if (sort === 'amtDesc') rows.reverse();
+                    }
+                }
+                stockMovementsTableBody.innerHTML = '';
+                if (!rows || rows.length === 0) {
+                    if (stockMovementsNoData) stockMovementsNoData.classList.remove('hidden');
+                    return;
+                }
+                if (stockMovementsNoData) stockMovementsNoData.classList.add('hidden');
+                rows.forEach(item => {
+                        const row = stockMovementsTableBody.insertRow();
+                    row.className = 'border-b border-gray-700 report-table-row';
+                        const saleDate = new Date(item.saleDate).toLocaleDateString('tr-TR');
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${item.productName}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.quantitySold}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${item.totalAmount.toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${saleDate}</td>
+                        `;
+                    });
+            }
+
+            if (stockProductFilterSelect) {
+                stockProductFilterSelect.addEventListener('change', () => {
+                    renderStockMovementsTable();
+                    renderStockMovementsChart(getFilteredStockMovements());
+                    updateSelectedBadges();
+                });
+            }
+
+            if (stockTopNSelect) {
+                stockTopNSelect.addEventListener('change', () => {
+                    renderStockMovementsChart(getFilteredStockMovements());
+                });
+            }
+
+            function renderStockMovementsChart(rows) {
+                if (!stockMovementsChartCanvas) {
+                    console.error('Stock Movements Chart canvas not found!');
+                    return;
+                }
+                const topCount = Math.max(1, parseInt((stockTopNSelect && stockTopNSelect.value) ? stockTopNSelect.value : '10', 10) || 10);
+                // Aggregate quantities per product
+                const totalsMap = new Map();
+                rows.forEach(item => {
+                    const name = item.productName || 'Bilinmeyen';
+                    const qty = Number(item.quantitySold) || 0;
+                    totalsMap.set(name, (totalsMap.get(name) || 0) + qty);
+                });
+                const sorted = Array.from(totalsMap.entries()).sort((a, b) => b[1] - a[1]);
+                const top = sorted.slice(0, topCount);
+                const labels = top.map(e => e[0]);
+                const quantities = top.map(e => e[1]);
+
+                if (stockMovementsChartInstance) {
+                    stockMovementsChartInstance.destroy();
+                }
+
+                const ctx = stockMovementsChartCanvas.getContext('2d');
+                stockMovementsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Satılan Miktar',
+                            data: quantities,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,
+                                labels: { color: '#A0AEC0' }
+                            },
+                            title: {
+                                display: true,
+                                text: `En Çok Satılan Ürünler (Top ${topCount})`,
+                                color: '#E2E8F0'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Adet', color: '#A0AEC0' },
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            x: {
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function filterStockProductOptions() {
+                if (!stockProductFilterSelect || !stockProductSearchInput) return;
+                const q = stockProductSearchInput.value.toLowerCase().trim();
+                Array.from(stockProductFilterSelect.options).forEach(opt => {
+                    const match = opt.textContent.toLowerCase().includes(q);
+                    opt.hidden = q ? !match : false;
+                });
+            }
+
+            if (stockProductSearchInput) {
+                stockProductSearchInput.addEventListener('input', () => {
+                    filterStockProductOptions();
+                });
+            }
 
             // Olay Dinleyicileri ve Başlangıç Ayarları
             if (reportTypeSelect) {
@@ -1494,9 +1846,57 @@
             // Sayfa yüklendiğinde varsayılan raporu göster ve filtreleri doldur
             populateYearMonthDropdowns();
             updateReportVisibility(); // Varsayılan raporu göster
+            initDateShortcuts();
             generateReportBtn.click(); // Sayfa yüklendiğinde ilk raporu otomatik oluştur
             loadNotifications();
             initializeSidebarState();
+
+            function updateSelectedBadges() {
+                if (!stockSelectedBadges || !stockProductFilterSelect) return;
+                const selected = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
+                stockSelectedBadges.innerHTML = '';
+                if (selected.length === 0) {
+                    const span = document.createElement('span');
+                    span.className = 'text-xs text-gray-400';
+                    span.textContent = 'Tümü';
+                    stockSelectedBadges.appendChild(span);
+                    return;
+                }
+                selected.forEach(name => {
+                    const badge = document.createElement('span');
+                    badge.className = 'inline-flex items-center gap-1 bg-blue-700 text-white text-xs px-2 py-1 rounded';
+                    badge.innerHTML = `${name} <button aria-label="Kaldır" class="ml-1 text-white/80 hover:text-white"><i class="fas fa-times"></i></button>`;
+                    badge.querySelector('button').addEventListener('click', () => {
+                        Array.from(stockProductFilterSelect.options).forEach(o => {
+                            if (o.value === name) o.selected = false;
+                        });
+                        stockProductFilterSelect.dispatchEvent(new Event('change'));
+                    });
+                    stockSelectedBadges.appendChild(badge);
+                });
+            }
+
+            if (stockSelectAllBtn) {
+                stockSelectAllBtn.addEventListener('click', () => {
+                    Array.from(stockProductFilterSelect.options).forEach(o => {
+                        if (!o.hidden) o.selected = true;
+                    });
+                    stockProductFilterSelect.dispatchEvent(new Event('change'));
+                });
+            }
+
+            if (stockClearBtn) {
+                stockClearBtn.addEventListener('click', () => {
+                    Array.from(stockProductFilterSelect.options).forEach(o => { o.selected = false; });
+                    stockProductFilterSelect.dispatchEvent(new Event('change'));
+                });
+            }
+
+            if (stockSortBySelect) {
+                stockSortBySelect.addEventListener('change', () => {
+                    renderStockMovementsTable();
+                });
+            }
         });
     </script>
 </body>

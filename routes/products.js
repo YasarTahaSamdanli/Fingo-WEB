@@ -2,6 +2,7 @@
 const express = require('express');
 const { ObjectId } = require('mongodb'); // ObjectId'yi hala kullanıyoruz (_id alanları için)
 const { getDb } = require('../db');
+const { sendLowStockEmail } = require('../utils/emailSender');
 const { authenticateToken, verify2FA } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -191,15 +192,46 @@ router.put('/products/stock/:id', authenticateToken, async (req, res) => {
 
     try {
         const db = getDb();
+
+        // Eşik geçişini tespit etmek için mevcut ürünü çek
+        const product = await db.collection('products').findOne({ _id: new ObjectId(id), userId: userId });
+        if (!product) {
+            return res.status(404).json({ message: 'Ürün bulunamadı veya bu kullanıcıya ait değil.' });
+        }
+
+        const previousQuantity = Number(product.quantity);
+        const updatedQuantity = parseInt(newQuantity);
+        const minLevel = Number.isFinite(product.minStockLevel) ? Number(product.minStockLevel) : 0;
+        const threshold = minLevel > 0 ? minLevel : 10;
+
         const result = await db.collection('products').updateOne(
             { _id: new ObjectId(id), userId: userId }, // <<<< DÜZELTME: userId'yi ObjectId'ye çevirmeden direkt string olarak kullan
-            { $set: { quantity: parseInt(newQuantity), updatedAt: new Date() } }
+            { $set: { quantity: updatedQuantity, updatedAt: new Date() } }
         );
 
         if (result.matchedCount === 0) {
             return res.status(404).json({ message: 'Ürün bulunamadı veya bu kullanıcıya ait değil.' });
         }
-        res.status(200).json({ message: 'Stok başarıyla güncellendi!', newQuantity: newQuantity });
+
+        // Eşik üstünden eşik altına düşüşte e-posta gönder
+        if (previousQuantity >= threshold && updatedQuantity < threshold) {
+            try {
+                const user = await db.collection('users').findOne({ _id: new ObjectId(userId) }, { projection: { email: 1 } });
+                if (user && user.email) {
+                    // Async fire-and-forget
+                    sendLowStockEmail(user.email, {
+                        productName: product.name,
+                        newQuantity: updatedQuantity,
+                        minStockLevel: threshold,
+                        unit: product.unit
+                    }).catch(err => console.error('Düşük stok e-posta hatası:', err));
+                }
+            } catch (err) {
+                console.error('Düşük stok e-posta hazırlama/lookup hatası:', err);
+            }
+        }
+
+        res.status(200).json({ message: 'Stok başarıyla güncellendi!', newQuantity: updatedQuantity });
     } catch (error) {
         console.error('Stok güncelleme hatası:', error);
         res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });

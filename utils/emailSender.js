@@ -54,3 +54,40 @@ async function sendVerificationEmail(email, token) {
 }
 
 module.exports = { sendVerificationEmail };
+
+/**
+ * Düşük stok uyarı e-postası gönderir.
+ * @param {string} email - Alıcı e-posta adresi
+ * @param {{ productName: string, newQuantity: number, minStockLevel?: number, unit?: string }} params
+ */
+async function sendLowStockEmail(email, { productName, newQuantity, minStockLevel, unit }) {
+    const threshold = Number(minStockLevel ?? 10);
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: `Düşük Stok Uyarısı: ${productName}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: #EF4444;">Düşük Stok Uyarısı</h2>
+                <p><strong>${productName}</strong> ürününün stoğu eşik değerinin altına düştü.</p>
+                <ul>
+                    <li>Mevcut Stok: <strong>${newQuantity} ${unit || ''}</strong></li>
+                    <li>Eşik Değer: <strong>${threshold}</strong></li>
+                </ul>
+                <p>Stokları kontrol etmeniz tavsiye edilir.</p>
+                <p style="font-size: 12px; color: #666;">Bu mesaj otomatik gönderilmiştir.</p>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`Düşük stok e-postası ${email} adresine gönderildi.`);
+    } catch (error) {
+        console.error(`Düşük stok e-postası gönderilemedi (${email}):`, error);
+        throw new Error('Düşük stok e-postası gönderilemedi.');
+    }
+}
+
+module.exports = { sendVerificationEmail, sendLowStockEmail };

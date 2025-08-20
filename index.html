@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo Web Uygulaması</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS CDN with local fallback -->
+    <script src="https://cdn.tailwindcss.com" onerror="(function(){var l=document.createElement('link');l.rel='stylesheet';l.href='output.css';document.head.appendChild(l);}())"></script>
     <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
     <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -705,32 +705,48 @@
         }
 
         // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
-        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+        function createErrorWithRetryControl(message, noRetry = false) {
+            const err = new Error(message);
+            err.noRetry = noRetry;
+            return err;
+        }
+
+        async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
-                    // 404 durumunda özel mesaj ver, ancak yeniden deneme yapma
-                    if (response.status === 404 && options.method === 'DELETE') {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Kaynak bulunamadı.');
+                    const method = (options && options.method ? options.method : 'GET').toUpperCase();
+
+                    // 401/403: yeniden deneme yapmadan oturum hatası
+                    if (response.status === 401 || response.status === 403) {
+                        handleAuthError();
+                        throw createErrorWithRetryControl('Yetkisiz veya oturum süresi doldu.', true);
                     }
+
+                    // 404 (DELETE): yeniden deneme yapma
+                    if (response.status === 404 && method === 'DELETE') {
+                        let errorData = {};
+                        try { errorData = await response.json(); } catch (_) {}
+                        throw createErrorWithRetryControl(errorData.message || 'Kaynak bulunamadı.', true);
+                    }
+
+                    // Diğer başarısız durumlar: yeniden denemeye uygun
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        // 401 veya 403 ise doğrudan hata fırlat, yeniden deneme yapma
-                        if (response.status === 401 || response.status === 403) {
-                            handleAuthError();
-                            return; // handleAuthError zaten yönlendirme yapacağı için burada dur
-                        }
-                        // Diğer hatalar için yeniden deneme yap
+                        let errorData = {};
+                        try { errorData = await response.json(); } catch (_) {}
                         throw new Error(errorData.message || `HTTP hata! Durum: ${response.status}`);
                     }
+
                     return response;
                 } catch (error) {
+                    // Yeniden deneme yapılmaması gereken hatalar
+                    if (error && error.noRetry) {
+                        throw error;
+                    }
                     if (i < retries - 1) {
-                        // console.warn(`Fetch hatası: ${error.message}. Yeniden deniyor... (Deneme ${i + 1}/${retries})`);
                         await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
                     } else {
-                        throw error; // Son deneme başarısız oldu, hatayı fırlat
+                        throw error;
                     }
                 }
             }
@@ -1185,12 +1201,13 @@
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
 
-                        const result = await response.json();
+                        let result = { message: 'İşlem silindi.' };
+                        try { result = await response.json(); } catch (_) {}
                         if (!response.ok) {
                             throw new Error(result.message || 'İşlem silinemedi.');
                         }
 
-                        addNotification(result.message, 'success');
+                        addNotification(result.message || 'İşlem silindi.', 'success');
                         // İşlem başarıyla silindiyse tüm özetleri ve listeyi güncelle
                         fetchTransactions();
                         fetchGeneralFinancialSummary();
@@ -1387,12 +1404,13 @@
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
 
-                        const result = await response.json();
+                        let result = { message: 'Kategori silindi.' };
+                        try { result = await response.json(); } catch (_) {}
                         if (!response.ok) {
                             throw new Error(result.message || 'Kategori silinemedi.');
                         }
 
-                        addNotification(result.message, 'success');
+                        addNotification(result.message || 'Kategori silindi.', 'success');
                         fetchCategories();
                         fetchTransactions();
                     } catch (error) {
@@ -1960,7 +1978,9 @@
 
             // Sayfanın herhangi bir yerine tıklayınca menüyü kapat
             document.addEventListener('click', (e) => {
-                if (userDropdownMenu && !userDropdownMenu.contains(e.target) && !userDropdownBtn.contains(e.target)) {
+                if (!userDropdownMenu || !userDropdownBtn) return;
+                const target = e.target;
+                if (!userDropdownMenu.contains(target) && !userDropdownBtn.contains(target)) {
                     userDropdownMenu.classList.remove('active');
                 }
             });
