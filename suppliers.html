@@ -837,7 +837,7 @@
         // ----- Supplier Management Functions -----
         async function loadSuppliers() {
             try {
-                const token = localStorage.getItem('fingoToken');
+                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
@@ -911,7 +911,7 @@
 
         async function addSupplier(formData) {
             try {
-                const token = localStorage.getItem('fingoToken');
+                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
@@ -944,7 +944,7 @@
 
         async function editSupplier(supplierId) {
             try {
-                const token = localStorage.getItem('fingoToken');
+                const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
                 if (!token) {
                     showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                     return;
@@ -1028,7 +1028,7 @@
                 const data = Object.fromEntries(formData.entries());
                 
                 try {
-                    const token = localStorage.getItem('fingoToken');
+                    const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
                     const response = await fetch(`/api/suppliers/${supplier._id}`, {
                         method: 'PUT',
                         headers: {
@@ -1058,7 +1058,7 @@
         async function deleteSupplier(supplierId, supplierName) {
             showConfirmBox(`"${supplierName}" adlı tedarikçiyi silmek istediğinizden emin misiniz?`, async () => {
                 try {
-                    const token = localStorage.getItem('fingoToken');
+                    const token = localStorage.getItem('jwtToken'); // ✅ fingoToken → jwtToken
                     if (!token) {
                         showMessageBox('Oturum bulunamadı. Lütfen tekrar giriş yapın.', 'error');
                         return;
