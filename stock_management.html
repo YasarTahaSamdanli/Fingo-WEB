@@ -581,6 +581,12 @@
             const stopScanBtn = document.getElementById('stopScanBtn');
             const barcodeScannerResult = document.getElementById('barcodeScannerResult');
 
+            // Global helpers/state
+            const SIDEBAR_STATE_KEY = 'sidebarOpen';
+            let lastScannedCode = null;
+            let lastScannedAt = 0;
+            let searchDebounceTimer = null;
+
 
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 
@@ -756,15 +762,16 @@
                 }
 
                 const productItemDiv = document.querySelector(`div[data-id="${productId}"]`);
-                const currentStockDisplay = productItemDiv ? productItemDiv.querySelector('.current-stock-display') : null;
+                const currentStockDisplays = productItemDiv ? productItemDiv.querySelectorAll('.current-stock-display') : null;
+                const primaryStockDisplay = currentStockDisplays && currentStockDisplays.length > 0 ? currentStockDisplays[0] : null;
 
-                if (!currentStockDisplay) {
+                if (!primaryStockDisplay) {
                     console.error("Ürün stok göstergesi bulunamadı.");
                     addNotification("Stok güncellenirken bir hata oluştu: Ürün bilgisi eksik.", 'error');
                     return;
                 }
 
-                let currentQuantity = parseInt(currentStockDisplay.textContent);
+                let currentQuantity = parseInt(primaryStockDisplay.textContent);
                 if (isNaN(currentQuantity)) {
                     console.error("Mevcut stok miktarı sayısal değil.");
                     addNotification("Stok güncellenirken bir hata oluştu: Mevcut stok miktarı geçersiz.", 'error');
@@ -814,39 +821,41 @@
                     if (productItemDiv) {
                         const productMainQuantitySpan = productItemDiv.querySelector('.product-main-quantity');
                         const productUnit = productItemDiv.dataset.productUnit;
-                        const productName = productItemDiv.querySelector('p.text-xl.font-semibold.mb-1').textContent.split('&#9888;')[0].trim();
+                        const productName = productItemDiv.dataset.productName || '';
 
-                        if (currentStockDisplay) {
-                            currentStockDisplay.textContent = result.newQuantity;
-                        }
-                        if (productMainQuantitySpan) {
-                            productMainQuantitySpan.textContent = `${result.newQuantity} ${productUnit}`;
+                        if (currentStockDisplays && currentStockDisplays.length > 0) {
+                            currentStockDisplays.forEach(displayEl => {
+                                if (displayEl.classList.contains('product-main-quantity')) {
+                                    displayEl.textContent = `${result.newQuantity} ${productUnit}`;
+                                } else {
+                                    displayEl.textContent = `${result.newQuantity}`;
+                                }
+                            });
                         }
 
-                        // Düşük stok uyarısını ve kartın rengini de güncelle
+                        // Düşük stok uyarısını ve kartın rengini güncelle
                         const minStockLevel = parseInt(productItemDiv.dataset.minStockLevel);
                         const isBelowMinStock = result.newQuantity <= minStockLevel;
 
-                        let lowStockWarningElement = productItemDiv.querySelector('.ml-2.text-red-400');
+                        // Only show .low-stock-warning if stock < 10
+                        const lowStockWarningElement = productItemDiv.querySelector('.low-stock-warning');
+                        if (lowStockWarningElement) {
+                            if (result.newQuantity < 10) {
+                                lowStockWarningElement.classList.remove('hidden');
+                            } else {
+                                lowStockWarningElement.classList.add('hidden');
+                            }
+                        }
 
                         if (isBelowMinStock) {
-                            if (!lowStockWarningElement) {
-                                const productNameElement = productItemDiv.querySelector('p.text-xl.font-semibold.mb-1');
-                                if (productNameElement) {
-                                    productNameElement.innerHTML += `<span class="ml-2 text-red-400 font-bold text-sm" title="Stok Minimum Seviyenin Altında!">&#9888; Düşük Stok!</span>`;
-                                }
-                                const notificationExists = notifications.some(n =>
-                                    n.type === 'warning' && n.message.includes(`Düşük Stok: "${productName}"`)
-                                );
-                                if (!notificationExists) {
-                                    addNotification(`Düşük Stok: "${productName}" ürününün stoğu ${result.newQuantity} seviyesinde!`, 'warning');
-                                }
+                            const notificationExists = notifications.some(n =>
+                                n.type === 'warning' && n.message.includes(`Düşük Stok: "${productName}"`)
+                            );
+                            if (!notificationExists) {
+                                addNotification(`Düşük Stok: "${productName}" ürününün stoğu ${result.newQuantity} seviyesinde!`, 'warning');
                             }
                             productItemDiv.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                         } else {
-                            if (lowStockWarningElement) {
-                                lowStockWarningElement.remove();
-                            }
                             productItemDiv.classList.remove('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
                             removeLowStockNotification(productName);
                         }
@@ -908,6 +917,7 @@
                         productItem.className = `p-4 bg-gray-700 rounded-lg shadow-md border border-gray-600 flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 md:space-x-4`;
 
                         const isBelowMinStock = product.minStockLevel !== undefined && product.quantity <= product.minStockLevel;
+                        const shouldShowLowStockWarning = product.quantity < 10;
 
                         if (isBelowMinStock) {
                             productItem.classList.add('bg-red-900', 'bg-opacity-30', 'border-l-4', 'border-red-500');
@@ -922,6 +932,7 @@
                         productItem.dataset.id = product._id;
                         productItem.dataset.minStockLevel = product.minStockLevel !== undefined ? product.minStockLevel : 0;
                         productItem.dataset.productUnit = product.unit;
+                        productItem.dataset.productName = product.name;
 
                         const imageUrlHtml = product.imageUrl ?
                             `<img src="${product.imageUrl}" alt="${product.name}" class="w-20 h-20 object-cover rounded-md mr-4 flex-shrink-0 border border-gray-600" onerror="this.onerror=null;this.src='https://placehold.co/80x80/2D3748/A0AEC0?text=Resim+Yok';">` :
@@ -931,7 +942,7 @@
                             ${imageUrlHtml}
                             <div class="flex-1">
                                 <p class="text-xl text-gray-100 font-semibold mb-1">${product.name}
-                                    ${isBelowMinStock ? '<span class="ml-2 text-red-400 font-bold text-sm" title="Stok Minimum Seviyenin Altında!">&#9888; Düşük Stok!</span>' : ''}
+                                    ${shouldShowLowStockWarning ? '<span class="low-stock-warning ml-2 text-red-400 font-bold text-sm" title="Stok düşük!">&#9888; Düşük Stok!</span>' : '<span class="low-stock-warning hidden ml-2 text-red-400 font-bold text-sm" title="Stok düşük!">&#9888; Düşük Stok!</span>'}
                                 </p>
                                 <p class="text-base text-gray-300 mb-1">Miktar: <span class="font-bold text-blue-400 text-lg current-stock-display product-main-quantity">${product.quantity} ${product.unit}</span></p>
                                 ${product.barcode ? `<p class="text-sm text-gray-400">Barkod: <span class="font-mono text-gray-200">${product.barcode}</span></p>` : ''}
@@ -976,10 +987,14 @@
                 });
             }
 
-            // Stok arama inputu için olay dinleyici
+            // Stok arama inputu için 300ms debounce'lu olay dinleyici
             if (stockSearchInput) {
                 stockSearchInput.addEventListener('input', () => {
-                    fetchStockProducts(stockSearchInput.value.trim());
+                    const query = stockSearchInput.value.trim();
+                    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+                    searchDebounceTimer = setTimeout(() => {
+                        fetchStockProducts(query);
+                    }, 300);
                 });
             }
 
@@ -1027,6 +1042,13 @@
 
                     Quagga.onDetected(function (result) {
                         const code = result.codeResult.code;
+                        const now = Date.now();
+                        if (lastScannedCode === code && (now - lastScannedAt) < 2000) {
+                            return; // throttle duplicate scans within 2s
+                        }
+                        lastScannedCode = code;
+                        lastScannedAt = now;
+
                         console.log("Barkod algılandı:", code);
                         if (stockSearchInput) stockSearchInput.value = code;
                         barcodeScannerResult.textContent = `Barkod algılandı: ${code}`;
@@ -1122,7 +1144,11 @@
             };
 
             const initializeSidebarState = () => {
-                if (window.innerWidth >= 1024) {
+                const stored = localStorage.getItem(SIDEBAR_STATE_KEY);
+                const shouldBeOpen = stored === null
+                    ? (window.innerWidth >= 1024)
+                    : stored === 'true';
+                if (shouldBeOpen) {
                     openSidebar();
                 } else {
                     closeSidebar();
@@ -1135,8 +1161,10 @@
                 sidebarToggleBtn.addEventListener('click', () => {
                     if (sidebar && sidebar.classList.contains('open')) {
                         closeSidebar();
+                        localStorage.setItem(SIDEBAR_STATE_KEY, 'false');
                     } else {
                         openSidebar();
+                        localStorage.setItem(SIDEBAR_STATE_KEY, 'true');
                     }
                 });
             }
@@ -1144,12 +1172,14 @@
             if (closeSidebarBtn) {
                 closeSidebarBtn.addEventListener('click', () => {
                     closeSidebar();
+                    localStorage.setItem(SIDEBAR_STATE_KEY, 'false');
                 });
             }
 
             if (sidebarOverlay) {
                 sidebarOverlay.addEventListener('click', () => {
                     closeSidebar();
+                    localStorage.setItem(SIDEBAR_STATE_KEY, 'false');
                 });
             }
 
