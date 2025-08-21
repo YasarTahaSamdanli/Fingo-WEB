@@ -815,6 +815,86 @@
     <script>
         // Sayfa yüklendiğinde çalışacak JavaScript kodları buraya eklenecek
         document.addEventListener('DOMContentLoaded', function() {
+            // Bildirim sistemi için gerekli değişkenler
+            let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
+
+            // Bildirim fonksiyonları
+            function loadNotifications() {
+                renderNotifications();
+                updateNotificationCount();
+            }
+
+            function saveNotifications() {
+                localStorage.setItem('fingoNotifications', JSON.stringify(notifications));
+            }
+
+            function addNotification(message, type = 'info', isRead = false) {
+                const timestamp = new Date().toLocaleString('tr-TR');
+                notifications.unshift({ message, type, timestamp, isRead });
+                saveNotifications();
+                renderNotifications();
+                updateNotificationCount();
+                showMessage(message, type);
+            }
+
+            function renderNotifications() {
+                const notificationList = document.getElementById('notificationList');
+                if (!notificationList) return;
+                
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="text-center text-gray-500 py-4">Henüz bildirim yok.</div>';
+                    return;
+                }
+
+                notifications.forEach((notif, index) => {
+                    const notificationItem = document.createElement('div');
+                    notificationItem.classList.add('notification-item', notif.type, notif.isRead ? 'read' : 'unread');
+                    notificationItem.dataset.index = index;
+
+                    let iconClass = '';
+                    if (notif.type === 'success') iconClass = 'fa-check-circle';
+                    else if (notif.type === 'error') iconClass = 'fa-times-circle';
+                    else if (notif.type === 'warning') iconClass = 'fa-exclamation-triangle';
+                    else iconClass = 'fa-info-circle';
+
+                    notificationItem.innerHTML = `
+                        <i class="fas ${iconClass} notification-item-icon"></i>
+                        <div>
+                            <p>${notif.message}</p>
+                            <p class="text-xs text-gray-400">${notif.timestamp}</p>
+                        </div>
+                    `;
+                    notificationList.appendChild(notificationItem);
+
+                    if (!notif.isRead) {
+                        notificationItem.addEventListener('click', () => markNotificationAsRead(index));
+                    }
+                });
+            }
+
+            function updateNotificationCount() {
+                const notificationCountBadge = document.getElementById('notificationCountBadge');
+                if (!notificationCountBadge) return;
+                
+                const unreadCount = notifications.filter(n => !n.isRead).length;
+                if (unreadCount > 0) {
+                    notificationCountBadge.textContent = unreadCount;
+                    notificationCountBadge.classList.remove('hidden');
+                } else {
+                    notificationCountBadge.classList.add('hidden');
+                }
+            }
+
+            function markNotificationAsRead(index) {
+                if (notifications[index]) {
+                    notifications[index].isRead = true;
+                    saveNotifications();
+                    renderNotifications();
+                    updateNotificationCount();
+                }
+            }
+
             // Sidebar açma/kapama işlemleri
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -881,13 +961,27 @@
             const notificationCenter = document.getElementById('notificationCenter');
             const closeNotificationCenterBtn = document.getElementById('closeNotificationCenterBtn');
 
-            notificationBellBtn.addEventListener('click', function() {
-                notificationCenter.classList.toggle('active');
-            });
+            if (notificationBellBtn) {
+                notificationBellBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.toggle('active');
+                    if (notificationCenter && notificationCenter.classList.contains('active')) {
+                        notifications.forEach(n => {
+                            if (n.type === 'warning' && !n.isRead) {
+                                n.isRead = true;
+                            }
+                        });
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                    }
+                });
+            }
 
-            closeNotificationCenterBtn.addEventListener('click', function() {
-                notificationCenter.classList.remove('active');
-            });
+            if (closeNotificationCenterBtn) {
+                closeNotificationCenterBtn.addEventListener('click', () => {
+                    if (notificationCenter) notificationCenter.classList.remove('active');
+                });
+            }
 
             // Mesaj kutusu kapatma
             const messageBox = document.getElementById('messageBox');
@@ -896,6 +990,20 @@
             closeMessageBox.addEventListener('click', function() {
                 messageBox.classList.remove('show');
             });
+
+            // Bildirim temizleme butonu event listener
+            const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+            if (clearNotificationsBtn) {
+                clearNotificationsBtn.addEventListener('click', () => {
+                    if (confirm('Tüm bildirimleri temizlemek istediğinizden emin misiniz?')) {
+                        notifications = [];
+                        saveNotifications();
+                        renderNotifications();
+                        updateNotificationCount();
+                        showMessage('Tüm bildirimler temizlendi.', 'info');
+                    }
+                });
+            }
 
             // Mesaj gösterme fonksiyonu
             function showMessage(message, type = 'info') {
@@ -1115,9 +1223,32 @@
             // Yaklaşan ödemeler sayısını güncelle
             document.getElementById('upcomingCount').textContent = '2';
             document.getElementById('overdueCount').textContent = '0';
+            
+            // Bildirimleri yükle
+            loadNotifications();
         });
         
         // Global fonksiyonlar (onclick için)
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            const messageContent = document.getElementById('messageContent');
+            
+            if (!messageBox || !messageContent) {
+                console.error('Message box elements not found!');
+                return;
+            }
+            
+            messageContent.textContent = message;
+            
+            messageBox.className = 'message-box';
+            messageBox.classList.add(type);
+            messageBox.classList.add('show');
+            
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 5000);
+        }
+
         function editRecurringTransaction(id) {
             console.log('Tekrarlayan işlem düzenleniyor:', id);
             // Modal açılacak ve veriler doldurulacak
@@ -1136,7 +1267,7 @@
         function deleteRecurringTransaction(id) {
             console.log('Tekrarlayan işlem siliniyor:', id);
             // Silme işlemi yapılacak
-            if (confirm('Bu tekrarlayan işlemi silmek istediğinizden emin misiniz?')) {
+            if (confirm('Bu tekrarlayan işlem silmek istediğinizden emin misiniz?')) {
                 showMessage('İşlem silindi.', 'success');
             }
         }
