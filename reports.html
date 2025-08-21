@@ -6,6 +6,9 @@
     <title>Fingo Raporlar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -318,6 +321,39 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Export Butonları için Responsive Tasarım */
+        @media (max-width: 768px) {
+            .export-buttons-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .export-buttons-container button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Export Butonları Hover Efektleri */
+        .export-btn {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+        
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .export-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Export Butonları Başlangıç Durumu */
+        [id^="export"] {
+            display: none;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -383,9 +419,6 @@
                 </a>
                 <a href="/Fingo-WEB/reports.html" id="viewReportsBtn" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-700 text-white cursor-default text-base font-medium">
                     <i class="fas fa-chart-line"></i> <span class="text-gray-100">Raporları Görüntüle</span>
-                </a>
-                <a href="#" id="exportCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
-                    <i class="fas fa-file-export"></i> <span class="text-gray-200">Verileri Dışa Aktar (CSV)</span>
                 </a>
                 <a href="#" id="importCsvBtn" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-800 transition-colors duration-200 text-base font-medium">
                     <i class="fas fa-file-import"></i> <span class="text-gray-200">Verileri İçe Aktar (CSV)</span>
@@ -456,7 +489,20 @@
 
             <div id="reportResults" class="space-y-8">
                 <div id="categorySummaryReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700">
-                    <h3 class="text-2xl font-semibold text-purple-300 mb-4 text-center">Kategori Bazında Özet</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold text-purple-300">Kategori Bazında Özet</h3>
+                        <div class="flex gap-2 export-buttons-container">
+                            <button id="exportCategorySummaryCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button id="exportCategorySummaryPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button id="exportCategorySummaryExcel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative h-80 mb-4">
                         <canvas id="categorySummaryChart"></canvas>
                     </div>
@@ -477,7 +523,20 @@
                 </div>
 
                 <div id="balanceHistoryReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700 hidden">
-                    <h3 class="text-2xl font-semibold text-green-300 mb-4 text-center">Bakiye Geçmişi</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold text-green-300">Bakiye Geçmişi</h3>
+                        <div class="flex gap-2 export-buttons-container">
+                            <button id="exportBalanceHistoryCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button id="exportBalanceHistoryPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button id="exportBalanceHistoryExcel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative h-80 mb-4">
                         <canvas id="balanceHistoryChart"></canvas>
                     </div>
@@ -500,7 +559,20 @@
                 </div>
 
                 <div id="stockMovementsReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700 hidden">
-                    <h3 class="text-2xl font-semibold text-red-300 mb-4 text-center">Stok Hareketleri</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold text-red-300">Stok Hareketleri</h3>
+                        <div class="flex gap-2 export-buttons-container">
+                            <button id="exportStockMovementsCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button id="exportStockMovementsPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button id="exportStockMovementsExcel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative h-80 mb-4">
                         <canvas id="stockMovementsChart"></canvas>
                     </div>
@@ -695,7 +767,6 @@
             const goToSalesManagementBtn = document.getElementById('goToSalesManagementBtn');
             const manageRecurringTransactionsBtn = document.getElementById('manageRecurringTransactionsBtn');
             const viewReportsBtn = document.getElementById('viewReportsBtn');
-            const exportCsvBtn = document.getElementById('exportCsvBtn');
             const importCsvBtn = document.getElementById('importCsvBtn');
 
 
@@ -1038,13 +1109,7 @@
                     closeSidebar();
                 });
             }
-            if (exportCsvBtn) {
-                exportCsvBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    exportVisibleReportToCSV();
-                    closeSidebar();
-                });
-            }
+
             if (importCsvBtn) {
                 importCsvBtn.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1139,6 +1204,203 @@
                 URL.revokeObjectURL(url);
             }
 
+            // Kategori Özet Export Fonksiyonları
+            function exportCategorySummary(format) {
+                if (!categorySummaryTableBody || categorySummaryTableBody.children.length === 0) {
+                    showMessageBox('Kategori özet verisi bulunamadı.', 'warning');
+                    return;
+                }
+
+                const data = getCategorySummaryData();
+                const filename = `kategori-ozet-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+
+                switch (format) {
+                    case 'csv':
+                        exportToCSV(data, filename + '.csv');
+                        break;
+                    case 'pdf':
+                        exportToPDF(data, filename + '.pdf', 'Kategori Bazında Özet Raporu');
+                        break;
+                    case 'excel':
+                        exportToExcel(data, filename + '.xlsx', 'Kategori Özeti');
+                        break;
+                }
+            }
+
+            // Bakiye Geçmişi Export Fonksiyonları
+            function exportBalanceHistory(format) {
+                if (!balanceHistoryTableBody || balanceHistoryTableBody.children.length === 0) {
+                    showMessageBox('Bakiye geçmişi verisi bulunamadı.', 'warning');
+                    return;
+                }
+
+                const data = getBalanceHistoryData();
+                const filename = `bakiye-gecmisi-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+
+                switch (format) {
+                    case 'csv':
+                        exportToCSV(data, filename + '.csv');
+                        break;
+                    case 'pdf':
+                        exportToPDF(data, filename + '.pdf', 'Bakiye Geçmişi Raporu');
+                        break;
+                    case 'excel':
+                        exportToExcel(data, filename + '.xlsx', 'Bakiye Geçmişi');
+                        break;
+                }
+            }
+
+            // Stok Hareketleri Export Fonksiyonları
+            function exportStockMovements(format) {
+                if (!stockMovementsTableBody || stockMovementsTableBody.children.length === 0) {
+                    showMessageBox('Stok hareketleri verisi bulunamadı.', 'warning');
+                    return;
+                }
+
+                const data = getStockMovementsData();
+                const filename = `stok-hareketleri-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+
+                switch (format) {
+                    case 'csv':
+                        exportToCSV(data, filename + '.csv');
+                        break;
+                    case 'pdf':
+                        exportToPDF(data, filename + '.pdf', 'Stok Hareketleri Raporu');
+                        break;
+                    case 'excel':
+                        exportToExcel(data, filename + '.xlsx', 'Stok Hareketleri');
+                        break;
+                }
+            }
+
+            // Veri Çıkarma Fonksiyonları
+            function getCategorySummaryData() {
+                const rows = Array.from(categorySummaryTableBody.querySelectorAll('tr'));
+                return rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    return {
+                        kategori: cells[0]?.textContent?.trim() || '',
+                        tip: cells[1]?.textContent?.trim() || '',
+                        toplamMiktar: cells[2]?.textContent?.trim() || ''
+                    };
+                });
+            }
+
+            function getBalanceHistoryData() {
+                const rows = Array.from(balanceHistoryTableBody.querySelectorAll('tr'));
+                return rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    return {
+                        donem: cells[0]?.textContent?.trim() || '',
+                        gelir: cells[1]?.textContent?.trim() || '',
+                        gider: cells[2]?.textContent?.trim() || '',
+                        netBakiye: cells[3]?.textContent?.trim() || '',
+                        kumulatifBakiye: cells[4]?.textContent?.trim() || ''
+                    };
+                });
+            }
+
+            function getStockMovementsData() {
+                const rows = Array.from(stockMovementsTableBody.querySelectorAll('tr'));
+                return rows.map(row => {
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    return {
+                        urunAdi: cells[0]?.textContent?.trim() || '',
+                        satilanMiktar: cells[1]?.textContent?.trim() || '',
+                        toplamTutar: cells[2]?.textContent?.trim() || '',
+                        satisTarihi: cells[3]?.textContent?.trim() || ''
+                    };
+                });
+            }
+
+            // Export Format Fonksiyonları
+            function exportToCSV(data, filename) {
+                if (!data || data.length === 0) {
+                    showMessageBox('Dışa aktarılacak veri bulunamadı.', 'warning');
+                    return;
+                }
+
+                const headers = Object.keys(data[0]);
+                const csvContent = [
+                    headers.join(','),
+                    ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
+                ].join('\n');
+
+                downloadCSV(csvContent, filename);
+                showMessageBox('CSV dosyası başarıyla indirildi.', 'success');
+            }
+
+            function exportToPDF(data, filename, title) {
+                try {
+                    if (!data || data.length === 0) {
+                        showMessageBox('PDF için veri bulunamadı.', 'warning');
+                        return;
+                    }
+
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // Başlık ekle
+                    doc.setFontSize(18);
+                    doc.text(title, 14, 22);
+                    
+                    // Tarih ekle
+                    doc.setFontSize(12);
+                    doc.text(`Oluşturulma Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 14, 32);
+                    
+                    // Tablo verilerini hazırla
+                    const headers = Object.keys(data[0]);
+                    const tableData = data.map(row => headers.map(header => row[header]));
+                    
+                    // AutoTable ile tablo oluştur
+                    doc.autoTable({
+                        head: [headers],
+                        body: tableData,
+                        startY: 40,
+                        styles: {
+                            fontSize: 10,
+                            cellPadding: 3
+                        },
+                        headStyles: {
+                            fillColor: [59, 130, 246],
+                            textColor: 255
+                        }
+                    });
+                    
+                    // PDF'i indir
+                    doc.save(filename);
+                    showMessageBox('PDF dosyası başarıyla indirildi.', 'success');
+                } catch (error) {
+                    console.error('PDF export hatası:', error);
+                    showMessageBox('PDF oluşturulurken hata oluştu.', 'error');
+                }
+            }
+
+            function exportToExcel(data, filename, sheetName) {
+                try {
+                    if (!data || data.length === 0) {
+                        showMessageBox('Excel için veri bulunamadı.', 'warning');
+                        return;
+                    }
+
+                    // Workbook oluştur
+                    const wb = XLSX.utils.book_new();
+                    
+                    // Veriyi worksheet formatına çevir
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    
+                    // Worksheet'i workbook'a ekle
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                    
+                    // Excel dosyasını indir
+                    XLSX.writeFile(wb, filename);
+                    showMessageBox('Excel dosyası başarıyla indirildi.', 'success');
+                } catch (error) {
+                    console.error('Excel export hatası:', error);
+                    showMessageBox('Excel oluşturulurken hata oluştu.', 'error');
+                }
+            }
+
             function exportVisibleReportToCSV() {
                 let table = null;
                 let filename = `rapor-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
@@ -1161,7 +1423,7 @@
 
                 const bodyRows = table.querySelector('tbody');
                 if (!bodyRows || bodyRows.children.length === 0) {
-                    showMessageBox('Tabloda dışa aktarılacak veri yok.', 'warning');
+                    showMessageBox('Tabloda dışa aktarılacak veri bulunamadı.', 'warning');
                     return;
                 }
 
@@ -1218,7 +1480,6 @@
                 if (reportEndDateInput) reportEndDateInput.parentElement.classList.add('hidden'); // Tarih inputunun div'ini gizle
                 if (dateShortcutsRow) dateShortcutsRow.classList.add('hidden');
 
-
                 // Seçilen rapora göre ilgili bölümleri ve filtreleri göster
                 if (selectedReportType === 'categorySummary') {
                     if (categorySummaryReportDiv) categorySummaryReportDiv.classList.remove('hidden');
@@ -1238,6 +1499,38 @@
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
                     if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
+                }
+
+                // Export butonlarının görünürlüğünü güncelle
+                updateExportButtonsVisibility();
+            }
+
+            function updateExportButtonsVisibility() {
+                const selectedReportType = reportTypeSelect ? reportTypeSelect.value : 'categorySummary';
+                
+                // Tüm export butonlarını gizle
+                const allExportButtons = document.querySelectorAll('[id^="export"]');
+                allExportButtons.forEach(btn => btn.style.display = 'none');
+                
+                // Seçilen rapora göre ilgili export butonlarını göster
+                if (selectedReportType === 'categorySummary') {
+                    const categoryButtons = ['exportCategorySummaryCSV', 'exportCategorySummaryPDF', 'exportCategorySummaryExcel'];
+                    categoryButtons.forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (btn) btn.style.display = 'flex';
+                    });
+                } else if (selectedReportType === 'balanceHistory') {
+                    const balanceButtons = ['exportBalanceHistoryCSV', 'exportBalanceHistoryPDF', 'exportBalanceHistoryExcel'];
+                    balanceButtons.forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (btn) btn.style.display = 'flex';
+                    });
+                } else if (selectedReportType === 'stockMovements') {
+                    const stockButtons = ['exportStockMovementsCSV', 'exportStockMovementsPDF', 'exportStockMovementsExcel'];
+                    stockButtons.forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (btn) btn.style.display = 'flex';
+                    });
                 }
             }
 
@@ -1839,6 +2132,52 @@
                 });
             }
 
+            // Export Butonları için Event Listener'lar
+            const exportCategorySummaryCSV = document.getElementById('exportCategorySummaryCSV');
+            const exportCategorySummaryPDF = document.getElementById('exportCategorySummaryPDF');
+            const exportCategorySummaryExcel = document.getElementById('exportCategorySummaryExcel');
+            
+            const exportBalanceHistoryCSV = document.getElementById('exportBalanceHistoryCSV');
+            const exportBalanceHistoryPDF = document.getElementById('exportBalanceHistoryPDF');
+            const exportBalanceHistoryExcel = document.getElementById('exportBalanceHistoryExcel');
+            
+            const exportStockMovementsCSV = document.getElementById('exportStockMovementsCSV');
+            const exportStockMovementsPDF = document.getElementById('exportStockMovementsPDF');
+            const exportStockMovementsExcel = document.getElementById('exportStockMovementsExcel');
+
+            // Kategori Özet Export Butonları
+            if (exportCategorySummaryCSV) {
+                exportCategorySummaryCSV.addEventListener('click', () => exportCategorySummary('csv'));
+            }
+            if (exportCategorySummaryPDF) {
+                exportCategorySummaryPDF.addEventListener('click', () => exportCategorySummary('pdf'));
+            }
+            if (exportCategorySummaryExcel) {
+                exportCategorySummaryExcel.addEventListener('click', () => exportCategorySummary('excel'));
+            }
+
+            // Bakiye Geçmişi Export Butonları
+            if (exportBalanceHistoryCSV) {
+                exportBalanceHistoryCSV.addEventListener('click', () => exportBalanceHistory('csv'));
+            }
+            if (exportBalanceHistoryPDF) {
+                exportBalanceHistoryPDF.addEventListener('click', () => exportBalanceHistory('pdf'));
+            }
+            if (exportBalanceHistoryExcel) {
+                exportBalanceHistoryExcel.addEventListener('click', () => exportBalanceHistory('excel'));
+            }
+
+            // Stok Hareketleri Export Butonları
+            if (exportStockMovementsCSV) {
+                exportStockMovementsCSV.addEventListener('click', () => exportStockMovements('csv'));
+            }
+            if (exportStockMovementsPDF) {
+                exportStockMovementsPDF.addEventListener('click', () => exportStockMovements('pdf'));
+            }
+            if (exportStockMovementsExcel) {
+                exportStockMovementsExcel.addEventListener('click', () => exportStockMovements('excel'));
+            }
+
             // Olay Dinleyicileri ve Başlangıç Ayarları
             if (reportTypeSelect) {
                 reportTypeSelect.addEventListener('change', updateReportVisibility);
@@ -1854,6 +2193,11 @@
             generateReportBtn.click(); // Sayfa yüklendiğinde ilk raporu otomatik oluştur
             loadNotifications();
             initializeSidebarState();
+            
+            // Export butonlarının başlangıç görünürlüğünü ayarla
+            setTimeout(() => {
+                updateExportButtonsVisibility();
+            }, 100);
 
             function updateSelectedBadges() {
                 if (!stockSelectedBadges || !stockProductFilterSelect) return;
