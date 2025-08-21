@@ -363,14 +363,12 @@
             <!-- whitespace-nowrap ekleyerek başlığın asla alt satıra geçmemesini sağlıyoruz -->
             <h1 id="headerTitle" class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Stok Yönetimi</h1>
         </div>
-        <!-- Right group: notifications and logout -->
+        <!-- Right group: notifications -->
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
                 <i class="fas fa-bell text-white text-xl"></i>
                 <span id="notificationCountBadge" class="notification-count-badge hidden">0</span>
             </button>
-            <!-- Hoş Geldin metni kaldırıldı -->
-            <button id="logoutBtn" class="bg-red-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-md hover:bg-red-700 transition-colors text-xs md:text-sm">Çıkış Yap</button>
         </div>
     </header>
 
@@ -554,7 +552,7 @@
             const viewReportsBtn = document.querySelector('a[href="reports.html"]');
             const exportCsvBtn = document.querySelector('a[id="exportCsvBtn"]');
             const importCsvBtn = document.querySelector('a[id="importCsvBtn"]');
-            const logoutBtn = document.getElementById('logoutBtn');
+
 
             // Message Box and Notification Center Elements (customers.html'den kopyalandı)
             const messageBox = document.getElementById('messageBox');
@@ -1252,16 +1250,7 @@
                 });
             }
 
-            // Logout Button
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    localStorage.removeItem('jwtToken');
-                    localStorage.removeItem('userId');
-                    localStorage.removeItem('userEmail');
-                    localStorage.removeItem('fingoNotifications');
-                    window.location.href = 'auth.html';
-                });
-            }
+
 
             // İlk yüklemede ürünleri çek
             fetchStockProducts();
