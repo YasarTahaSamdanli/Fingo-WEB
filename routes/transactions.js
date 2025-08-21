@@ -389,4 +389,187 @@ router.get('/transactions/credit/:customerId', authenticateToken, async (req, re
     }
 });
 
+// TEKRARLAYAN İŞLEMLER ROTALARI
+
+// Yeni tekrarlayan işlem ekleme
+router.post('/recurring-transactions', authenticateToken, async (req, res) => {
+    const { 
+        type, amount, recurrenceType, weekDay, monthDay, yearMonth, yearDay, 
+        startDate, endDate, category, description, reminderDays, customerId 
+    } = req.body;
+    const userId = req.user.userId;
+
+    if (!type || !amount || !recurrenceType || !startDate || !description) {
+        return res.status(400).json({ message: 'Lütfen tüm gerekli alanları doldurun.' });
+    }
+
+    if (isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ message: 'Miktar geçerli bir sayı olmalıdır.' });
+    }
+
+    try {
+        const db = getDb();
+        
+        const newRecurringTransaction = {
+            userId: new ObjectId(userId),
+            type,
+            amount: parseFloat(amount),
+            recurrenceType,
+            weekDay: weekDay || null,
+            monthDay: monthDay || null,
+            yearMonth: yearMonth || null,
+            yearDay: yearDay || null,
+            startDate: new Date(startDate),
+            endDate: endDate ? new Date(endDate) : null,
+            category: category || null,
+            description,
+            reminderDays: parseInt(reminderDays) || 1,
+            customerId: customerId ? new ObjectId(customerId) : null,
+            status: 'active',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('recurringTransactions').insertOne(newRecurringTransaction);
+        res.status(201).json({ 
+            message: 'Tekrarlayan işlem başarıyla eklendi.', 
+            transactionId: result.insertedId 
+        });
+    } catch (error) {
+        console.error('Tekrarlayan işlem eklerken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
+// Tekrarlayan işlemleri listeleme
+router.get('/recurring-transactions', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { type, recurrenceType, category, status } = req.query;
+
+    try {
+        const db = getDb();
+        const query = { userId: new ObjectId(userId) };
+
+        if (type) query.type = type;
+        if (recurrenceType) query.recurrenceType = recurrenceType;
+        if (category) query.category = { $regex: category, $options: 'i' };
+        if (status) query.status = status;
+
+        const recurringTransactions = await db.collection('recurringTransactions')
+            .find(query)
+            .sort({ createdAt: -1 })
+            .toArray();
+
+        res.status(200).json(recurringTransactions);
+    } catch (error) {
+        console.error('Tekrarlayan işlemleri çekerken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
+// Tekrarlayan işlem güncelleme
+router.put('/recurring-transactions/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { 
+        type, amount, recurrenceType, weekDay, monthDay, yearMonth, yearDay, 
+        startDate, endDate, category, description, reminderDays, customerId 
+    } = req.body;
+    const userId = req.user.userId;
+
+    if (!type || !amount || !recurrenceType || !startDate || !description) {
+        return res.status(400).json({ message: 'Lütfen tüm gerekli alanları doldurun.' });
+    }
+
+    try {
+        const db = getDb();
+        
+        const updatedTransaction = {
+            type,
+            amount: parseFloat(amount),
+            recurrenceType,
+            weekDay: weekDay || null,
+            monthDay: monthDay || null,
+            yearMonth: yearMonth || null,
+            yearDay: yearDay || null,
+            startDate: new Date(startDate),
+            endDate: endDate ? new Date(endDate) : null,
+            category: category || null,
+            description,
+            reminderDays: parseInt(reminderDays) || 1,
+            customerId: customerId ? new ObjectId(customerId) : null,
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('recurringTransactions').updateOne(
+            { _id: new ObjectId(id), userId: new ObjectId(userId) },
+            { $set: updatedTransaction }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'Tekrarlayan işlem bulunamadı veya yetkiniz yok.' });
+        }
+        res.status(200).json({ message: 'Tekrarlayan işlem başarıyla güncellendi.' });
+    } catch (error) {
+        console.error('Tekrarlayan işlem güncellerken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
+// Tekrarlayan işlem durumunu değiştirme (duraklatma/devam ettirme)
+router.patch('/recurring-transactions/:id/status', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const userId = req.user.userId;
+
+    if (!status || !['active', 'paused', 'completed'].includes(status)) {
+        return res.status(400).json({ message: 'Geçerli bir durum belirtilmelidir (active, paused, completed).' });
+    }
+
+    try {
+        const db = getDb();
+        
+        const result = await db.collection('recurringTransactions').updateOne(
+            { _id: new ObjectId(id), userId: new ObjectId(userId) },
+            { $set: { status, updatedAt: new Date() } }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: 'Tekrarlayan işlem bulunamadı veya yetkiniz yok.' });
+        }
+
+        const statusText = status === 'active' ? 'devam ettirildi' : 
+                          status === 'paused' ? 'duraklatıldı' : 'tamamlandı';
+        
+        res.status(200).json({ 
+            message: `Tekrarlayan işlem başarıyla ${statusText}.`,
+            status 
+        });
+    } catch (error) {
+        console.error('Tekrarlayan işlem durumu güncellenirken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
+// Tekrarlayan işlem silme
+router.delete('/recurring-transactions/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const db = getDb();
+        const result = await db.collection('recurringTransactions').deleteOne({ 
+            _id: new ObjectId(id), 
+            userId: new ObjectId(userId) 
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Tekrarlayan işlem bulunamadı veya yetkiniz yok.' });
+        }
+        res.status(200).json({ message: 'Tekrarlayan işlem başarıyla silindi.' });
+    } catch (error) {
+        console.error('Tekrarlayan işlem silerken hata:', error);
+        res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });
+    }
+});
+
 module.exports = router;
