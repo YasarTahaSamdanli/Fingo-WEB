@@ -553,238 +553,194 @@
 
 <!-- Main Content -->
 <main id="mainContent"
-      class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
-    <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center mt-6">Gelişmiş Tedarikçi Yönetimi</h2>
-    <p class="text-base text-gray-400 text-center mb-10 font-light">Tedarikçilerinizi profesyonel olarak yönetin ve analiz edin. (v2.0.0)</p>
+      class="flex-1 p-4 md:p-6 lg:p-8 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-7xl transition-all duration-300 ease-in-out">
+    
+    <!-- Header Section - Daha kompakt -->
+    <div class="text-center mb-4 mt-2">
+        <h2 class="text-xl font-bold text-blue-300 mb-1">Gelişmiş Tedarikçi Yönetimi</h2>
+        <p class="text-sm text-gray-400 font-light">Tedarikçilerinizi profesyonel olarak yönetin ve analiz edin. (v2.0.0)</p>
+    </div>
 
-    <!-- Advanced Search & Filters -->
-    <section class="mb-8 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Gelişmiş Arama & Filtreleme</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">Tedarikçi Adı</label>
-                <input type="text" id="searchName" class="form-input w-full p-3" placeholder="Ara...">
+    <!-- Collapsible Sections -->
+    <div class="space-y-4">
+        <!-- Advanced Search & Filters - Collapsible -->
+        <section class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+        <button id="searchToggleBtn" class="w-full p-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors">
+            <h3 class="text-lg font-bold text-blue-300">🔍 Gelişmiş Arama & Filtreleme</h3>
+            <i class="fas fa-chevron-down transition-transform" id="searchToggleIcon"></i>
+        </button>
+        <div id="searchContent" class="px-4 pb-4 hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">Tedarikçi Adı</label>
+                    <input type="text" id="searchName" class="form-input w-full p-2 text-sm" placeholder="Ara...">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">E-posta</label>
+                    <input type="email" id="searchEmail" class="form-input w-full p-2 text-sm" placeholder="Ara...">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">Şehir</label>
+                    <input type="text" id="searchCity" class="form-input w-full p-2 text-sm" placeholder="Şehir...">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">Kategori</label>
+                    <select id="searchCategory" class="form-input w-full p-2 text-sm">
+                        <option value="">Tümü</option>
+                        <option value="elektronik">Elektronik</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="insaat">İnşaat</option>
+                        <option value="diger">Diğer</option>
+                    </select>
+                </div>
             </div>
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">E-posta</label>
-                <input type="email" id="searchEmail" class="form-input w-full p-3" placeholder="Ara...">
-            </div>
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">Şehir</label>
-                <input type="text" id="searchCity" class="form-input w-full p-3" placeholder="Şehir...">
-            </div>
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">Kategori</label>
-                <select id="searchCategory" class="form-input w-full p-3">
-                    <option value="">Tümü</option>
-                    <option value="elektronik">Elektronik</option>
-                    <option value="tekstil">Tekstil</option>
-                    <option value="gida">Gıda</option>
-                    <option value="insaat">İnşaat</option>
-                    <option value="diger">Diğer</option>
-                </select>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">Durum</label>
-                <select id="searchStatus" class="form-input w-full p-3">
-                    <option value="">Tümü</option>
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Pasif</option>
-                    <option value="pending">Beklemede</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-gray-300 text-sm font-semibold mb-2">Sıralama</label>
-                <select id="searchSort" class="form-input w-full p-3">
-                    <option value="name">Ada Göre</option>
-                    <option value="createdAt">Tarihe Göre</option>
-                    <option value="rating">Puana Göre</option>
-                    <option value="orderCount">Sipariş Sayısına Göre</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button id="clearFiltersBtn" class="bg-gray-600 hover:bg-gray-500 text-white px-4 py-3 rounded-md transition-colors w-full">
-                    <i class="fas fa-times mr-2"></i>Filtreleri Temizle
-                </button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">Durum</label>
+                    <select id="searchStatus" class="form-input w-full p-2 text-sm">
+                        <option value="">Tümü</option>
+                        <option value="active">Aktif</option>
+                        <option value="inactive">Pasif</option>
+                        <option value="pending">Beklemede</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-xs font-semibold mb-1">Sıralama</label>
+                    <select id="searchSort" class="form-input w-full p-2 text-sm">
+                        <option value="name">Ada Göre</option>
+                        <option value="createdAt">Tarihe Göre</option>
+                        <option value="rating">Puana Göre</option>
+                        <option value="orderCount">Sipariş Sayısına Göre</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="clearFiltersBtn" class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-2 rounded-md transition-colors w-full text-sm">
+                        <i class="fas fa-times mr-1"></i>Filtreleri Temizle
+                    </button>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Supplier Form -->
-    <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Gelişmiş Tedarikçi Ekle</h3>
-        <form id="supplierForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label for="name" class="block text-gray-300 text-sm font-semibold mb-2">Tedarikçi Adı:</label>
-                <input type="text" id="name" name="name" class="form-input w-full p-3 text-base"
-                       placeholder="Örn: Fingo Ltd.">
-            </div>
-            <div>
-                <label for="contactPerson" class="block text-gray-300 text-sm font-semibold mb-2">İlgili Kişi:</label>
-                <input type="text" id="contactPerson" name="contactPerson" class="form-input w-full p-3 text-base"
-                       placeholder="Örn: Ayşe Demir">
-            </div>
-            <div>
-                <label for="email" class="block text-gray-300 text-sm font-semibold mb-2">E-posta:</label>
-                <input type="email" id="email" name="email" class="form-input w-full p-3 text-base"
-                       placeholder="Örn: ayse.demir@fingo.com">
-            </div>
-            <div>
-                <label for="phone" class="block text-gray-300 text-sm font-semibold mb-2">Telefon:</label>
-                <input type="tel" id="phone" name="phone" class="form-input w-full p-3 text-base"
-                       placeholder="Örn: 0532 123 45 67">
-            </div>
-            <div class="md:col-span-2">
-                <label for="address" class="block text-gray-300 text-sm font-semibold mb-2">Adres:</label>
-                <input type="text" id="address" name="address" class="form-input w-full p-3 text-base"
-                       placeholder="Örn: Merkez Mah. Fingo Sok. No:1">
-            </div>
-            <div>
-                <label for="website" class="block text-gray-300 text-sm font-semibold mb-2">Web Sitesi</label>
-                <input type="url" id="website" name="website" class="form-input w-full p-3 text-base" placeholder="https://...">
-            </div>
-            <div>
-                <label for="category" class="block text-gray-300 text-sm font-semibold mb-2">Kategori</label>
-                <select id="category" name="category" class="form-input w-full p-3 text-base">
-                    <option value="">Seçiniz</option>
-                    <option value="elektronik">Elektronik</option>
-                    <option value="tekstil">Tekstil</option>
-                    <option value="gida">Gıda</option>
-                    <option value="insaat">İnşaat</option>
-                    <option value="diger">Diğer</option>
-                </select>
-            </div>
-            <div>
-                <label for="city" class="block text-gray-300 text-sm font-semibold mb-2">Şehir</label>
-                <input type="text" id="city" name="city" class="form-input w-full p-3 text-base">
-            </div>
-            <div>
-                <label for="country" class="block text-gray-300 text-sm font-semibold mb-2">Ülke</label>
-                <input type="text" id="country" name="country" class="form-input w-full p-3 text-base" value="Türkiye">
-            </div>
-            <div>
-                <label for="taxNumber" class="block text-gray-300 text-sm font-semibold mb-2">Vergi Numarası</label>
-                <input type="text" id="taxNumber" name="taxNumber" class="form-input w-full p-3 text-base">
-            </div>
-            <div>
-                <label for="paymentTerms" class="block text-gray-300 text-sm font-semibold mb-2">Ödeme Koşulları</label>
-                <select id="paymentTerms" name="paymentTerms" class="form-input w-full p-3 text-base">
-                    <option value="">Seçiniz</option>
-                    <option value="peşin">Peşin</option>
-                    <option value="30_gun">30 Gün</option>
-                    <option value="60_gun">60 Gün</option>
-                    <option value="90_gun">90 Gün</option>
-                </select>
-            </div>
-            <div>
-                <label for="deliveryTime" class="block text-gray-300 text-sm font-semibold mb-2">Teslimat Süresi (Gün)</label>
-                <input type="number" id="deliveryTime" name="deliveryTime" class="form-input w-full p-3 text-base" min="1">
-            </div>
-            <div>
-                <label for="rating" class="block text-gray-300 text-sm font-semibold mb-2">Değerlendirme</label>
-                <select id="rating" name="rating" class="form-input w-full p-3 text-base">
-                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4)</option>
-                    <option value="3">⭐⭐⭐ (3)</option>
-                    <option value="2">⭐⭐ (2)</option>
-                    <option value="1">⭐ (1)</option>
-                </select>
-            </div>
-            <div>
-                <label for="contractRenewal" class="block text-gray-300 text-sm font-semibold mb-2">Sözleşme Yenileme Tarihi</label>
-                <input type="date" id="contractRenewal" name="contractRenewal" class="form-input w-full p-3 text-base">
-            </div>
-            <div>
-                <label for="paymentDue" class="block text-gray-300 text-sm font-semibold mb-2">Ödeme Vadesi</label>
-                <input type="date" id="paymentDue" name="paymentDue" class="form-input w-full p-3 text-base">
-            </div>
-            <div class="md:col-span-2">
-                <label for="notes" class="block text-gray-300 text-sm font-semibold mb-2">Notlar:</label>
-                <textarea id="notes" name="notes" rows="3" class="form-input w-full p-3 text-base"
-                          placeholder="Ek notlar..."></textarea>
-            </div>
-            <div class="md:col-span-2 flex justify-end space-x-4 mt-4">
-                <button type="submit"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">Tedarikçi
-                    Ekle</button>
-                <button type="button" id="resetFormBtn"
-                        class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-md text-lg">İptal</button>
-            </div>
-        </form>
+    <!-- Supplier Form - Collapsible -->
+    <section class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+        <button id="formToggleBtn" class="w-full p-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors">
+            <h3 class="text-lg font-bold text-blue-300">➕ Yeni Tedarikçi Ekle</h3>
+            <i class="fas fa-chevron-down transition-transform" id="formToggleIcon"></i>
+        </button>
+        <div id="formContent" class="px-4 pb-4 hidden">
+            <form id="supplierForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="name" class="block text-gray-300 text-xs font-semibold mb-1">Tedarikçi Adı:</label>
+                    <input type="text" id="name" name="name" class="form-input w-full p-2 text-sm" placeholder="Örn: Fingo Ltd.">
+                </div>
+                <div>
+                    <label for="contactPerson" class="block text-gray-300 text-xs font-semibold mb-1">İlgili Kişi:</label>
+                    <input type="text" id="contactPerson" name="contactPerson" class="form-input w-full p-2 text-sm" placeholder="Örn: Ayşe Demir">
+                </div>
+                <div>
+                    <label for="email" class="block text-gray-300 text-xs font-semibold mb-1">E-posta:</label>
+                    <input type="email" id="email" name="email" class="form-input w-full p-2 text-sm" placeholder="Örn: ayse.demir@fingo.com">
+                </div>
+                <div>
+                    <label for="phone" class="block text-gray-300 text-xs font-semibold mb-1">Telefon:</label>
+                    <input type="tel" id="phone" name="phone" class="form-input w-full p-2 text-sm" placeholder="Örn: 0532 123 45 67">
+                </div>
+                <div>
+                    <label for="category" class="block text-gray-300 text-xs font-semibold mb-1">Kategori</label>
+                    <select id="category" name="category" class="form-input w-full p-2 text-sm">
+                        <option value="">Seçiniz</option>
+                        <option value="elektronik">Elektronik</option>
+                        <option value="tekstil">Tekstil</option>
+                        <option value="gida">Gıda</option>
+                        <option value="insaat">İnşaat</option>
+                        <option value="diger">Diğer</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="city" class="block text-gray-300 text-xs font-semibold mb-1">Şehir</label>
+                    <input type="text" id="city" name="city" class="form-input w-full p-2 text-sm">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="notes" class="block text-gray-300 text-xs font-semibold mb-1">Notlar:</label>
+                    <textarea id="notes" name="notes" rows="2" class="form-input w-full p-2 text-sm" placeholder="Ek notlar..."></textarea>
+                </div>
+                <div class="md:col-span-2 flex justify-end space-x-3 mt-2">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors shadow-md text-sm">
+                        Tedarikçi Ekle
+                    </button>
+                    <button type="button" id="resetFormBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md transition-colors shadow-md text-sm">
+                        İptal
+                    </button>
+                </div>
+            </form>
+        </div>
     </section>
 
-    <!-- Import/Export Section -->
-    <section class="mb-8 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Veri İçe/Dışa Aktarma</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button id="exportExcelBtn" class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-file-excel mr-2"></i>Excel Dışa Aktar
+    <!-- Quick Actions Bar -->
+    <section class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg p-4">
+        <h3 class="text-lg font-bold text-blue-300 mb-3 text-center">⚡ Hızlı İşlemler</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <button id="exportExcelBtn" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-file-excel mr-1"></i>Excel
             </button>
-            <button id="exportCsvBtn" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-file-csv mr-2"></i>CSV Dışa Aktar
+            <button id="exportCsvBtn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-file-csv mr-1"></i>CSV
             </button>
-            <button id="exportJsonBtn" class="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-file-code mr-2"></i>JSON Dışa Aktar
+            <button id="bulkEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-edit mr-1"></i>Toplu Düzenle
             </button>
-            <button id="importBtn" class="bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-file-import mr-2"></i>Dosya İçe Aktar
+            <button id="bulkDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-trash mr-1"></i>Toplu Sil
+            </button>
+            <button id="refreshListBtn" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-sync-alt mr-1"></i>Yenile
+            </button>
+            <button id="importBtn" class="bg-orange-600 hover:bg-orange-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-file-import mr-1"></i>İçe Aktar
+            </button>
+            <button id="exportJsonBtn" class="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-file-code mr-1"></i>JSON
+            </button>
+            <button id="bulkTagBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-tags mr-1"></i>Etiketle
+            </button>
+            <button id="bulkExportBtn" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-md transition-colors text-xs">
+                <i class="fas fa-download mr-1"></i>Seçilenleri
             </button>
         </div>
         <input type="file" id="importFile" accept=".xlsx,.csv,.json" class="hidden">
     </section>
 
-    <!-- Bulk Actions -->
-    <section class="mb-8 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">Toplu İşlemler</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <button id="bulkEditBtn" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-edit mr-2"></i>Toplu Düzenle
-            </button>
-            <button id="bulkDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-trash mr-2"></i>Toplu Sil
-            </button>
-            <button id="bulkTagBtn" class="bg-yellow-600 hover:bg-yellow-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-tags mr-2"></i>Toplu Etiketle
-            </button>
-            <button id="bulkExportBtn" class="bg-green-600 hover:bg-green-700 text-white p-3 rounded-md transition-colors">
-                <i class="fas fa-download mr-2"></i>Seçilenleri Dışa Aktar
-            </button>
-        </div>
-    </section>
-
-    <!-- Supplier List -->
-    <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+    <!-- Supplier List - Main Content -->
+    <section class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg p-4">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-blue-300">Tedarikçi Listesi</h3>
+            <h3 class="text-lg font-bold text-blue-300">📋 Tedarikçi Listesi</h3>
             <div class="flex items-center space-x-2">
                 <span id="supplierCount" class="text-gray-400 text-sm">0 tedarikçi</span>
-                <button id="refreshListBtn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
             </div>
         </div>
         <div id="supplierList" class="overflow-x-auto">
             <table class="min-w-full bg-gray-900 bg-opacity-70 rounded-lg shadow-md border border-gray-700">
                 <thead>
-                <tr class="bg-gray-700 text-gray-200 uppercase text-sm leading-normal">
-                    <th class="py-3 px-2 text-center">
+                <tr class="bg-gray-700 text-gray-200 uppercase text-xs leading-normal">
+                    <th class="py-2 px-1 text-center w-8">
                         <input type="checkbox" id="selectAllCheckbox" class="rounded">
                     </th>
-                    <th class="py-3 px-6 text-left">Tedarikçi</th>
-                    <th class="py-3 px-6 text-left">İletişim</th>
-                    <th class="py-3 px-6 text-left">Kategori</th>
-                    <th class="py-3 px-6 text-center">Durum</th>
-                    <th class="py-3 px-6 text-center">Değerlendirme</th>
-                    <th class="py-3 px-6 text-center">İşlemler</th>
+                    <th class="py-2 px-2 text-left">Tedarikçi</th>
+                    <th class="py-2 px-2 text-left">İletişim</th>
+                    <th class="py-2 px-2 text-center">Kategori</th>
+                    <th class="py-2 px-2 text-center">Durum</th>
+                    <th class="py-2 px-2 text-center">Puan</th>
+                    <th class="py-2 px-2 text-center">İşlemler</th>
                 </tr>
                 </thead>
-                <tbody id="suppliersTableBody" class="text-gray-300 text-sm font-light">
+                <tbody id="suppliersTableBody" class="text-gray-300 text-xs font-light">
                 <tr id="loadingSuppliersRow">
-                    <td colspan="7" class="py-8 px-6 text-center text-gray-400">
+                    <td colspan="7" class="py-6 px-3 text-center text-gray-400">
                         <div class="flex items-center justify-center">
-                            <div class="spinner mr-3"></div>
+                            <div class="spinner mr-2"></div>
                             Tedarikçiler yükleniyor...
                         </div>
                     </td>
@@ -794,35 +750,45 @@
         </div>
     </section>
 
-    <!-- Statistics & Charts -->
-    <section class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-        <h3 class="text-xl font-bold text-blue-300 mb-4 text-center">İstatistikler & Grafikler</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            <div class="bg-gray-700 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-blue-400" id="totalSuppliers">0</div>
-                <div class="text-gray-300 text-sm">Toplam Tedarikçi</div>
+    <!-- Statistics Cards - Horizontal Layout -->
+    <section class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg p-4">
+        <h3 class="text-lg font-bold text-blue-300 mb-3 text-center">📊 Özet İstatistikler</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-gray-700 p-3 rounded-lg text-center">
+                <div class="text-xl font-bold text-blue-400" id="totalSuppliers">0</div>
+                <div class="text-gray-300 text-xs">Toplam</div>
             </div>
-            <div class="bg-gray-700 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-green-400" id="activeSuppliers">0</div>
-                <div class="text-gray-300 text-sm">Aktif Tedarikçi</div>
+            <div class="bg-gray-700 p-3 rounded-lg text-center">
+                <div class="text-xl font-bold text-green-400" id="activeSuppliers">0</div>
+                <div class="text-gray-300 text-xs">Aktif</div>
             </div>
-            <div class="bg-gray-700 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-yellow-400" id="avgRating">0.0</div>
-                <div class="text-gray-300 text-sm">Ortalama Puan</div>
+            <div class="bg-gray-700 p-3 rounded-lg text-center">
+                <div class="text-xl font-bold text-yellow-400" id="avgRating">0.0</div>
+                <div class="text-gray-300 text-xs">Ort. Puan</div>
             </div>
-            <div class="bg-gray-700 p-4 rounded-lg text-center">
-                <div class="text-2xl font-bold text-purple-400" id="totalOrders">0</div>
-                <div class="text-gray-300 text-sm">Toplam Sipariş</div>
+            <div class="bg-gray-700 p-3 rounded-lg text-center">
+                <div class="text-xl font-bold text-purple-400" id="totalOrders">0</div>
+                <div class="text-gray-300 text-xs">Sipariş</div>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-gray-700 p-4 rounded-lg">
-                <h4 class="text-lg font-semibold text-blue-300 mb-4">Kategori Dağılımı</h4>
-                <canvas id="categoryChart" width="400" height="200"></canvas>
-            </div>
-            <div class="bg-gray-700 p-4 rounded-lg">
-                <h4 class="text-lg font-semibold text-blue-300 mb-4">Aylık Sipariş Trendi</h4>
-                <canvas id="orderTrendChart" width="400" height="200"></canvas>
+    </section>
+
+    <!-- Charts Section - Collapsible -->
+    <section class="mb-4 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+        <button id="chartsToggleBtn" class="w-full p-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors">
+            <h3 class="text-lg font-bold text-blue-300">📈 Grafikler & Analizler</h3>
+            <i class="fas fa-chevron-down transition-transform" id="chartsToggleIcon"></i>
+        </button>
+        <div id="chartsContent" class="px-4 pb-4 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-blue-300 mb-2">Kategori Dağılımı</h4>
+                    <canvas id="categoryChart" width="400" height="150"></canvas>
+                </div>
+                <div class="bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-blue-300 mb-2">Aylık Sipariş Trendi</h4>
+                    <canvas id="orderTrendChart" width="400" height="150"></canvas>
+                </div>
             </div>
         </div>
     </section>
@@ -1315,8 +1281,8 @@
             if (suppliersToRender.length === 0) {
                 suppliersTableBody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="py-8 px-6 text-center text-gray-400">
-                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                        <td colspan="7" class="py-6 px-3 text-center text-gray-400">
+                            <i class="fas fa-inbox text-3xl mb-2 block"></i>
                             Tedarikçi bulunamadı
                         </td>
                     </tr>
@@ -1328,49 +1294,49 @@
                 const row = document.createElement('tr');
                 row.className = 'border-b border-gray-700 hover:bg-gray-800 transition-colors';
                 row.innerHTML = `
-                    <td class="py-4 px-2 text-center">
+                    <td class="py-2 px-1 text-center w-8">
                         <input type="checkbox" class="supplier-checkbox" value="${supplier._id}" 
                                ${selectedSuppliers.has(supplier._id) ? 'checked' : ''}>
                     </td>
-                    <td class="py-4 px-6">
-                        <div class="font-medium text-blue-300">${supplier.name}</div>
+                    <td class="py-2 px-2">
+                        <div class="font-medium text-blue-300 text-xs">${supplier.name}</div>
                         <div class="text-xs text-gray-400">${supplier.category || 'Kategori yok'}</div>
                     </td>
-                    <td class="py-4 px-6">
-                        <div class="text-sm">${supplier.contactPerson || '-'}</div>
+                    <td class="py-2 px-2">
+                        <div class="text-xs">${supplier.contactPerson || '-'}</div>
                         <div class="text-xs text-gray-400">
                             ${supplier.email ? `<a href="mailto:${supplier.email}" class="text-blue-400 hover:text-blue-300">${supplier.email}</a>` : '-'}
                         </div>
                         <div class="text-xs text-gray-400">${supplier.phone || '-'}</div>
                     </td>
-                    <td class="py-4 px-6">
-                        <span class="px-2 py-1 text-xs rounded-full ${getCategoryColor(supplier.category)}">
+                    <td class="py-2 px-2 text-center">
+                        <span class="px-1 py-1 text-xs rounded-full ${getCategoryColor(supplier.category)}">
                             ${getCategoryLabel(supplier.category)}
                         </span>
                     </td>
-                    <td class="py-4 px-6 text-center">
-                        <span class="px-2 py-1 text-xs rounded-full ${getCategoryColor(supplier.status)}">
+                    <td class="py-2 px-2 text-center">
+                        <span class="px-1 py-1 text-xs rounded-full ${getCategoryColor(supplier.status)}">
                             ${getStatusLabel(supplier.status)}
                         </span>
                     </td>
-                    <td class="py-4 px-6 text-center">
+                    <td class="py-2 px-2 text-center">
                         <div class="flex items-center justify-center">
                             ${getRatingStars(supplier.rating || 0)}
-                            <span class="ml-2 text-sm">${supplier.rating || 0}/5</span>
+                            <span class="ml-1 text-xs">${supplier.rating || 0}/5</span>
                         </div>
                     </td>
-                    <td class="py-4 px-6 text-center">
-                        <div class="flex justify-center space-x-2">
+                    <td class="py-2 px-2 text-center">
+                        <div class="flex justify-center space-x-1">
                             <button onclick="viewSupplierDetail('${supplier._id}')" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-md transition-colors text-xs">
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-1 py-1 rounded-md transition-colors text-xs">
                                 <i class="fas fa-eye mr-1"></i>Detay
                             </button>
                             <button onclick="editSupplier('${supplier._id}')" 
-                                    class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-md transition-colors text-xs">
+                                    class="bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded-md transition-colors text-xs">
                                 <i class="fas fa-edit mr-1"></i>Düzenle
                             </button>
                             <button onclick="deleteSupplier('${supplier._id}', '${supplier.name}')" 
-                                    class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md transition-colors text-xs">
+                                    class="bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded-md transition-colors text-xs">
                                 <i class="fas fa-trash mr-1"></i>Sil
                             </button>
                         </div>
@@ -2057,8 +2023,38 @@
         // ----- Other Event Listeners -----
         refreshListBtn.addEventListener('click', loadSuppliers);
 
+        // ----- Collapsible Sections Functionality -----
+        function initializeCollapsibleSections() {
+            const sections = [
+                { btn: 'searchToggleBtn', content: 'searchContent', icon: 'searchToggleIcon' },
+                { btn: 'formToggleBtn', content: 'formContent', icon: 'formToggleIcon' },
+                { btn: 'chartsToggleBtn', content: 'chartsContent', icon: 'chartsToggleIcon' }
+            ];
+
+            sections.forEach(({ btn, content, icon }) => {
+                const button = document.getElementById(btn);
+                const contentDiv = document.getElementById(content);
+                const iconElement = document.getElementById(icon);
+
+                if (button && contentDiv && iconElement) {
+                    button.addEventListener('click', () => {
+                        const isHidden = contentDiv.classList.contains('hidden');
+                        
+                        if (isHidden) {
+                            contentDiv.classList.remove('hidden');
+                            iconElement.style.transform = 'rotate(180deg)';
+                        } else {
+                            contentDiv.classList.add('hidden');
+                            iconElement.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                }
+            });
+        }
+
         // ----- Initialization -----
         initializeSidebarState();
+        initializeCollapsibleSections();
         loadNotifications();
         loadSuppliers();
     });
@@ -2066,3 +2062,4 @@
 </body>
 
 </html>
+
