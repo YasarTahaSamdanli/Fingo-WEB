@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fingo - İşlem Yönetimi</title>
+    <title>Fingo - Tekrarlayan İşlemler</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -308,27 +308,54 @@
             margin-bottom: 15px;
         }
 
-        /* İşlem kartları için stil */
-        .transaction-card {
+        /* Tekrarlayan işlem kartları için stil */
+        .recurring-transaction-card {
             border-left: 4px solid #6366F1;
             transition: all 0.2s ease;
+            background: linear-gradient(135deg, #1A202C 0%, #2D3748 100%);
         }
-        .transaction-card:hover {
+        .recurring-transaction-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-        .transaction-card.income {
+        .recurring-transaction-card.income {
             border-left-color: #10B981; /* Gelir için yeşil */
         }
-        .transaction-card.expense {
+        .recurring-transaction-card.expense {
             border-left-color: #EF4444; /* Gider için kırmızı */
         }
-        .transaction-card.payment {
+        .recurring-transaction-card.payment {
             border-left-color: #3B82F6; /* Ödeme için mavi */
         }
-        .transaction-card.debt {
+        .recurring-transaction-card.debt {
             border-left-color: #F59E0B; /* Borç için turuncu */
         }
+        
+        /* Tekrarlama tipi etiketleri */
+        .recurrence-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .recurrence-badge.daily { background-color: #10B981; color: white; }
+        .recurrence-badge.weekly { background-color: #3B82F6; color: white; }
+        .recurrence-badge.monthly { background-color: #8B5CF6; color: white; }
+        .recurrence-badge.yearly { background-color: #F59E0B; color: white; }
+        
+        /* Durum etiketleri */
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status-badge.active { background-color: #10B981; color: white; }
+        .status-badge.paused { background-color: #F59E0B; color: white; }
+        .status-badge.completed { background-color: #6B7280; color: white; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen font-sans overflow-x-hidden">
@@ -338,7 +365,7 @@
             <button id="sidebarToggleBtn" class="p-2 rounded-md hover:bg-blue-800 mr-4 transition-colors duration-200">
                 <i class="fas fa-bars text-white text-xl"></i>
             </button>
-            <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo İşlem Yönetimi</h1>
+            <h1 class="text-xl md:text-2xl font-bold text-blue-300 whitespace-nowrap">Fingo Tekrarlayan İşlemler</h1>
         </div>
         <div class="flex items-center space-x-3 md:space-x-4">
             <button id="notificationBellBtn" class="relative p-3 rounded-full hover:bg-blue-800 transition-all duration-200 ease-in-out transform hover:scale-105">
@@ -393,16 +420,16 @@
         <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
         <main id="mainContent" class="flex-1 p-6 md:p-8 lg:p-10 rounded-lg shadow-inner border border-gray-700 mx-auto w-full max-w-6xl transition-all duration-300 ease-in-out">
-            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">İşlem Yönetimi</h2>
-            <p class="text-base text-gray-400 text-center mb-10 font-light">Gelir, gider ve veresiye işlemlerinizi ekleyin, düzenleyin ve görüntüleyin.</p>
+            <h2 class="text-2xl font-bold text-blue-300 mb-6 text-center">Tekrarlayan İşlemler</h2>
+            <p class="text-base text-gray-400 text-center mb-10 font-light">Her gün, hafta, ay veya yıl tekrarlanan ödemeleri ve gelirleri yönetin, hatırlatmalar alın.</p>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
 
-                <!-- Yeni İşlem Ekleme Formu -->
+                <!-- Yeni Tekrarlayan İşlem Ekleme Formu -->
                 <div class="lg:col-span-1">
                     <div class="p-8 bg-gray-800 rounded-xl border border-gray-700 shadow-lg h-full flex flex-col">
-                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni İşlem Ekle</h3>
-                        <form id="newTransactionForm" class="space-y-6">
+                        <h3 class="text-xl font-bold text-blue-300 mb-6 text-center">Yeni Tekrarlayan İşlem</h3>
+                        <form id="newRecurringTransactionForm" class="space-y-6">
                             <div>
                                 <label for="transactionType" class="block text-gray-300 text-sm font-semibold mb-2">İşlem Tipi:</label>
                                 <select id="transactionType" class="form-select w-full p-3 text-base shadow-sm" required>
@@ -428,8 +455,68 @@
                             </div>
                             
                             <div>
-                                <label for="transactionDate" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
-                                <input type="date" id="transactionDate" class="form-input w-full p-3 text-base shadow-sm" required>
+                                <label for="recurrenceType" class="block text-gray-300 text-sm font-semibold mb-2">Tekrarlama Sıklığı:</label>
+                                <select id="recurrenceType" class="form-select w-full p-3 text-base shadow-sm" required>
+                                    <option value="">Tekrarlama Sıklığı Seçin</option>
+                                    <option value="daily">Her Gün</option>
+                                    <option value="weekly">Her Hafta</option>
+                                    <option value="monthly">Her Ay</option>
+                                    <option value="yearly">Her Yıl</option>
+                                </select>
+                            </div>
+                            
+                            <div id="weeklyOptions" class="hidden">
+                                <label for="weekDay" class="block text-gray-300 text-sm font-semibold mb-2">Haftanın Günü:</label>
+                                <select id="weekDay" class="form-select w-full p-3 text-base shadow-sm">
+                                    <option value="1">Pazartesi</option>
+                                    <option value="2">Salı</option>
+                                    <option value="3">Çarşamba</option>
+                                    <option value="4">Perşembe</option>
+                                    <option value="5">Cuma</option>
+                                    <option value="6">Cumartesi</option>
+                                    <option value="0">Pazar</option>
+                                </select>
+                            </div>
+                            
+                            <div id="monthlyOptions" class="hidden">
+                                <label for="monthDay" class="block text-gray-300 text-sm font-semibold mb-2">Ayın Günü:</label>
+                                <input type="number" id="monthDay" min="1" max="31" placeholder="1-31" class="form-input w-full p-3 text-base shadow-sm">
+                            </div>
+                            
+                            <div id="yearlyOptions" class="hidden">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="yearMonth" class="block text-gray-300 text-sm font-semibold mb-2">Ay:</label>
+                                        <select id="yearMonth" class="form-select w-full p-2 text-sm">
+                                            <option value="1">Ocak</option>
+                                            <option value="2">Şubat</option>
+                                            <option value="3">Mart</option>
+                                            <option value="4">Nisan</option>
+                                            <option value="5">Mayıs</option>
+                                            <option value="6">Haziran</option>
+                                            <option value="7">Temmuz</option>
+                                            <option value="8">Ağustos</option>
+                                            <option value="9">Eylül</option>
+                                            <option value="10">Ekim</option>
+                                            <option value="11">Kasım</option>
+                                            <option value="12">Aralık</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="yearDay" class="block text-gray-300 text-sm font-semibold mb-2">Gün:</label>
+                                        <input type="number" id="yearDay" min="1" max="31" placeholder="1-31" class="form-input w-full p-2 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="startDate" class="block text-gray-300 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
+                                <input type="date" id="startDate" class="form-input w-full p-3 text-base shadow-sm" required>
+                            </div>
+                            
+                            <div>
+                                <label for="endDate" class="block text-gray-300 text-sm font-semibold mb-2">Bitiş Tarihi (Opsiyonel):</label>
+                                <input type="date" id="endDate" class="form-input w-full p-3 text-base shadow-sm">
                             </div>
                             
                             <div>
@@ -442,17 +529,37 @@
                                 <textarea id="transactionDescription" rows="3" class="form-input w-full p-3 text-base shadow-sm" required></textarea>
                             </div>
                             
-                            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">İşlem Ekle</button>
+                            <div>
+                                <label for="reminderDays" class="block text-gray-300 text-sm font-semibold mb-2">Hatırlatma (Gün Öncesi):</label>
+                                <input type="number" id="reminderDays" min="0" max="30" placeholder="0" class="form-input w-full p-3 text-base shadow-sm" value="1">
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold text-lg">Tekrarlayan İşlem Ekle</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- İşlem Listesi ve Filtreleme -->
+                <!-- Tekrarlayan İşlemler Listesi ve Filtreleme -->
                 <div class="lg:col-span-1 space-y-6">
+                    <!-- Yaklaşan Ödemeler Özeti -->
                     <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
-                        <h3 class="text-xl font-bold text-blue-300 mb-4">İşlem Filtreleme</h3>
+                        <h3 class="text-xl font-bold text-blue-300 mb-4">Yaklaşan Ödemeler</h3>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-yellow-600 bg-opacity-20 p-4 rounded-lg border border-yellow-500">
+                                <div class="text-2xl font-bold text-yellow-400" id="upcomingCount">0</div>
+                                <div class="text-sm text-yellow-300">Bu Hafta</div>
+                            </div>
+                            <div class="bg-red-600 bg-opacity-20 p-4 rounded-lg border border-red-500">
+                                <div class="text-2xl font-bold text-red-400" id="overdueCount">0</div>
+                                <div class="text-sm text-red-300">Gecikmiş</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
+                        <h3 class="text-xl font-bold text-blue-300 mb-4">Tekrarlayan İşlem Filtreleme</h3>
                         
-                        <form id="transactionFilterForm" class="space-y-4">
+                        <form id="recurringTransactionFilterForm" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="filterType" class="block text-gray-300 text-sm font-semibold mb-2">İşlem Tipi:</label>
@@ -465,19 +572,30 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="filterCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
-                                    <input type="text" id="filterCategory" placeholder="Kategori" class="form-input w-full p-2 text-sm">
+                                    <label for="filterRecurrence" class="block text-gray-300 text-sm font-semibold mb-2">Tekrarlama:</label>
+                                    <select id="filterRecurrence" class="form-select w-full p-2 text-sm">
+                                        <option value="">Tümü</option>
+                                        <option value="daily">Her Gün</option>
+                                        <option value="weekly">Her Hafta</option>
+                                        <option value="monthly">Her Ay</option>
+                                        <option value="yearly">Her Yıl</option>
+                                    </select>
                                 </div>
                             </div>
                             
-                            <div class="date-range-picker">
-                                <div class="flex-1">
-                                    <label for="filterStartDate" class="block text-gray-300 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
-                                    <input type="date" id="filterStartDate" class="form-input w-full p-2 text-sm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="filterCategory" class="block text-gray-300 text-sm font-semibold mb-2">Kategori:</label>
+                                    <input type="text" id="filterCategory" placeholder="Kategori" class="form-input w-full p-2 text-sm">
                                 </div>
-                                <div class="flex-1">
-                                    <label for="filterEndDate" class="block text-gray-300 text-sm font-semibold mb-2">Bitiş Tarihi:</label>
-                                    <input type="date" id="filterEndDate" class="form-input w-full p-2 text-sm">
+                                <div>
+                                    <label for="filterStatus" class="block text-gray-300 text-sm font-semibold mb-2">Durum:</label>
+                                    <select id="filterStatus" class="form-select w-full p-2 text-sm">
+                                        <option value="">Tümü</option>
+                                        <option value="active">Aktif</option>
+                                        <option value="paused">Duraklatılmış</option>
+                                        <option value="completed">Tamamlanmış</option>
+                                    </select>
                                 </div>
                             </div>
                             
@@ -494,15 +612,15 @@
                     
                     <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 shadow-lg">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-blue-300">İşlem Listesi</h3>
+                            <h3 class="text-xl font-bold text-blue-300">Tekrarlayan İşlemler</h3>
                             <div class="text-sm text-gray-400">
-                                <span id="transactionCount">0</span> işlem bulundu
+                                <span id="recurringTransactionCount">0</span> işlem bulundu
                             </div>
                         </div>
                         
-                        <div id="transactionList" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                            <!-- İşlemler JavaScript ile doldurulacak -->
-                            <div class="text-center text-gray-500 py-8">Henüz işlem bulunmuyor veya yükleniyor...</div>
+                        <div id="recurringTransactionList" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                            <!-- Tekrarlayan işlemler JavaScript ile doldurulacak -->
+                            <div class="text-center text-gray-500 py-8">Henüz tekrarlayan işlem bulunmuyor veya yükleniyor...</div>
                         </div>
                     </div>
                 </div>
@@ -510,15 +628,15 @@
         </main>
     </div>
 
-    <!-- İşlem Düzenleme Modalı -->
-    <div id="editTransactionModal" class="modal-overlay">
+    <!-- Tekrarlayan İşlem Düzenleme Modalı -->
+    <div id="editRecurringTransactionModal" class="modal-overlay">
         <div class="modal-content relative">
-            <button class="modal-close-btn" id="closeEditTransactionModal">
+            <button class="modal-close-btn" id="closeEditRecurringTransactionModal">
                 <i class="fas fa-times"></i>
             </button>
-            <h3 class="text-xl font-bold text-blue-300 mb-6">İşlem Düzenle</h3>
-            <form id="editTransactionForm" class="space-y-4">
-                <input type="hidden" id="editTransactionId">
+            <h3 class="text-xl font-bold text-blue-300 mb-6">Tekrarlayan İşlem Düzenle</h3>
+            <form id="editRecurringTransactionForm" class="space-y-4">
+                <input type="hidden" id="editRecurringTransactionId">
                 
                 <div>
                     <label for="editTransactionType" class="block text-gray-300 text-sm font-semibold mb-2">İşlem Tipi:</label>
@@ -543,8 +661,67 @@
                 </div>
                 
                 <div>
-                    <label for="editTransactionDate" class="block text-gray-300 text-sm font-semibold mb-2">Tarih:</label>
-                    <input type="date" id="editTransactionDate" class="form-input w-full p-3 text-base shadow-sm" required>
+                    <label for="editRecurrenceType" class="block text-gray-300 text-sm font-semibold mb-2">Tekrarlama Sıklığı:</label>
+                    <select id="editRecurrenceType" class="form-select w-full p-3 text-base shadow-sm" required>
+                        <option value="daily">Her Gün</option>
+                        <option value="weekly">Her Hafta</option>
+                        <option value="monthly">Her Ay</option>
+                        <option value="yearly">Her Yıl</option>
+                    </select>
+                </div>
+                
+                <div id="editWeeklyOptions" class="hidden">
+                    <label for="editWeekDay" class="block text-gray-300 text-sm font-semibold mb-2">Haftanın Günü:</label>
+                    <select id="editWeekDay" class="form-select w-full p-3 text-base shadow-sm">
+                        <option value="1">Pazartesi</option>
+                        <option value="2">Salı</option>
+                        <option value="3">Çarşamba</option>
+                        <option value="4">Perşembe</option>
+                        <option value="5">Cuma</option>
+                        <option value="6">Cumartesi</option>
+                        <option value="0">Pazar</option>
+                    </select>
+                </div>
+                
+                <div id="editMonthlyOptions" class="hidden">
+                    <label for="editMonthDay" class="block text-gray-300 text-sm font-semibold mb-2">Ayın Günü:</label>
+                    <input type="number" id="editMonthDay" min="1" max="31" placeholder="1-31" class="form-input w-full p-3 text-base shadow-sm">
+                </div>
+                
+                <div id="editYearlyOptions" class="hidden">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="editYearMonth" class="block text-sm font-semibold mb-2">Ay:</label>
+                            <select id="editYearMonth" class="form-select w-full p-2 text-sm">
+                                <option value="1">Ocak</option>
+                                <option value="2">Şubat</option>
+                                <option value="3">Mart</option>
+                                <option value="4">Nisan</option>
+                                <option value="5">Mayıs</option>
+                                <option value="6">Haziran</option>
+                                <option value="7">Temmuz</option>
+                                <option value="8">Ağustos</option>
+                                <option value="9">Eylül</option>
+                                <option value="10">Ekim</option>
+                                <option value="11">Kasım</option>
+                                <option value="12">Aralık</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="editYearDay" class="block text-sm font-semibold mb-2">Gün:</label>
+                            <input type="number" id="editYearDay" min="1" max="31" placeholder="1-31" class="form-input w-full p-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="editStartDate" class="block text-gray-300 text-sm font-semibold mb-2">Başlangıç Tarihi:</label>
+                    <input type="date" id="editStartDate" class="form-input w-full p-3 text-base shadow-sm" required>
+                </div>
+                
+                <div>
+                    <label for="editEndDate" class="block text-gray-300 text-sm font-semibold mb-2">Bitiş Tarihi (Opsiyonel):</label>
+                    <input type="date" id="editEndDate" class="form-input w-full p-3 text-base shadow-sm">
                 </div>
                 
                 <div>
@@ -557,11 +734,19 @@
                     <textarea id="editTransactionDescription" rows="3" class="form-input w-full p-3 text-base shadow-sm" required></textarea>
                 </div>
                 
+                <div>
+                    <label for="editReminderDays" class="block text-gray-300 text-sm font-semibold mb-2">Hatırlatma (Gün Öncesi):</label>
+                    <input type="number" id="editReminderDays" min="0" max="30" class="form-input w-full p-3 text-base shadow-sm">
+                </div>
+                
                 <div class="flex space-x-4 pt-4">
                     <button type="submit" class="flex-1 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors shadow-md font-semibold">
                         <i class="fas fa-save mr-2"></i>Kaydet
                     </button>
-                    <button type="button" id="deleteTransactionBtn" class="flex-1 bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors shadow-md font-semibold">
+                    <button type="button" id="pauseRecurringTransactionBtn" class="flex-1 bg-yellow-600 text-white p-3 rounded-md hover:bg-yellow-700 transition-colors shadow-md font-semibold">
+                        <i class="fas fa-pause mr-2"></i>Duraklat
+                    </button>
+                    <button type="button" id="deleteRecurringTransactionBtn" class="flex-1 bg-red-600 text-white p-3 rounded-md hover:bg-red-700 transition-colors shadow-md font-semibold">
                         <i class="fas fa-trash-alt mr-2"></i>Sil
                     </button>
                 </div>
@@ -666,6 +851,32 @@
                 }
             });
 
+            // Tekrarlama tipi değiştiğinde ek seçenekleri göster/gizle
+            const recurrenceType = document.getElementById('recurrenceType');
+            const weeklyOptions = document.getElementById('weeklyOptions');
+            const monthlyOptions = document.getElementById('monthlyOptions');
+            const yearlyOptions = document.getElementById('yearlyOptions');
+
+            recurrenceType.addEventListener('change', function() {
+                // Tüm seçenekleri gizle
+                weeklyOptions.classList.add('hidden');
+                monthlyOptions.classList.add('hidden');
+                yearlyOptions.classList.add('hidden');
+                
+                // Seçilen tipe göre ilgili seçenekleri göster
+                switch(this.value) {
+                    case 'weekly':
+                        weeklyOptions.classList.remove('hidden');
+                        break;
+                    case 'monthly':
+                        monthlyOptions.classList.remove('hidden');
+                        break;
+                    case 'yearly':
+                        yearlyOptions.classList.remove('hidden');
+                        break;
+                }
+            });
+
             // Bildirim merkezi açma/kapama
             const notificationBellBtn = document.getElementById('notificationBellBtn');
             const notificationCenter = document.getElementById('notificationCenter');
@@ -722,11 +933,214 @@
 
             // Modalları ayarla
             setupModal('importCsvModal', 'importCsvBtn', 'closeImportCsvModal');
-            setupModal('editTransactionModal', null, 'closeEditTransactionModal');
+            setupModal('editRecurringTransactionModal', null, 'closeEditRecurringTransactionModal');
 
             // Burada API çağrıları ve diğer işlemler eklenecek
-            // ...
+            
+            // Tekrarlayan işlem formu submit
+            const newRecurringTransactionForm = document.getElementById('newRecurringTransactionForm');
+            if (newRecurringTransactionForm) {
+                newRecurringTransactionForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Form verilerini topla
+                    const formData = {
+                        type: document.getElementById('transactionType').value,
+                        amount: document.getElementById('transactionAmount').value,
+                        recurrenceType: document.getElementById('recurrenceType').value,
+                        weekDay: document.getElementById('weekDay').value,
+                        monthDay: document.getElementById('monthDay').value,
+                        yearMonth: document.getElementById('yearMonth').value,
+                        yearDay: document.getElementById('yearDay').value,
+                        startDate: document.getElementById('startDate').value,
+                        endDate: document.getElementById('endDate').value,
+                        category: document.getElementById('transactionCategory').value,
+                        description: document.getElementById('transactionDescription').value,
+                        reminderDays: document.getElementById('reminderDays').value,
+                        customerId: document.getElementById('customerSelect').value || null
+                    };
+                    
+                    // Form validasyonu
+                    if (!formData.type || !formData.amount || !formData.recurrenceType || !formData.startDate) {
+                        showMessage('Lütfen tüm gerekli alanları doldurun.', 'error');
+                        return;
+                    }
+                    
+                    // Tekrarlama tipine göre ek validasyon
+                    if (formData.recurrenceType === 'weekly' && !formData.weekDay) {
+                        showMessage('Haftalık tekrarlama için haftanın günü seçilmelidir.', 'error');
+                        return;
+                    }
+                    if (formData.recurrenceType === 'monthly' && !formData.monthDay) {
+                        showMessage('Aylık tekrarlama için ayın günü girilmelidir.', 'error');
+                        return;
+                    }
+                    if (formData.recurrenceType === 'yearly' && (!formData.yearMonth || !formData.yearDay)) {
+                        showMessage('Yıllık tekrarlama için ay ve gün seçilmelidir.', 'error');
+                        return;
+                    }
+                    
+                    // API çağrısı yapılacak
+                    console.log('Tekrarlayan işlem ekleniyor:', formData);
+                    showMessage('Tekrarlayan işlem başarıyla eklendi!', 'success');
+                    
+                    // Formu temizle
+                    this.reset();
+                    weeklyOptions.classList.add('hidden');
+                    monthlyOptions.classList.add('hidden');
+                    yearlyOptions.classList.add('hidden');
+                });
+            }
+            
+            // Filtreleme formu submit
+            const recurringTransactionFilterForm = document.getElementById('recurringTransactionFilterForm');
+            if (recurringTransactionFilterForm) {
+                recurringTransactionFilterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // Filtreleme işlemi yapılacak
+                    console.log('Filtreleme yapılıyor...');
+                });
+            }
+            
+            // Sayfa yüklendiğinde bugünün tarihini başlangıç tarihi olarak ayarla
+            const startDateInput = document.getElementById('startDate');
+            if (startDateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                startDateInput.value = today;
+            }
+            
+            // Örnek tekrarlayan işlem verileri (test için)
+            const sampleRecurringTransactions = [
+                {
+                    id: 1,
+                    type: 'Gider',
+                    amount: 1500,
+                    recurrenceType: 'monthly',
+                    category: 'Kira',
+                    description: 'Ofis kirası',
+                    startDate: '2024-01-01',
+                    status: 'active',
+                    nextDueDate: '2024-12-01'
+                },
+                {
+                    id: 2,
+                    type: 'Gelir',
+                    amount: 5000,
+                    recurrenceType: 'weekly',
+                    category: 'Maaş',
+                    description: 'Haftalık maaş',
+                    startDate: '2024-01-01',
+                    status: 'active',
+                    nextDueDate: '2024-12-09'
+                }
+            ];
+            
+            // Tekrarlayan işlemleri listele
+            function displayRecurringTransactions(transactions) {
+                const container = document.getElementById('recurringTransactionList');
+                if (!container) return;
+                
+                if (transactions.length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-8">Henüz tekrarlayan işlem bulunmuyor.</div>';
+                    return;
+                }
+                
+                container.innerHTML = transactions.map(transaction => `
+                    <div class="recurring-transaction-card ${transaction.type.toLowerCase()} p-4 rounded-lg border border-gray-600">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2 mb-2">
+                                    <span class="recurrence-badge ${transaction.recurrenceType}">${getRecurrenceText(transaction.recurrenceType)}</span>
+                                    <span class="status-badge ${transaction.status}">${getStatusText(transaction.status)}</span>
+                                </div>
+                                <h4 class="text-lg font-semibold text-white">${transaction.description}</h4>
+                                <p class="text-gray-400 text-sm">${transaction.category}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-bold ${transaction.type === 'Gelir' ? 'text-green-400' : 'text-red-400'}">
+                                    ${transaction.type === 'Gelir' ? '+' : '-'}₺${transaction.amount.toLocaleString()}
+                                </div>
+                                <div class="text-sm text-gray-400">Sonraki: ${formatDate(transaction.nextDueDate)}</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-400">
+                                Başlangıç: ${formatDate(transaction.startDate)}
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="editRecurringTransaction(${transaction.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-edit mr-1"></i>Düzenle
+                                </button>
+                                <button onclick="pauseRecurringTransaction(${transaction.id})" class="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors">
+                                    <i class="fas fa-pause mr-1"></i>Duraklat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Sayıyı güncelle
+                const countElement = document.getElementById('recurringTransactionCount');
+                if (countElement) {
+                    countElement.textContent = transactions.length;
+                }
+            }
+            
+            // Yardımcı fonksiyonlar
+            function getRecurrenceText(type) {
+                const types = {
+                    'daily': 'Her Gün',
+                    'weekly': 'Her Hafta',
+                    'monthly': 'Her Ay',
+                    'yearly': 'Her Yıl'
+                };
+                return types[type] || type;
+            }
+            
+            function getStatusText(status) {
+                const statuses = {
+                    'active': 'Aktif',
+                    'paused': 'Duraklatılmış',
+                    'completed': 'Tamamlanmış'
+                };
+                return statuses[status] || status;
+            }
+            
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('tr-TR');
+            }
+            
+            // Örnek verileri göster
+            displayRecurringTransactions(sampleRecurringTransactions);
+            
+            // Yaklaşan ödemeler sayısını güncelle
+            document.getElementById('upcomingCount').textContent = '2';
+            document.getElementById('overdueCount').textContent = '0';
         });
+        
+        // Global fonksiyonlar (onclick için)
+        function editRecurringTransaction(id) {
+            console.log('Tekrarlayan işlem düzenleniyor:', id);
+            // Modal açılacak ve veriler doldurulacak
+            const modal = document.getElementById('editRecurringTransactionModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+        
+        function pauseRecurringTransaction(id) {
+            console.log('Tekrarlayan işlem duraklatılıyor:', id);
+            // Duraklatma işlemi yapılacak
+            showMessage('İşlem duraklatıldı.', 'info');
+        }
+        
+        function deleteRecurringTransaction(id) {
+            console.log('Tekrarlayan işlem siliniyor:', id);
+            // Silme işlemi yapılacak
+            if (confirm('Bu tekrarlayan işlemi silmek istediğinizden emin misiniz?')) {
+                showMessage('İşlem silindi.', 'success');
+            }
+        }
     </script>
 </body>
 </html>
