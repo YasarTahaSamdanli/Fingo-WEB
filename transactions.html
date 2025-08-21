@@ -815,6 +815,57 @@
     <script>
         // Sayfa yüklendiğinde çalışacak JavaScript kodları buraya eklenecek
         document.addEventListener('DOMContentLoaded', function() {
+            // Oturum kontrolü
+            const jwtToken = localStorage.getItem('jwtToken');
+            const userId = localStorage.getItem('userId');
+            
+            // JWT Token'ı parse et
+            function parseJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) {
+                    console.error("JWT parse error:", e);
+                    return null;
+                }
+            };
+
+            // Token'ı çöz ve geçerliliğini kontrol et
+            const decodedToken = parseJwt(jwtToken);
+            console.log("Transactions.html - Decoded JWT Token:", decodedToken);
+
+            const isTokenPresent = !!jwtToken;
+            const isUserIdPresent = !!userId;
+            const isTokenExpired = decodedToken ? (decodedToken.exp * 1000 < Date.now()) : true;
+            const isUserIdMismatch = decodedToken ? (decodedToken.userId !== userId) : true;
+            const is2FARequiredButNotVerified = decodedToken ? (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified) : false;
+
+            if (!isTokenPresent || !isUserIdPresent || isTokenExpired || isUserIdMismatch || is2FARequiredButNotVerified) {
+                console.warn("Transactions.html - Authentication check failed. Redirecting to login.");
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('fingoNotifications');
+                window.location.href = 'auth.html';
+            } else {
+                console.log("Transactions.html - Authentication check passed. User is authenticated.");
+            }
+
+            // ----- Yetkilendirme Hatası Yönetimi -----
+            function handleAuthError() {
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('fingoNotifications');
+                showMessage('Oturumunuz sona erdi. Lütfen tekrar giriş yapın.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 1500);
+            }
+
             // Bildirim sistemi için gerekli değişkenler
             let notifications = JSON.parse(localStorage.getItem('fingoNotifications')) || [];
 

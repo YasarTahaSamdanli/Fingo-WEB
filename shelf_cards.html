@@ -649,13 +649,25 @@
             }
         };
 
+        // Token'ı çöz ve geçerliliğini kontrol et
         const decodedToken = parseJwt(jwtToken);
-        if (!decodedToken || decodedToken.exp * 1000 < Date.now() || decodedToken.userId !== userId) {
-            console.warn("JWT geçersiz veya süresi dolmuş. Giriş sayfasına yönlendiriliyor.");
+        console.log("Shelf_cards.html - Decoded JWT Token:", decodedToken);
+
+        const isTokenPresent = !!jwtToken;
+        const isUserIdPresent = !!userId;
+        const isTokenExpired = decodedToken ? (decodedToken.exp * 1000 < Date.now()) : true;
+        const isUserIdMismatch = decodedToken ? (decodedToken.userId !== userId) : true;
+        const is2FARequiredButNotVerified = decodedToken ? (decodedToken.is2FAEnabled && !decodedToken.is2FAVerified) : false;
+
+        if (!isTokenPresent || !isUserIdPresent || isTokenExpired || isUserIdMismatch || is2FARequiredButNotVerified) {
+            console.warn("Shelf_cards.html - Authentication check failed. Redirecting to login.");
             localStorage.removeItem('jwtToken');
             localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
             localStorage.removeItem('fingoNotifications');
             window.location.href = 'auth.html';
+        } else {
+            console.log("Shelf_cards.html - Authentication check passed. User is authenticated.");
         }
 
         document.addEventListener('DOMContentLoaded', () => {
