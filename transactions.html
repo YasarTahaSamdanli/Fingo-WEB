@@ -1086,56 +1086,41 @@
                         return;
                     }
                     
-                    // API çağrısı yap
-                    fetch('/api/recurring-transactions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify(formData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.message) {
-                            showMessage(data.message, 'success');
-                            
-                            // Formu temizle
-                            this.reset();
-                            weeklyOptions.classList.add('hidden');
-                            monthlyOptions.classList.add('hidden');
-                            yearlyOptions.classList.add('hidden');
-                            
-                            // Listeyi güncelle (gerçek uygulamada API'den yeni veriyi çek)
-                            // Şimdilik örnek veriyi güncelleyelim
-                            const newTransaction = {
-                                id: Date.now(), // Geçici ID
-                                type: formData.type,
-                                amount: parseFloat(formData.amount),
-                                recurrenceType: formData.recurrenceType,
-                                category: formData.category || 'Genel',
-                                description: formData.description,
-                                startDate: formData.startDate,
-                                status: 'active',
-                                nextDueDate: formData.startDate
-                            };
-                            
-                            sampleRecurringTransactions.unshift(newTransaction);
-                            displayRecurringTransactions(sampleRecurringTransactions);
-                            
-                            // Sayıyı güncelle
-                            const countElement = document.getElementById('recurringTransactionCount');
-                            if (countElement) {
-                                countElement.textContent = sampleRecurringTransactions.length;
-                            }
-                        } else {
-                            showMessage('Tekrarlayan işlem eklenirken hata oluştu.', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Tekrarlayan işlem eklenirken hata:', error);
-                        showMessage('Tekrarlayan işlem eklenirken hata oluştu.', 'error');
-                    });
+                                         // Mock data ile test et (backend olmadan)
+                     console.log('Mock: Yeni tekrarlayan işlem ekleniyor:', formData);
+                     
+                     // Başarılı ekleme simülasyonu
+                     setTimeout(() => {
+                         showMessage('Tekrarlayan işlem başarıyla eklendi.', 'success');
+                         
+                         // Formu temizle
+                         this.reset();
+                         weeklyOptions.classList.add('hidden');
+                         monthlyOptions.classList.add('hidden');
+                         yearlyOptions.classList.add('hidden');
+                         
+                         // Yeni işlemi listeye ekle
+                         const newTransaction = {
+                             id: Date.now(), // Geçici ID
+                             type: formData.type,
+                             amount: parseFloat(formData.amount),
+                             recurrenceType: formData.recurrenceType,
+                             category: formData.category || 'Genel',
+                             description: formData.description,
+                             startDate: formData.startDate,
+                             status: 'active',
+                             nextDueDate: formData.startDate
+                         };
+                         
+                         sampleRecurringTransactions.unshift(newTransaction);
+                         displayRecurringTransactions(sampleRecurringTransactions);
+                         
+                         // Sayıyı güncelle
+                         const countElement = document.getElementById('recurringTransactionCount');
+                         if (countElement) {
+                             countElement.textContent = sampleRecurringTransactions.length;
+                         }
+                     }, 500);
                 });
             }
             
@@ -1152,44 +1137,22 @@
                         status: document.getElementById('filterStatus').value
                     };
                     
-                    // API çağrısı yap
-                    const queryParams = new URLSearchParams();
-                    Object.keys(filterData).forEach(key => {
-                        if (filterData[key]) {
-                            queryParams.append(key, filterData[key]);
-                        }
-                    });
-                    
-                    fetch(`/api/recurring-transactions?${queryParams.toString()}`, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (Array.isArray(data)) {
-                            // Filtrelenmiş sonuçları göster
-                            displayRecurringTransactions(data);
-                            showMessage(`${data.length} tekrarlayan işlem bulundu.`, 'info');
-                        } else {
-                            showMessage('Filtreleme sırasında hata oluştu.', 'error');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Filtreleme hatası:', error);
-                        // Hata durumunda örnek verileri göster
-                        const filteredTransactions = sampleRecurringTransactions.filter(transaction => {
-                            if (filterData.type && transaction.type !== filterData.type) return false;
-                            if (filterData.recurrenceType && transaction.recurrenceType !== filterData.recurrenceType) return false;
-                            if (filterData.category && !transaction.category?.toLowerCase().includes(filterData.category.toLowerCase())) return false;
-                            if (filterData.status && transaction.status !== filterData.status) return false;
-                            return true;
-                        });
-                        
-                        displayRecurringTransactions(filteredTransactions);
-                        showMessage(`${filteredTransactions.length} tekrarlayan işlem bulundu.`, 'info');
-                    });
+                                         // Mock data ile filtreleme (backend olmadan)
+                     console.log('Mock: Filtreleme yapılıyor:', filterData);
+                     
+                     // Filtreleme simülasyonu
+                     setTimeout(() => {
+                         const filteredTransactions = sampleRecurringTransactions.filter(transaction => {
+                             if (filterData.type && transaction.type !== filterData.type) return false;
+                             if (filterData.recurrenceType && transaction.recurrenceType !== filterData.recurrenceType) return false;
+                             if (filterData.category && !transaction.category?.toLowerCase().includes(filterData.category.toLowerCase())) return false;
+                             if (filterData.status && transaction.status !== filterData.status) return false;
+                             return true;
+                         });
+                         
+                         displayRecurringTransactions(filteredTransactions);
+                         showMessage(`${filteredTransactions.length} tekrarlayan işlem bulundu.`, 'info');
+                     }, 300);
                 });
                 
                 // Reset butonu işlevi
@@ -1375,73 +1338,66 @@
         }
         
         function updateRecurringTransactionStatus(id, newStatus, button) {
-            // API çağrısı yap
-            fetch(`/api/recurring-transactions/${id}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message) {
-                    showMessage(data.message, 'success');
-                    
-                    // Buton metnini ve durumunu güncelle
-                    if (newStatus === 'paused') {
-                        button.innerHTML = '<i class="fas fa-play mr-1"></i>Devam Ettir';
-                        button.className = 'bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors';
-                        button.dataset.status = 'paused';
-                    } else {
-                        button.innerHTML = '<i class="fas fa-pause mr-1"></i>Duraklat';
-                        button.className = 'bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors';
-                        button.dataset.status = 'active';
-                    }
-                    
-                    // Durum badge'ini güncelle
-                    const statusBadge = button.closest('.recurring-transaction-card').querySelector('.status-badge');
-                    if (statusBadge) {
-                        statusBadge.textContent = newStatus === 'paused' ? 'Duraklatılmış' : 'Aktif';
-                        statusBadge.className = `status-badge ${newStatus}`;
-                    }
+            // Mock data ile test et (backend olmadan)
+            console.log(`Mock: ${id} ID'li işlemin durumu ${newStatus} olarak güncelleniyor`);
+            
+            // Başarılı güncelleme simülasyonu
+            setTimeout(() => {
+                showMessage(`İşlem ${newStatus === 'paused' ? 'duraklatıldı' : 'devam ettirildi'}.`, 'success');
+                
+                // Buton metnini ve durumunu güncelle
+                if (newStatus === 'paused') {
+                    button.innerHTML = '<i class="fas fa-play mr-1"></i>Devam Ettir';
+                    button.className = 'bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors';
+                    button.dataset.status = 'paused';
                 } else {
-                    showMessage('Durum güncellenirken hata oluştu.', 'error');
+                    button.innerHTML = '<i class="fas fa-pause mr-1"></i>Duraklat';
+                    button.className = 'bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 transition-colors';
+                    button.dataset.status = 'active';
                 }
-            })
-            .catch(error => {
-                console.error('Durum güncellenirken hata:', error);
-                showMessage('Durum güncellenirken hata oluştu.', 'error');
-            });
+                
+                // Durum badge'ini güncelle
+                const statusBadge = button.closest('.recurring-transaction-card').querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.textContent = newStatus === 'paused' ? 'Duraklatılmış' : 'Aktif';
+                    statusBadge.className = `status-badge ${newStatus}`;
+                }
+                
+                // Örnek verileri güncelle
+                const transactionIndex = sampleRecurringTransactions.findIndex(t => t.id === id);
+                if (transactionIndex !== -1) {
+                    sampleRecurringTransactions[transactionIndex].status = newStatus;
+                }
+            }, 500);
         }
         
         function deleteRecurringTransaction(id) {
             console.log('Tekrarlayan işlem siliniyor:', id);
             // Silme işlemi yapılacak
-            if (confirm('Bu tekrarlayan işlemi silmek istediğinizden emin misiniz?')) {
-                // API çağrısı yap
-                fetch(`/api/recurring-transactions/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message) {
-                        showMessage(data.message, 'success');
-                        // Sayfayı yenile veya listeyi güncelle
-                        location.reload();
-                    } else {
-                        showMessage('İşlem silinirken hata oluştu.', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('İşlem silinirken hata:', error);
-                    showMessage('İşlem silinirken hata oluştu.', 'error');
-                });
-            }
+                         if (confirm('Bu tekrarlayan işlemi silmek istediğinizden emin misiniz?')) {
+                 // Mock data ile silme (backend olmadan)
+                 console.log(`Mock: ${id} ID'li işlem siliniyor`);
+                 
+                 // Silme simülasyonu
+                 setTimeout(() => {
+                     // Örnek verilerden kaldır
+                     const transactionIndex = sampleRecurringTransactions.findIndex(t => t.id === id);
+                     if (transactionIndex !== -1) {
+                         sampleRecurringTransactions.splice(transactionIndex, 1);
+                         displayRecurringTransactions(sampleRecurringTransactions);
+                         
+                         // Sayıyı güncelle
+                         const countElement = document.getElementById('recurringTransactionCount');
+                         if (countElement) {
+                             countElement.textContent = sampleRecurringTransactions.length;
+                         }
+                         
+                         showMessage('İşlem başarıyla silindi.', 'success');
+                     } else {
+                         showMessage('İşlem bulunamadı.', 'error');
+                     }
+                 }, 500);
+             }
         }
     </script>
 </body>
