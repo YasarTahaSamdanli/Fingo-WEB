@@ -26,6 +26,18 @@ Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıc
 
 ---
 
+## 🚀 **Kurulum**
+
+1. **Projeyi klonlayın**
+2. **Bağımlılıkları yükleyin**: `npm install`
+3. **Veritabanını kurun**: MongoDB'yi başlatın
+4. **Admin hesabı oluşturun**: `npm run create-admin`
+5. **Uygulamayı başlatın**: `npm start`
+
+**Not**: İlk kayıt olan kullanıcı otomatik olarak admin rolü alır!
+
+---
+
 ## 📸 Ekran Görüntüleri
 
 

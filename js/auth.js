@@ -130,7 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(result.message || 'Kayıt başarısız oldu.');
                 }
 
-                showMessageBox(result.message, 'success');
+                // İlk kullanıcı admin olduysa özel mesaj göster
+                if (result.isFirstUser) {
+                    showMessageBox('🎉 Tebrikler! İlk kullanıcı olarak admin rolü verildi. Artık tüm yetkilere sahipsiniz!', 'success');
+                } else {
+                    showMessageBox(result.message, 'success');
+                }
+                
                 registerForm.reset();
                 if (loginForm) loginForm.classList.remove('hidden');
                 if (registerForm) registerForm.classList.add('hidden');

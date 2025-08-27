@@ -8,8 +8,9 @@
             "test": "echo \"Error: no test specified\" && exit 1",
             "build:css": "npx tailwindcss -i ./input.css -o ./output.css --minify",
             "watch:css": "npx tailwindcss -i ./input.css -o ./output.css --watch",
-            "create-admin": "node scripts/createAdminUser.js",
-            "update-users": "node scripts/updateExistingUsers.js"
+                    "create-admin": "node scripts/createAdminUser.js",
+        "update-users": "node scripts/updateExistingUsers.js",
+        "make-admin": "node scripts/makeUserAdmin.js"
       },
       "keywords": [],
       "author": "",

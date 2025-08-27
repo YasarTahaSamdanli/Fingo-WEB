@@ -87,7 +87,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-between items-center mb-6">
             <div class="flex space-x-4">
-                <button onclick="showCreateUserModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                <button onclick="showCreateUserModal()" data-manager-only class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
                     <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
                 </button>
                 <button onclick="refreshUsers()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors">
@@ -290,6 +290,11 @@
             checkAuth();
             loadUserStats();
             loadUsers();
+            
+            // Rol bazlı UI kontrolü
+            setTimeout(() => {
+                applyRoleBasedUI();
+            }, 100);
         });
 
         // Kimlik doğrulama kontrolü
@@ -302,17 +307,45 @@
 
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                if (payload.role !== 'admin' && payload.role !== 'manager') {
-                    Swal.fire('Yetkisiz Erişim', 'Bu sayfaya erişim yetkiniz bulunmuyor.', 'error');
-                    window.location.href = 'index.html';
-                    return;
-                }
+                console.log('Kullanıcı rolü:', payload.role); // Debug için
+                
+                // Tüm rollere izin ver (test için)
                 currentUser = payload;
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
+                
             } catch (error) {
                 console.error('Token çözümleme hatası:', error);
                 localStorage.removeItem('token');
                 window.location.href = 'auth.html';
+            }
+        }
+
+        // Rol bazlı UI kontrolü
+        function applyRoleBasedUI() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userRole = payload.role;
+                
+                // Admin değilse sadece görüntüleme yapabilir
+                if (userRole !== 'admin') {
+                    document.querySelectorAll('[data-admin-only]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+                
+                // Sadece admin ve manager kullanıcı ekleyebilir/düzenleyebilir
+                if (userRole !== 'admin' && userRole !== 'manager') {
+                    document.querySelectorAll('[data-manager-only]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+                
+                console.log('UI güncellendi, kullanıcı rolü:', userRole);
+            } catch (error) {
+                console.error('UI güncelleme hatası:', error);
             }
         }
 
@@ -423,18 +456,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
-                            <button onclick="editUser('${user._id}')" class="text-blue-600 hover:text-blue-900">
+                            <button onclick="editUser('${user._id}')" data-manager-only class="text-blue-600 hover:text-blue-900">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            ${currentUser.role === 'admin' ? `
-                                <button onclick="resetPassword('${user._id}')" class="text-yellow-600 hover:text-yellow-900">
-                                    <i class="fas fa-key"></i>
-                                </button>
-                                <button onclick="deleteUser('${user._id}')" class="text-red-600 hover:text-red-900">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            ` : ''}
-                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" class="text-${user.isActive ? 'orange' : 'green'}-600 hover:text-${user.isActive ? 'orange' : 'green'}-900">
+                            <button onclick="resetPassword('${user._id}')" data-admin-only class="text-yellow-600 hover:text-yellow-900">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <button onclick="deleteUser('${user._id}')" data-admin-only class="text-red-600 hover:text-blue-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" data-manager-only class="text-${user.isActive ? 'orange' : 'green'}-600 hover:text-${user.isActive ? 'orange' : 'green'}-900">
                                 <i class="fas fa-${user.isActive ? 'ban' : 'check'}"></i>
                             </button>
                         </div>

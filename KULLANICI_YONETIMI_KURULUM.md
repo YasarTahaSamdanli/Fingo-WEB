@@ -38,7 +38,22 @@ Bu script:
 - Eksik alanları ekler
 - İlk kullanıcıyı otomatik olarak admin yapar
 
-### 4. İlk Admin Kullanıcısını Oluşturun
+### 4. Admin Yetkisi Verme
+
+**Otomatik Admin:**
+- Sistemde hiç kullanıcı yoksa, ilk kayıt olan otomatik admin olur
+- Bu özellik `routes/auth.js` dosyasında tanımlıdır
+
+**Manuel Admin Yapma:**
+```bash
+# Mevcut kullanıcıyı admin yap
+npm run make-admin <email>
+
+# Örnek:
+npm run make-admin admin@fingo.com
+```
+
+### 5. İlk Admin Kullanıcısını Oluşturun
 
 ```bash
 npm run create-admin
@@ -49,7 +64,7 @@ Bu script:
 - Varsayılan şifre: `admin123`
 - Sadece bir kez çalıştırılmalıdır
 
-### 5. Uygulamayı Başlatın
+### 6. Uygulamayı Başlatın
 
 ```bash
 npm start
