@@ -143,6 +143,9 @@ router.post('/2fa/verify-login-code', async (req, res) => {
                 return res.status(404).json({ message: 'Kullanıcı bilgileri bulunamadı.' });
             }
             
+            // Organizasyon bilgisini al
+            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
+            
             const newJwtToken = jwt.sign(
                 { 
                     userId: fullUser._id.toString(), 
@@ -156,9 +159,6 @@ router.post('/2fa/verify-login-code', async (req, res) => {
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
-            
-            // Organizasyon bilgisini al
-            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
             
             // Başarılı doğrulama
             res.status(200).json({
@@ -214,6 +214,9 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
                 return res.status(404).json({ message: 'Kullanıcı bilgileri bulunamadı.' });
             }
             
+            // Organizasyon bilgisini al
+            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
+            
             const newJwtToken = jwt.sign(
                 { 
                     userId: fullUser._id.toString(), 
@@ -227,9 +230,6 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
-
-            // Organizasyon bilgisini al
-            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
 
             res.status(200).json({
                 message: 'Kurtarma kodu başarıyla doğrulandı.',
