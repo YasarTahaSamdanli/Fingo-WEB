@@ -127,7 +127,13 @@ router.post('/login', async (req, res) => {
 
         // Eğer 2FA etkinse, kullanıcıya 2FA yapması gerektiğini bildir
         if (user.is2FAEnabled) {
-            return res.status(403).json({ message: '2FA gerekli.', token, userId: user._id.toString() });
+            return res.status(403).json({ 
+                message: '2FA gerekli.', 
+                token, 
+                userId: user._id.toString(),
+                organizationId: user.organizationId,
+                organizationName: organization ? organization.name : 'Bilinmeyen Organizasyon'
+            });
         }
 
         res.status(200).json({ 
