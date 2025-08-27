@@ -136,28 +136,35 @@ router.post('/2fa/verify-login-code', async (req, res) => {
 
         if (verified) {
             // 2FA doğrulandıktan sonra YENİ bir JWT token oluştur
+            // Önce kullanıcının tam bilgilerini al
+            const fullUser = await db.collection('users').findOne({ email: user.email });
+            
             const newJwtToken = jwt.sign(
                 { 
-                    userId: user._id.toString(), 
-                    email: user.email, 
-                    role: user.role || 'staff',
-                    organizationId: user.organizationId,
-                    isOrganizationAdmin: user.isOrganizationAdmin,
+                    userId: fullUser._id.toString(), 
+                    email: fullUser.email, 
+                    role: fullUser.role || 'staff',
+                    organizationId: fullUser.organizationId,
+                    isOrganizationAdmin: fullUser.isOrganizationAdmin,
                     is2FAEnabled: true, 
                     is2FAVerified: true 
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
+            
+            // Organizasyon bilgisini al
+            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
+            
             // Başarılı doğrulama
             res.status(200).json({
                 message: '2FA kodu başarıyla doğrulandı.',
                 is2FAVerified: true,
                 token: newJwtToken, // YENİ OLUŞTURULAN TOKEN'I GÖNDERİYORUZ
-                userId: user._id.toString(), // user ID'yi de gönderiyoruz
-                email: user.email, // email'i de gönderiyoruz
-                organizationId: user.organizationId,
-                organizationName: user.organizationName
+                userId: fullUser._id.toString(), // user ID'yi de gönderiyoruz
+                email: fullUser.email, // email'i de gönderiyoruz
+                organizationId: fullUser.organizationId,
+                organizationName: organization ? organization.name : 'Bilinmeyen Organizasyon'
             });
         } else {
             res.status(400).json({ message: 'Geçersiz 2FA kodu.' });
@@ -196,13 +203,16 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
             );
 
             // Başarılı doğrulama sonrası YENİ bir JWT token oluştur
+            // Önce kullanıcının tam bilgilerini al
+            const fullUser = await db.collection('users').findOne({ email: user.email });
+            
             const newJwtToken = jwt.sign(
                 { 
-                    userId: user._id.toString(), 
-                    email: user.email, 
-                    role: user.role || 'staff',
-                    organizationId: user.organizationId,
-                    isOrganizationAdmin: user.isOrganizationAdmin,
+                    userId: fullUser._id.toString(), 
+                    email: fullUser.email, 
+                    role: fullUser.role || 'staff',
+                    organizationId: fullUser.organizationId,
+                    isOrganizationAdmin: fullUser.isOrganizationAdmin,
                     is2FAEnabled: true, 
                     is2FAVerified: true 
                 },
@@ -210,14 +220,17 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
                 { expiresIn: '1h' }
             );
 
+            // Organizasyon bilgisini al
+            const organization = await db.collection('organizations').findOne({ organizationId: fullUser.organizationId });
+
             res.status(200).json({
                 message: 'Kurtarma kodu başarıyla doğrulandı.',
                 is2FAVerified: true,
                 token: newJwtToken, // YENİ OLUŞTURULAN TOKEN'I GÖNDERİYORUZ
-                userId: user._id.toString(), // user ID'yi de gönderiyoruz
-                email: user.email, // email'i de gönderiyoruz
-                organizationId: user.organizationId,
-                organizationName: user.organizationName
+                userId: fullUser._id.toString(), // user ID'yi de gönderiyoruz
+                email: fullUser.email, // email'i de gönderiyoruz
+                organizationId: fullUser.organizationId,
+                organizationName: organization ? organization.name : 'Bilinmeyen Organizasyon'
             });
         } else {
             res.status(400).json({ message: 'Geçersiz kurtarma kodu.' });
