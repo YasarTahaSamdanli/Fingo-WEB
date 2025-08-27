@@ -287,42 +287,63 @@
 
         // Sayfa yüklendiğinde çalışacak fonksiyonlar
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Sayfa yüklendi, fonksiyonlar çalıştırılıyor...');
+            
+            console.log('1️⃣ checkAuth() çalıştırılıyor...');
             checkAuth();
+            
+            console.log('2️⃣ loadUserStats() çalıştırılıyor...');
             loadUserStats();
+            
+            console.log('3️⃣ loadUsers() çalıştırılıyor...');
             loadUsers();
             
             // Rol bazlı UI kontrolü
             setTimeout(() => {
+                console.log('4️⃣ applyRoleBasedUI() çalıştırılıyor...');
                 applyRoleBasedUI();
             }, 100);
         });
 
         // Kimlik doğrulama kontrolü
         function checkAuth() {
+            console.log('🔍 checkAuth() çalıştırılıyor...');
+            
             // Hem 'token' hem 'jwtToken' olarak saklanan token'ları kontrol et
             let token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
             
+            console.log('📱 localStorage içeriği:');
+            console.log('- token:', localStorage.getItem('token'));
+            console.log('- jwtToken:', localStorage.getItem('jwtToken'));
+            console.log('- userId:', localStorage.getItem('userId'));
+            console.log('- userEmail:', localStorage.getItem('userEmail'));
+            
             if (!token) {
-                console.log('Token bulunamadı, auth.html\'e yönlendiriliyor...');
+                console.log('❌ Token bulunamadı, auth.html\'e yönlendiriliyor...');
                 window.location.href = 'auth.html';
                 return;
             }
 
+            console.log('✅ Token bulundu:', token.substring(0, 20) + '...');
+
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('Kullanıcı rolü:', payload.role); // Debug için
+                console.log('🔓 Token payload:', payload);
+                console.log('👤 Kullanıcı rolü:', payload.role);
                 
                 // Token'ı localStorage'da 'token' olarak standardize et
                 if (localStorage.getItem('jwtToken') && !localStorage.getItem('token')) {
                     localStorage.setItem('token', token);
+                    console.log('🔄 Token standardize edildi');
                 }
                 
                 // Tüm rollere izin ver (test için)
                 currentUser = payload;
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
+                console.log('✅ checkAuth başarılı, kullanıcı bilgileri güncellendi');
                 
             } catch (error) {
-                console.error('Token çözümleme hatası:', error);
+                console.error('❌ Token çözümleme hatası:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('jwtToken');
                 window.location.href = 'auth.html';
@@ -369,47 +390,62 @@
 
         // Kullanıcı istatistiklerini yükle
         async function loadUserStats() {
+            console.log('📊 loadUserStats() çalıştırılıyor...');
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                console.log('🔑 API çağrısı için token:', token ? token.substring(0, 20) + '...' : 'YOK');
+                
                 const response = await fetch('/api/users/stats/overview', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📡 API yanıtı:', response.status, response.statusText);
+
                 if (response.ok) {
                     const stats = await response.json();
+                    console.log('📈 İstatistikler yüklendi:', stats);
                     document.getElementById('totalUsers').textContent = stats.totalUsers;
                     document.getElementById('activeUsers').textContent = stats.activeUsers;
                     document.getElementById('inactiveUsers').textContent = stats.inactiveUsers;
                     
                     const adminCount = stats.roleBreakdown.find(r => r._id === 'admin')?.count || 0;
                     document.getElementById('adminUsers').textContent = adminCount;
+                } else {
+                    console.error('❌ API hatası:', response.status, response.statusText);
                 }
             } catch (error) {
-                console.error('İstatistik yükleme hatası:', error);
+                console.error('❌ İstatistik yükleme hatası:', error);
             }
         }
 
         // Kullanıcıları yükle
         async function loadUsers() {
+            console.log('👥 loadUsers() çalıştırılıyor...');
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                console.log('🔑 API çağrısı için token:', token ? token.substring(0, 20) + '...' : 'YOK');
+                
                 const response = await fetch('/api/users', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
+                console.log('📡 API yanıtı:', response.status, response.statusText);
+
                 if (response.ok) {
                     users = await response.json();
+                    console.log('✅ Kullanıcılar yüklendi:', users.length, 'kullanıcı');
                     renderUsers();
                 } else {
                     const error = await response.json();
+                    console.error('❌ API hatası:', error);
                     Swal.fire('Hata', error.message, 'error');
                 }
             } catch (error) {
-                console.error('Kullanıcı yükleme hatası:', error);
+                console.error('❌ Kullanıcı yükleme hatası:', error);
                 Swal.fire('Hata', 'Kullanıcılar yüklenirken bir hata oluştu.', 'error');
             }
         }
