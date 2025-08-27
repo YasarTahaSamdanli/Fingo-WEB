@@ -11,6 +11,10 @@ const router = express.Router();
 // Tüm kullanıcıları listele (SADECE kendi organizasyonundaki aktif kullanıcılar)
 router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
     try {
+        // Debug: req.user bilgilerini logla
+        console.log("req.user bilgileri:", req.user);
+        console.log("req.user.organizationId:", req.user.organizationId);
+        
         const db = getDb();
         const users = await db.collection('users').find(
             { 

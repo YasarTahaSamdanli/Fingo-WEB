@@ -15,6 +15,11 @@ const authenticateToken = (req, res, next) => {
             console.error("JWT doğrulama hatası:", err);
             return res.status(403).json({ message: 'Geçersiz veya süresi dolmuş token.' });
         }
+        
+        // Debug: Token'dan çıkarılan bilgileri logla
+        console.log("JWT Token'dan çıkarılan bilgiler:", user);
+        console.log("organizationId:", user.organizationId);
+        
         req.user = user; // Token'dan çözülen kullanıcı bilgilerini req.user'a ata
         next();
     });
