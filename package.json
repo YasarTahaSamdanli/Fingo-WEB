@@ -10,7 +10,8 @@
             "watch:css": "npx tailwindcss -i ./input.css -o ./output.css --watch",
                     "create-admin": "node scripts/createAdminUser.js",
         "update-users": "node scripts/updateExistingUsers.js",
-        "make-admin": "node scripts/makeUserAdmin.js"
+        "make-admin": "node scripts/makeUserAdmin.js",
+        "add-role": "node scripts/addRoleToUser.js"
       },
       "keywords": [],
       "author": "",

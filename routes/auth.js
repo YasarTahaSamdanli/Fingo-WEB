@@ -90,7 +90,13 @@ router.post('/login', async (req, res) => {
 
         // JWT payload'ına 2FA durumunu ve rol bilgisini ekle
         const token = jwt.sign(
-            { userId: user._id.toString(), email: user.email, role: user.role, is2FAEnabled: user.is2FAEnabled, is2FAVerified: false },
+            { 
+                userId: user._id.toString(), 
+                email: user.email, 
+                role: user.role || 'staff', // Role yoksa default 'staff'
+                is2FAEnabled: user.is2FAEnabled, 
+                is2FAVerified: false 
+            },
             process.env.JWT_SECRET,
             { expiresIn: '1h' } // Token 1 saat geçerli
         );
