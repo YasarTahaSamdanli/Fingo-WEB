@@ -139,6 +139,10 @@ router.post('/2fa/verify-login-code', async (req, res) => {
             // Önce kullanıcının tam bilgilerini al
             const fullUser = await db.collection('users').findOne({ email: user.email });
             
+            if (!fullUser) {
+                return res.status(404).json({ message: 'Kullanıcı bilgileri bulunamadı.' });
+            }
+            
             const newJwtToken = jwt.sign(
                 { 
                     userId: fullUser._id.toString(), 
@@ -205,6 +209,10 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
             // Başarılı doğrulama sonrası YENİ bir JWT token oluştur
             // Önce kullanıcının tam bilgilerini al
             const fullUser = await db.collection('users').findOne({ email: user.email });
+            
+            if (!fullUser) {
+                return res.status(404).json({ message: 'Kullanıcı bilgileri bulunamadı.' });
+            }
             
             const newJwtToken = jwt.sign(
                 { 
