@@ -299,8 +299,11 @@
 
         // Kimlik doğrulama kontrolü
         function checkAuth() {
-            const token = localStorage.getItem('token');
+            // Hem 'token' hem 'jwtToken' olarak saklanan token'ları kontrol et
+            let token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+            
             if (!token) {
+                console.log('Token bulunamadı, auth.html\'e yönlendiriliyor...');
                 window.location.href = 'auth.html';
                 return;
             }
@@ -309,6 +312,11 @@
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 console.log('Kullanıcı rolü:', payload.role); // Debug için
                 
+                // Token'ı localStorage'da 'token' olarak standardize et
+                if (localStorage.getItem('jwtToken') && !localStorage.getItem('token')) {
+                    localStorage.setItem('token', token);
+                }
+                
                 // Tüm rollere izin ver (test için)
                 currentUser = payload;
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
@@ -316,13 +324,14 @@
             } catch (error) {
                 console.error('Token çözümleme hatası:', error);
                 localStorage.removeItem('token');
+                localStorage.removeItem('jwtToken');
                 window.location.href = 'auth.html';
             }
         }
 
         // Rol bazlı UI kontrolü
         function applyRoleBasedUI() {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
             if (!token) return;
             
             try {
@@ -352,15 +361,19 @@
         // Çıkış yap
         function logout() {
             localStorage.removeItem('token');
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userEmail');
             window.location.href = 'auth.html';
         }
 
         // Kullanıcı istatistiklerini yükle
         async function loadUserStats() {
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 const response = await fetch('/api/users/stats/overview', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -381,9 +394,10 @@
         // Kullanıcıları yükle
         async function loadUsers() {
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 const response = await fetch('/api/users', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
 
@@ -540,11 +554,12 @@
             };
 
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 const response = await fetch('/api/users', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 });
@@ -578,11 +593,12 @@
             };
 
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 const response = await fetch(`/api/users/${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify(formData)
                 });
@@ -608,11 +624,12 @@
             const newPassword = document.getElementById('newPassword').value;
 
             try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 const response = await fetch(`/api/users/${userId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ newPassword })
                 });
@@ -665,12 +682,13 @@
 
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/users/${userId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
+                                    const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
                     if (response.ok) {
                         Swal.fire('Silindi!', 'Kullanıcı başarıyla silindi.', 'success');
@@ -702,12 +720,13 @@
 
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/users/${userId}/toggle-status`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        }
-                    });
+                                    const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const response = await fetch(`/api/users/${userId}/toggle-status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
                     if (response.ok) {
                         Swal.fire('Başarılı', `Kullanıcı başarıyla ${action}ıldı.`, 'success');
