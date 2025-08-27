@@ -96,11 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             console.log("Register form submitted!");
+            const organizationName = document.getElementById('organizationName').value;
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            if (!email || !password || !confirmPassword) {
+            if (!organizationName || !email || !password || !confirmPassword) {
                 showMessageBox('Lütfen tüm alanları doldurun.', 'error');
                 return;
             }
@@ -122,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`${API_BASE_URL}/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ organizationName, email, password })
                 });
 
                 const result = await response.json();
@@ -130,12 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(result.message || 'Kayıt başarısız oldu.');
                 }
 
-                // İlk kullanıcı admin olduysa özel mesaj göster
-                if (result.isFirstUser) {
-                    showMessageBox('🎉 Tebrikler! İlk kullanıcı olarak admin rolü verildi. Artık tüm yetkilere sahipsiniz!', 'success');
-                } else {
-                    showMessageBox(result.message, 'success');
-                }
+                showMessageBox(`🎉 Tebrikler! ${result.organizationName} organizasyonu başarıyla oluşturuldu ve admin hesabınız açıldı!`, 'success');
                 
                 registerForm.reset();
                 if (loginForm) loginForm.classList.remove('hidden');
@@ -194,20 +190,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         localStorage.setItem('jwtToken', result.token);
                         localStorage.setItem('userId', result.userId);
                         localStorage.setItem('userEmail', email);
+                        localStorage.setItem('organizationId', result.organizationId);
+                        localStorage.setItem('organizationName', result.organizationName);
                         console.log("Initial login token and user info stored in localStorage.");
-                        console.log("Stored initial JWT Token:", localStorage.getItem('jwtToken')); // Yeni log
-                        console.log("Stored initial User ID:", localStorage.getItem('userId')); // Yeni log
+                        console.log("Stored initial JWT Token:", localStorage.getItem('jwtToken'));
+                        console.log("Stored initial User ID:", localStorage.getItem('userId'));
                         return;
                     }
                     throw new Error(result.message || 'Giriş başarısız oldu.');
                 }
 
+                // Normal giriş başarılı
                 localStorage.setItem('jwtToken', result.token);
                 localStorage.setItem('userId', result.userId);
                 localStorage.setItem('userEmail', email);
+                localStorage.setItem('organizationId', result.organizationId);
+                localStorage.setItem('organizationName', result.organizationName);
                 console.log("Login successful. Token and user info stored in localStorage.");
-                console.log("Stored JWT Token after successful login:", localStorage.getItem('jwtToken')); // Yeni log
-                console.log("Stored User ID after successful login:", localStorage.getItem('userId')); // Yeni log
+                console.log("Stored JWT Token after successful login:", localStorage.getItem('jwtToken'));
+                console.log("Stored User ID after successful login:", localStorage.getItem('userId'));
 
                 setTimeout(() => {
                     window.location.href = '/Fingo-WEB/index.html';
@@ -264,9 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('jwtToken', verificationResult.token);
                     localStorage.setItem('userId', verificationResult.userId);
                     localStorage.setItem('userEmail', verificationResult.email);
-                    console.log("2FA verification successful. New token and user info stored in localStorage."); // Yeni log
-                    console.log("Stored JWT Token after 2FA verification:", localStorage.getItem('jwtToken')); // Yeni log
-                    console.log("Stored User ID after 2FA verification:", localStorage.getItem('userId')); // Yeni log
+                    localStorage.setItem('organizationId', verificationResult.organizationId);
+                    localStorage.setItem('organizationName', verificationResult.organizationName);
+                    console.log("2FA verification successful. New token and user info stored in localStorage.");
+                    console.log("Stored JWT Token after 2FA verification:", localStorage.getItem('jwtToken'));
+                    console.log("Stored User ID after 2FA verification:", localStorage.getItem('userId'));
 
                     showMessageBox('2FA doğrulama başarılı! Giriş yapılıyor...', 'success');
                     TwoFactorAuthHandler.hide2FAModal();

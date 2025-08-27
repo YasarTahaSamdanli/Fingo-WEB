@@ -9,50 +9,73 @@ const crypto = require('crypto'); // Token oluşturmak için
 
 const router = express.Router();
 
+// Organizasyon ID oluştur
+function generateOrganizationId() {
+    return 'org_' + crypto.randomBytes(8).toString('hex');
+}
+
 // Kullanıcı Kayıt Rotası
 router.post('/register', async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'E-posta ve şifre gerekli.' });
+    const { email, password, organizationName } = req.body;
+    if (!email || !password || !organizationName) {
+        return res.status(400).json({ message: 'E-posta, şifre ve organizasyon adı gerekli.' });
     }
 
     try {
         const db = getDb();
+        
+        // E-posta kontrolü (global olarak benzersiz olmalı)
         const existingUser = await db.collection('users').findOne({ email });
         if (existingUser) {
             return res.status(409).json({ message: 'Bu e-posta adresi zaten kayıtlı.' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); // Buradaki fazla ters eğik çizgi kaldırıldı
-        const verificationToken = crypto.randomBytes(32).toString('hex'); // Rastgele token oluştur
-        const verificationTokenExpires = new Date(Date.now() + 24 * 3600 * 1000); // 24 saat geçerli
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = new Date(Date.now() + 24 * 3600 * 1000);
+        
+        // Yeni organizasyon oluştur
+        const organizationId = generateOrganizationId();
+        const newOrganization = {
+            organizationId: organizationId,
+            name: organizationName,
+            adminEmail: email,
+            createdAt: new Date(),
+            isActive: true
+        };
+        
+        await db.collection('organizations').insertOne(newOrganization);
 
-        // Her yeni kullanıcı admin olsun
+        // Yeni kullanıcıyı oluştur (kendi organizasyonunda admin)
         const newUser = {
             email,
             password: hashedPassword,
             firstName: '',
             lastName: '',
-            role: 'admin', // Her yeni kullanıcı admin
+            role: 'admin', // Her yeni kullanıcı kendi organizasyonunda admin
+            organizationId: organizationId, // Organizasyon ID'si
             phone: '',
             department: '',
             isActive: true,
             is2FAEnabled: false,
             twoFactorSecret: null,
-            is2FAVerified: false, // Oturum bazında 2FA doğrulaması
-            isVerified: false, // E-posta doğrulaması için yeni alan, varsayılan olarak false
+            is2FAVerified: false,
+            isVerified: false,
             verificationToken: verificationToken,
             verificationTokenExpires: verificationTokenExpires,
-            createdAt: new Date()
+            createdAt: new Date(),
+            isOrganizationAdmin: true // Organizasyon admini olduğunu belirt
         };
+        
         await db.collection('users').insertOne(newUser);
 
         // Doğrulama e-postasını gönder
         await sendVerificationEmail(email, verificationToken);
 
         res.status(201).json({ 
-            message: 'Admin rolü ile kullanıcı başarıyla kaydedildi. Lütfen e-posta adresinizi doğrulayın.',
-            isAdmin: true
+            message: 'Organizasyon ve admin hesabı başarıyla oluşturuldu. Lütfen e-posta adresinizi doğrulayın.',
+            organizationId: organizationId,
+            organizationName: organizationName
         });
     } catch (error) {
         console.error('Kayıt hatası:', error);
@@ -84,12 +107,17 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Geçersiz kimlik bilgileri.' });
         }
 
-        // JWT payload'ına 2FA durumunu ve rol bilgisini ekle
+        // Organizasyon bilgisini al
+        const organization = await db.collection('organizations').findOne({ organizationId: user.organizationId });
+
+        // JWT payload'ına organizasyon bilgisini ekle
         const token = jwt.sign(
             { 
                 userId: user._id.toString(), 
                 email: user.email, 
-                role: user.role || 'staff', // Role yoksa default 'staff'
+                role: user.role || 'staff',
+                organizationId: user.organizationId,
+                isOrganizationAdmin: user.isOrganizationAdmin,
                 is2FAEnabled: user.is2FAEnabled, 
                 is2FAVerified: false 
             },
@@ -99,11 +127,16 @@ router.post('/login', async (req, res) => {
 
         // Eğer 2FA etkinse, kullanıcıya 2FA yapması gerektiğini bildir
         if (user.is2FAEnabled) {
-            // is2FAVerified: false olarak ayarla, 2FA doğrulaması bekleniyor
             return res.status(403).json({ message: '2FA gerekli.', token, userId: user._id.toString() });
         }
 
-        res.status(200).json({ message: 'Giriş başarılı.', token, userId: user._id.toString() });
+        res.status(200).json({ 
+            message: 'Giriş başarılı.', 
+            token, 
+            userId: user._id.toString(),
+            organizationId: user.organizationId,
+            organizationName: organization ? organization.name : 'Bilinmeyen Organizasyon'
+        });
     } catch (error) {
         console.error('Giriş hatası:', error);
         res.status(500).json({ message: 'Sunucu hatası. Lütfen tekrar deneyin.' });

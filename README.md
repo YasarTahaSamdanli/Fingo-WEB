@@ -1,108 +1,134 @@
-# 🚀 Fingo: Kişisel Finans ve Stok Yönetimi Uygulaması
+# Fingo Web - Organizasyon Bazlı Stok Yönetim Sistemi
 
-Fingo, finansal hayatınızı düzene sokarken, ürün stoklarınızı da parmaklarınızın ucunda tutmanızı sağlayan kapsamlı ve kullanıcı dostu bir web uygulamasıdır.  
-Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıcı raporlamaya kadar her şeyi tek bir yerden yönetin! 📈
+Fingo Web, her kullanıcının kendi organizasyonunda çalışabileceği, çok kullanıcılı bir stok yönetim sistemidir.
 
----
+## 🚀 Özellikler
 
-## ✨ Özellikler
+### Organizasyon Sistemi
+- **Her yeni kullanıcı kendi organizasyonunda admin olur**
+- **Organizasyonlar birbirinden tamamen izole edilmiştir**
+- **Her admin kendi organizasyonunda çalışanlar ekleyebilir**
+- **Çalışanlar farklı rollerle (admin, manager, cashier, staff) görev yapabilir**
 
-- 🛡️ **Kullanıcı Kimlik Doğrulama**: Güvenli kayıt, giriş ve parola yönetimi.
-- 🔐 **İki Faktörlü Kimlik Doğrulama (2FA)**: Hesabınıza ekstra bir güvenlik katmanı ekleyin.
-- 👥 **Kullanıcı Yönetimi**: Patron, yönetici, kasiyer ve çalışan rolleri ile yetki bazlı erişim kontrolü.
-- 💰 **Finansal İşlem Yönetimi**: Gelir ve giderlerinizi kolayca kaydedin, kategorilere ayırın ve takip edin.
-- 🔄 **Tekrarlayan İşlemler**: Düzenli gelir ve giderlerinizi otomatikleştirerek zamandan kazanın.
-- 📦 **Ürün Yönetimi**: Ürünlerinizi tüm detaylarıyla (ad, kategori, fiyat, birim, barkod vb.) ekleyin, güncelleyin ve silin.
-- ⚡ **Stok Yönetimi**: Stok miktarlarını anında artırın veya azaltın. Barkod tarayıcı desteği ile hızlı işlem yapın.
-- 🛒 **Satış Yönetimi**: Ürünleri sepete ekleyerek satışları kaydedin, geçmiş satışları filtreleyin ve inceleyin.
-- 🏷️ **Kategori Yönetimi**: Kendi özel gelir ve gider kategorilerinizi oluşturun.
-- 📊 **Detaylı Raporlar**:
-  - **Kategori Bazında Özet**: Hangi kategoride ne kadar harcama/kazanç var, bir bakışta görün.
-  - **Bakiye Geçmişi**: Zaman içindeki finansal bakiyenizin değişimini grafiklerle izleyin.
-  - **Stok Hareketleri**: Ürünlerinizin giriş-çıkış ve satışlarını detaylıca takip edin.
-- 📁 **Veri İçe/Dışa Aktarma**: Verilerinizi CSV formatında yedekleyin veya içe aktarın.
-- 🔔 **Bildirim Sistemi**: Düşük stok gibi önemli uyarılarda anlık bildirim alın.
-- 📱 **Duyarlı Tasarım**: Mobil, tablet ve masaüstünde sorunsuz kullanım.
+### Kullanıcı Rolleri
+- **Admin**: Organizasyon sahibi, tüm yetkilere sahip
+- **Manager**: Yönetici, çoğu yetkiye sahip
+- **Cashier**: Kasiyer, satış ve temel işlemler
+- **Staff**: Çalışan, sınırlı yetkiler
 
----
+### Ana Modüller
+- **Stok Yönetimi**: Ürün ekleme, düzenleme, silme
+- **Satış Yönetimi**: Müşteri işlemleri, satış kayıtları
+- **Tedarik Yönetimi**: Tedarikçi işlemleri, sipariş yönetimi
+- **Raporlama**: Detaylı raporlar ve analizler
+- **Kullanıcı Yönetimi**: Organizasyon içi kullanıcı yönetimi
 
-## 🚀 **Kurulum**
+## 🛠️ Kurulum
 
+### Gereksinimler
+- Node.js (v14 veya üzeri)
+- MongoDB
+- npm veya yarn
+
+### Adımlar
 1. **Projeyi klonlayın**
-2. **Bağımlılıkları yükleyin**: `npm install`
-3. **Veritabanını kurun**: MongoDB'yi başlatın
-4. **Admin hesabı oluşturun**: `npm run create-admin`
-5. **Uygulamayı başlatın**: `npm start`
+   ```bash
+   git clone <repository-url>
+   cd fingo-web
+   ```
 
-**Not**: İlk kayıt olan kullanıcı otomatik olarak admin rolü alır!
+2. **Bağımlılıkları yükleyin**
+   ```bash
+   npm install
+   ```
 
----
+3. **Çevre değişkenlerini ayarlayın**
+   ```bash
+   cp .env.example .env
+   # .env dosyasını düzenleyin
+   ```
 
-## 📸 Ekran Görüntüleri
+4. **Veritabanını başlatın**
+   ```bash
+   npm run db:start
+   ```
 
+5. **Uygulamayı çalıştırın**
+   ```bash
+   npm start
+   ```
 
-### 🔑 Giriş Ekranı  
-![Giriş Ekranı](ekranresmi/giriş.png)
+## 🔧 Organizasyon Sistemi Kurulumu
 
-### 🛠️ Yönetim Paneli  
-![Yönetim Paneli](ekranresmi/yönetimpaneli.png)
+### Yeni Kullanıcı Kaydı
+1. `/auth.html` sayfasından kayıt olun
+2. Organizasyon adınızı girin
+3. E-posta ve şifrenizi belirleyin
+4. Otomatik olarak kendi organizasyonunuzda admin olursunuz
 
-### 📊 Stok Sistemi  
-![Raporlar](ekranresmi/stok.png)
+### Mevcut Kullanıcıları Geçirme
+Eğer mevcut kullanıcılarınız varsa, organizasyon sistemine geçirmek için:
 
-### 🏷️ Barkod Özelliği
-![barkod](ekranresmi/barkod.png)
+```bash
+node scripts/migrateToOrganizationSystem.js
+```
 
-### 🆕 Ürün ekleme kaldırma 
-![ürün](ekranresmi/yeniürün.png)
+## 📁 Proje Yapısı
 
-### 🔁 Tekrarlayan İşlemler 
-![ürün](ekranresmi/tekrarlayan.png)
+```
+fingo-web/
+├── app.js                 # Ana uygulama dosyası
+├── db.js                  # Veritabanı bağlantısı
+├── routes/                # API rotaları
+│   ├── auth.js           # Kimlik doğrulama
+│   ├── userManagement.js # Kullanıcı yönetimi
+│   ├── products.js       # Ürün yönetimi
+│   └── ...
+├── middleware/            # Middleware'ler
+│   ├── authMiddleware.js # Kimlik doğrulama
+│   └── roleMiddleware.js # Rol kontrolü
+├── scripts/               # Yardımcı scriptler
+└── ...
+```
 
+## 🔐 Güvenlik
 
+- **JWT tabanlı kimlik doğrulama**
+- **Organizasyon bazlı veri izolasyonu**
+- **Rol bazlı yetkilendirme**
+- **2FA desteği**
+- **Şifre hash'leme**
 
----
+## 🌐 API Endpoints
 
-## 🛠️ Kullanılan Teknolojiler
+### Kimlik Doğrulama
+- `POST /api/register` - Yeni kullanıcı kaydı
+- `POST /api/login` - Kullanıcı girişi
+- `GET /api/verify-email` - E-posta doğrulama
 
-### Frontend
+### Kullanıcı Yönetimi
+- `GET /api/users` - Organizasyon kullanıcılarını listele
+- `POST /api/users` - Yeni kullanıcı ekle
+- `PUT /api/users/:id` - Kullanıcı güncelle
+- `DELETE /api/users/:id` - Kullanıcı sil
 
-- 🌐 HTML5  
-- 🎨 Tailwind CSS (Modern ve hızlı stil oluşturma)
-- ⚡ Vanilla JavaScript (Etkileşimli arayüzler)
-- 📊 Chart.js (Gelişmiş grafik ve veri görselleştirme)
-- 📸 QuaggaJS (Barkod tarama entegrasyonu)
+### Organizasyon
+- `GET /api/organization` - Organizasyon bilgilerini getir
 
-### Backend
+## 📝 Lisans
 
-- 🍃 Node.js
-- 🚀 Express.js
-- 🍃 MongoDB (MongoDB Atlas ile bulut veritabanı)
-- 🔑 JWT (JSON Web Token ile güvenli oturum yönetimi)
-- 🔒 bcryptjs (Şifreleme için)
-- 📧 nodemailer (2FA e-posta gönderimi)
-- ✅ speakeasy (2FA doğrulama)
+Bu proje MIT lisansı altında lisanslanmıştır.
 
-### Dağıtım
+## 🤝 Katkıda Bulunma
 
-- 📄 **Frontend:** GitHub Pages
-- ☁️ **Backend:** Render.com
-- ☁️🍃 **Veritabanı:** MongoDB Atlas
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/AmazingFeature`)
+3. Commit yapın (`git commit -m 'Add some AmazingFeature'`)
+4. Push yapın (`git push origin feature/AmazingFeature`)
+5. Pull Request oluşturun
 
----
+## 📞 İletişim
 
-## 📬 İletişim
-
-**👤 Geliştirici:** Yaşar Taha Şamdanlı  
-📧 E-posta: [yasarsamdanli1@gmail.com](mailto:yasarsamdanli1@gmail.com)  
-🔗 GitHub: [@YasarTahaSamdanli](https://github.com/YasarTahaSamdanli)
-
----
-
-## 🌐 Proje Linki
-
-🔗 [GitHub Repo](https://github.com/YasarTahaSamdanli/Fingo-WEB)
-
----
+Proje hakkında sorularınız için issue açabilir veya geliştirici ile iletişime geçebilirsiniz.
 
 

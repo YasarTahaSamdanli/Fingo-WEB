@@ -316,7 +316,13 @@
                     localStorage.setItem('token', token);
                 }
                 
-                // Tüm rollere izin ver (test için)
+                // SADECE Admin kullanıcılar erişebilir
+                if (payload.role !== 'admin') {
+                    Swal.fire('Yetkisiz Erişim', 'Bu sayfaya sadece admin kullanıcılar erişebilir.', 'error');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
                 currentUser = payload;
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
                 

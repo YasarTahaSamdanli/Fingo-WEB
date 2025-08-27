@@ -8,12 +8,12 @@ const { requireAdmin, requireManager, checkPermission } = require('../middleware
 
 const router = express.Router();
 
-// Tüm kullanıcıları listele (Admin ve Manager)
-router.get('/users', authenticateToken, requireManager, async (req, res) => {
+// Tüm kullanıcıları listele (SADECE kendi organizasyonundaki)
+router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const db = getDb();
         const users = await db.collection('users').find(
-            {},
+            { organizationId: req.user.organizationId }, // Sadece kendi organizasyonundaki kullanıcılar
             { projection: { password: 0, twoFactorSecret: 0, recoveryCodes: 0, verificationToken: 0, verificationTokenExpires: 0 } }
         ).toArray();
 
@@ -24,7 +24,7 @@ router.get('/users', authenticateToken, requireManager, async (req, res) => {
     }
 });
 
-// Yeni kullanıcı oluştur (Sadece Admin)
+// Yeni kullanıcı oluştur (Sadece kendi organizasyonunda)
 router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
     const { email, password, firstName, lastName, role, phone, department } = req.body;
 
@@ -35,10 +35,13 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const db = getDb();
         
-        // E-posta kontrolü
-        const existingUser = await db.collection('users').findOne({ email });
+        // E-posta kontrolü (sadece kendi organizasyonunda)
+        const existingUser = await db.collection('users').findOne({ 
+            email, 
+            organizationId: req.user.organizationId 
+        });
         if (existingUser) {
-            return res.status(409).json({ message: 'Bu e-posta adresi zaten kayıtlı.' });
+            return res.status(409).json({ message: 'Bu e-posta adresi zaten organizasyonunuzda kayıtlı.' });
         }
 
         // Şifre hash'leme
@@ -50,6 +53,7 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
             firstName,
             lastName,
             role,
+            organizationId: req.user.organizationId, // Admin'in organizasyon ID'si
             phone: phone || '',
             department: department || '',
             isActive: true,
@@ -59,7 +63,8 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
             isVerified: true, // Admin tarafından oluşturulan kullanıcılar otomatik doğrulanmış
             createdAt: new Date(),
             createdBy: req.user.userId,
-            lastLogin: null
+            lastLogin: null,
+            isOrganizationAdmin: false // Yeni kullanıcılar organizasyon admini değil
         };
 
         const result = await db.collection('users').insertOne(newUser);
@@ -78,7 +83,7 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
     }
 });
 
-// Kullanıcı güncelle (Admin ve Manager - kendi rollerini değiştiremez)
+// Kullanıcı güncelle (Admin ve Manager - kendi organizasyonunda ve kendi rollerini değiştiremez)
 router.put('/users/:userId', authenticateToken, requireManager, async (req, res) => {
     const { userId } = req.params;
     const { firstName, lastName, role, phone, department, isActive } = req.body;
@@ -86,8 +91,11 @@ router.put('/users/:userId', authenticateToken, requireManager, async (req, res)
     try {
         const db = getDb();
         
-        // Kullanıcıyı bul
-        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        // Kullanıcıyı bul (sadece kendi organizasyonunda)
+        const user = await db.collection('users').findOne({ 
+            _id: new ObjectId(userId),
+            organizationId: req.user.organizationId
+        });
         if (!user) {
             return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
         }
@@ -97,26 +105,28 @@ router.put('/users/:userId', authenticateToken, requireManager, async (req, res)
             return res.status(403).json({ message: 'Admin rolünü değiştirme yetkiniz bulunmuyor.' });
         }
 
-        // Güncelleme verilerini hazırla
-        const updateData = {};
-        if (firstName !== undefined) updateData.firstName = firstName;
-        if (lastName !== undefined) updateData.lastName = lastName;
-        if (role !== undefined) updateData.role = role;
-        if (phone !== undefined) updateData.phone = phone;
-        if (department !== undefined) updateData.department = department;
-        if (isActive !== undefined) updateData.isActive = isActive;
-        
-        updateData.updatedAt = new Date();
-        updateData.updatedBy = req.user.userId;
+        // Organizasyon admini rolünü değiştiremez
+        if (user.isOrganizationAdmin) {
+            return res.status(403).json({ message: 'Organizasyon admini rolü değiştirilemez.' });
+        }
 
-        const result = await db.collection('users').updateOne(
+        // Güncelleme verilerini hazırla
+        const updateData = {
+            firstName: firstName || user.firstName,
+            lastName: lastName || user.lastName,
+            role: role || user.role,
+            phone: phone !== undefined ? phone : user.phone,
+            department: department !== undefined ? department : user.department,
+            isActive: isActive !== undefined ? isActive : user.isActive,
+            updatedAt: new Date(),
+            updatedBy: req.user.userId
+        };
+
+        // Güncelleme işlemi
+        await db.collection('users').updateOne(
             { _id: new ObjectId(userId) },
             { $set: updateData }
         );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
-        }
 
         res.status(200).json({ message: 'Kullanıcı başarıyla güncellendi.' });
     } catch (error) {
@@ -205,30 +215,34 @@ router.patch('/users/:userId/toggle-status', authenticateToken, requireManager, 
     }
 });
 
-// Kullanıcıyı sil (Sadece Admin)
+// Kullanıcıyı sil (Sadece kendi organizasyonunda)
 router.delete('/users/:userId', authenticateToken, requireAdmin, async (req, res) => {
     const { userId } = req.params;
 
     try {
         const db = getDb();
         
-        // Kullanıcıyı bul
-        const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+        // Kullanıcıyı bul (sadece kendi organizasyonunda)
+        const user = await db.collection('users').findOne({ 
+            _id: new ObjectId(userId),
+            organizationId: req.user.organizationId
+        });
+        
         if (!user) {
             return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
         }
 
+        // Organizasyon admini silinemez
+        if (user.isOrganizationAdmin) {
+            return res.status(403).json({ message: 'Organizasyon admini silinemez.' });
+        }
+
         // Kendini silmeye çalışıyorsa engelle
         if (userId === req.user.userId) {
-            return res.status(400).json({ message: 'Kendinizi silemezsiniz.' });
+            return res.status(403).json({ message: 'Kendinizi silemezsiniz.' });
         }
 
-        const result = await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
-
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ message: 'Kullanıcı bulunamadı.' });
-        }
-
+        await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
         res.status(200).json({ message: 'Kullanıcı başarıyla silindi.' });
     } catch (error) {
         console.error('Kullanıcı silme hatası:', error);
@@ -258,8 +272,8 @@ router.get('/users/:userId', authenticateToken, requireManager, async (req, res)
     }
 });
 
-// Kullanıcı istatistiklerini getir (Admin ve Manager)
-router.get('/users/stats/overview', authenticateToken, requireManager, async (req, res) => {
+// Kullanıcı istatistiklerini getir (SADECE Admin)
+router.get('/users/stats/overview', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const db = getDb();
         
@@ -286,6 +300,25 @@ router.get('/users/stats/overview', authenticateToken, requireManager, async (re
         });
     } catch (error) {
         console.error('Kullanıcı istatistik hatası:', error);
+        res.status(500).json({ message: 'Sunucu hatası.' });
+    }
+});
+
+// Organizasyon bilgilerini getir
+router.get('/organization', authenticateToken, async (req, res) => {
+    try {
+        const db = getDb();
+        const organization = await db.collection('organizations').findOne({ 
+            organizationId: req.user.organizationId 
+        });
+        
+        if (!organization) {
+            return res.status(404).json({ message: 'Organizasyon bulunamadı.' });
+        }
+
+        res.status(200).json(organization);
+    } catch (error) {
+        console.error('Organizasyon bilgisi hatası:', error);
         res.status(500).json({ message: 'Sunucu hatası.' });
     }
 });

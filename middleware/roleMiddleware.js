@@ -44,7 +44,15 @@ const PERMISSIONS = {
     ]
 };
 
-// Rol kontrolü middleware'i
+// Organizasyon kontrolü middleware'i
+const checkOrganization = (req, res, next) => {
+    if (!req.user || !req.user.organizationId) {
+        return res.status(403).json({ message: 'Organizasyon bilgisi bulunamadı.' });
+    }
+    next();
+};
+
+// Rol kontrolü middleware'i (organizasyon kontrolü ile)
 const checkRole = (allowedRoles) => {
     return async (req, res, next) => {
         try {
@@ -52,10 +60,18 @@ const checkRole = (allowedRoles) => {
                 return res.status(401).json({ message: 'Kimlik doğrulama gerekli.' });
             }
 
+            // Organizasyon kontrolü
+            if (!req.user.organizationId) {
+                return res.status(403).json({ message: 'Organizasyon bilgisi bulunamadı.' });
+            }
+
             const db = getDb();
             const user = await db.collection('users').findOne(
-                { _id: new ObjectId(req.user.userId) },
-                { projection: { role: 1 } }
+                { 
+                    _id: new ObjectId(req.user.userId),
+                    organizationId: req.user.organizationId // Sadece kendi organizasyonundaki kullanıcı
+                },
+                { projection: { role: 1, organizationId: 1 } }
             );
 
             if (!user) {
@@ -83,7 +99,7 @@ const checkRole = (allowedRoles) => {
     };
 };
 
-// Yetki kontrolü middleware'i
+// Yetki kontrolü middleware'i (organizasyon kontrolü ile)
 const checkPermission = (requiredPermission) => {
     return async (req, res, next) => {
         try {
@@ -91,10 +107,18 @@ const checkPermission = (requiredPermission) => {
                 return res.status(401).json({ message: 'Kimlik doğrulama gerekli.' });
             }
 
+            // Organizasyon kontrolü
+            if (!req.user.organizationId) {
+                return res.status(403).json({ message: 'Organizasyon bilgisi bulunamadı.' });
+            }
+
             const db = getDb();
             const user = await db.collection('users').findOne(
-                { _id: new ObjectId(req.user.userId) },
-                { projection: { role: 1 } }
+                { 
+                    _id: new ObjectId(req.user.userId),
+                    organizationId: req.user.organizationId // Sadece kendi organizasyonundaki kullanıcı
+                },
+                { projection: { role: 1, organizationId: 1 } }
             );
 
             if (!user || !user.role) {
@@ -136,6 +160,7 @@ module.exports = {
     PERMISSIONS,
     checkRole,
     checkPermission,
+    checkOrganization,
     requireAdmin,
     requireManager,
     requireCashier,
