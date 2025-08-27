@@ -282,6 +282,7 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'https://fingo-web.onrender.com/api'; // API Base URL
         let currentUser = null;
         let users = [];
 
@@ -368,7 +369,7 @@
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 
-                const response = await fetch('http://localhost:3000/api/users/stats/overview', {
+                const response = await fetch(`${API_BASE_URL}/users/stats/overview`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -395,7 +396,7 @@
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
                 
-                const response = await fetch('http://localhost:3000/api/users', {
+                const response = await fetch(`${API_BASE_URL}/users`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -556,7 +557,7 @@
 
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
-                const response = await fetch('http://localhost:3000/api/users', {
+                const response = await fetch(`${API_BASE_URL}/users`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -595,7 +596,7 @@
 
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
-                const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -626,7 +627,7 @@
 
             try {
                 const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
-                const response = await fetch(`http://localhost:3000/api/users/${userId}/reset-password`, {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -684,7 +685,7 @@
             if (result.isConfirmed) {
                 try {
                                     const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
-                const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -722,7 +723,7 @@
             if (result.isConfirmed) {
                 try {
                                     const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
-                const response = await fetch(`http://localhost:3000/api/users/${userId}/toggle-status`, {
+                const response = await fetch(`${API_BASE_URL}/users/${userId}/toggle-status`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${token}`

@@ -27,16 +27,13 @@ router.post('/register', async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex'); // Rastgele token oluştur
         const verificationTokenExpires = new Date(Date.now() + 24 * 3600 * 1000); // 24 saat geçerli
 
-        // Sistemde hiç kullanıcı yoksa, ilk kullanıcı admin olsun
-        const userCount = await db.collection('users').countDocuments();
-        const isFirstUser = userCount === 0;
-        
+        // Her yeni kullanıcı admin olsun
         const newUser = {
             email,
             password: hashedPassword,
             firstName: '',
             lastName: '',
-            role: isFirstUser ? 'admin' : 'staff', // İlk kullanıcı admin, diğerleri staff
+            role: 'admin', // Her yeni kullanıcı admin
             phone: '',
             department: '',
             isActive: true,
@@ -53,10 +50,9 @@ router.post('/register', async (req, res) => {
         // Doğrulama e-postasını gönder
         await sendVerificationEmail(email, verificationToken);
 
-        const roleMessage = isFirstUser ? 'İlk kullanıcı olarak admin rolü verildi. ' : '';
         res.status(201).json({ 
-            message: `${roleMessage}Kullanıcı başarıyla kaydedildi. Lütfen e-posta adresinizi doğrulayın.`,
-            isFirstUser: isFirstUser
+            message: 'Admin rolü ile kullanıcı başarıyla kaydedildi. Lütfen e-posta adresinizi doğrulayın.',
+            isAdmin: true
         });
     } catch (error) {
         console.error('Kayıt hatası:', error);
