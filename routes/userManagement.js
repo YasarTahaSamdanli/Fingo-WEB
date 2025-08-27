@@ -8,12 +8,15 @@ const { requireAdmin, requireManager, checkPermission } = require('../middleware
 
 const router = express.Router();
 
-// Tüm kullanıcıları listele (SADECE kendi organizasyonundaki)
+// Tüm kullanıcıları listele (SADECE kendi organizasyonundaki aktif kullanıcılar)
 router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const db = getDb();
         const users = await db.collection('users').find(
-            { organizationId: req.user.organizationId }, // Sadece kendi organizasyonundaki kullanıcılar
+            { 
+                organizationId: req.user.organizationId, // Sadece kendi organizasyonundaki kullanıcılar
+                isActive: true // Sadece aktif kullanıcılar
+            },
             { projection: { password: 0, twoFactorSecret: 0, recoveryCodes: 0, verificationToken: 0, verificationTokenExpires: 0 } }
         ).toArray();
 
@@ -250,14 +253,17 @@ router.delete('/users/:userId', authenticateToken, requireAdmin, async (req, res
     }
 });
 
-// Kullanıcı detaylarını getir
+// Kullanıcı detaylarını getir (sadece kendi organizasyonunda)
 router.get('/users/:userId', authenticateToken, requireManager, async (req, res) => {
     const { userId } = req.params;
 
     try {
         const db = getDb();
         const user = await db.collection('users').findOne(
-            { _id: new ObjectId(userId) },
+            { 
+                _id: new ObjectId(userId),
+                organizationId: req.user.organizationId // Sadece kendi organizasyonundaki kullanıcı
+            },
             { projection: { password: 0, twoFactorSecret: 0, recoveryCodes: 0, verificationToken: 0, verificationTokenExpires: 0 } }
         );
 
@@ -272,12 +278,16 @@ router.get('/users/:userId', authenticateToken, requireManager, async (req, res)
     }
 });
 
-// Kullanıcı istatistiklerini getir (SADECE Admin)
+// Kullanıcı istatistiklerini getir (SADECE Admin - kendi organizasyonunda)
 router.get('/users/stats/overview', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const db = getDb();
         
+        // Sadece kendi organizasyonundaki kullanıcıları say
         const stats = await db.collection('users').aggregate([
+            {
+                $match: { organizationId: req.user.organizationId } // Sadece kendi organizasyonu
+            },
             {
                 $group: {
                     _id: '$role',
@@ -289,8 +299,11 @@ router.get('/users/stats/overview', authenticateToken, requireAdmin, async (req,
             }
         ]).toArray();
 
-        const totalUsers = await db.collection('users').countDocuments();
-        const activeUsers = await db.collection('users').countDocuments({ isActive: true });
+        const totalUsers = await db.collection('users').countDocuments({ organizationId: req.user.organizationId });
+        const activeUsers = await db.collection('users').countDocuments({ 
+            organizationId: req.user.organizationId, 
+            isActive: true 
+        });
 
         res.status(200).json({
             totalUsers,
