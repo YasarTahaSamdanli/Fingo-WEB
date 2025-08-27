@@ -704,6 +704,17 @@
             window.location.href = 'auth.html';
         } else {
             console.log("Index.html - Authentication check passed. User is authenticated.");
+            
+            // Token'dan organizasyon bilgilerini al ve localStorage'a kaydet
+            if (decodedToken.organizationId) {
+                localStorage.setItem('organizationId', decodedToken.organizationId);
+                console.log("Index.html - organizationId stored in localStorage:", decodedToken.organizationId);
+            }
+            
+            if (decodedToken.organizationName) {
+                localStorage.setItem('organizationName', decodedToken.organizationName);
+                console.log("Index.html - organizationName stored in localStorage:", decodedToken.organizationName);
+            }
         }
 
         // Üstel Geri Çekilme (Exponential Backoff) ile Fetch Fonksiyonu
