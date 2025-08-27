@@ -67,17 +67,40 @@ router.post('/users', authenticateToken, requireAdmin, async (req, res) => {
             createdAt: new Date(),
             createdBy: req.user.userId,
             lastLogin: null,
-            isOrganizationAdmin: false // Yeni kullanıcılar organizasyon admini değil
+            isOrganizationAdmin: false, // Yeni kullanıcılar organizasyon admini değil
+            isInvited: true, // Davet edilmiş kullanıcı
+            inviteDate: new Date()
         };
 
         const result = await db.collection('users').insertOne(newUser);
+        
+        // Organizasyon bilgisini al
+        const organization = await db.collection('organizations').findOne({ 
+            organizationId: req.user.organizationId 
+        });
+
+        // Davet e-postası gönder
+        try {
+            const { sendInviteEmail } = require('../utils/emailSender');
+            await sendInviteEmail(email, {
+                firstName: firstName,
+                lastName: lastName,
+                role: role,
+                organizationName: organization ? organization.name : 'Organizasyon',
+                password: password, // Şifreyi e-postada gönder
+                adminEmail: req.user.email
+            });
+        } catch (emailError) {
+            console.error('Davet e-postası gönderilemedi:', emailError);
+            // E-posta gönderilemese bile kullanıcı oluşturulur
+        }
         
         // Şifre olmadan kullanıcı bilgilerini döndür
         const { password: _, ...userWithoutPassword } = newUser;
         userWithoutPassword._id = result.insertedId;
 
         res.status(201).json({
-            message: 'Kullanıcı başarıyla oluşturuldu.',
+            message: 'Kullanıcı başarıyla oluşturuldu ve davet e-postası gönderildi.',
             user: userWithoutPassword
         });
     } catch (error) {
