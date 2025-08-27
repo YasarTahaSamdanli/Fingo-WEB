@@ -137,7 +137,15 @@ router.post('/2fa/verify-login-code', async (req, res) => {
         if (verified) {
             // 2FA doğrulandıktan sonra YENİ bir JWT token oluştur
             const newJwtToken = jwt.sign(
-                { userId: user._id.toString(), email: user.email, is2FAEnabled: true, is2FAVerified: true },
+                { 
+                    userId: user._id.toString(), 
+                    email: user.email, 
+                    role: user.role || 'staff',
+                    organizationId: user.organizationId,
+                    isOrganizationAdmin: user.isOrganizationAdmin,
+                    is2FAEnabled: true, 
+                    is2FAVerified: true 
+                },
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
@@ -147,7 +155,9 @@ router.post('/2fa/verify-login-code', async (req, res) => {
                 is2FAVerified: true,
                 token: newJwtToken, // YENİ OLUŞTURULAN TOKEN'I GÖNDERİYORUZ
                 userId: user._id.toString(), // user ID'yi de gönderiyoruz
-                email: user.email // email'i de gönderiyoruz
+                email: user.email, // email'i de gönderiyoruz
+                organizationId: user.organizationId,
+                organizationName: user.organizationName
             });
         } else {
             res.status(400).json({ message: 'Geçersiz 2FA kodu.' });
@@ -187,7 +197,15 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
 
             // Başarılı doğrulama sonrası YENİ bir JWT token oluştur
             const newJwtToken = jwt.sign(
-                { userId: user._id.toString(), email: user.email, is2FAEnabled: true, is2FAVerified: true },
+                { 
+                    userId: user._id.toString(), 
+                    email: user.email, 
+                    role: user.role || 'staff',
+                    organizationId: user.organizationId,
+                    isOrganizationAdmin: user.isOrganizationAdmin,
+                    is2FAEnabled: true, 
+                    is2FAVerified: true 
+                },
                 process.env.JWT_SECRET,
                 { expiresIn: '1h' }
             );
@@ -197,7 +215,9 @@ router.post('/2fa/verify-recovery-code', async (req, res) => {
                 is2FAVerified: true,
                 token: newJwtToken, // YENİ OLUŞTURULAN TOKEN'I GÖNDERİYORUZ
                 userId: user._id.toString(), // user ID'yi de gönderiyoruz
-                email: user.email // email'i de gönderiyoruz
+                email: user.email, // email'i de gönderiyoruz
+                organizationId: user.organizationId,
+                organizationName: user.organizationName
             });
         } else {
             res.status(400).json({ message: 'Geçersiz kurtarma kodu.' });
