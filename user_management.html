@@ -287,53 +287,49 @@
         let currentUser = null;
         let users = [];
 
-        // Sayfa yüklendiğinde çalışacak fonksiyonlar
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadUserStats();
-            loadUsers();
-            
-            // Rol bazlı UI kontrolü
-            setTimeout(() => {
-                applyRoleBasedUI();
-            }, 100);
-        });
-
-        // Kimlik doğrulama kontrolü
-        function checkAuth() {
-            // Hem 'token' hem 'jwtToken' olarak saklanan token'ları kontrol et
-            let token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+        // Sayfa yüklendiğinde çalışacak kod
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Token kontrolü
+            let token = localStorage.getItem('jwtToken');
             
             if (!token) {
-                window.location.href = 'auth.html';
+                console.error('Token bulunamadı');
+                Swal.fire('Hata', 'Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 2000);
                 return;
             }
 
+            // Token'ı decode et ve kullanıcı bilgilerini al
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('User Management - Decoded JWT Token:', payload);
                 
-                // Token'ı localStorage'da 'token' olarak standardize et
-                if (localStorage.getItem('jwtToken') && !localStorage.getItem('token')) {
-                    localStorage.setItem('token', token);
-                }
-                
-                // SADECE Admin kullanıcılar erişebilir
-                if (payload.role !== 'admin') {
-                    Swal.fire('Yetkisiz Erişim', 'Bu sayfaya sadece admin kullanıcılar erişebilir.', 'error');
-                    window.location.href = 'index.html';
+                if (!payload.organizationId) {
+                    console.error('organizationId bulunamadı');
+                    Swal.fire('Hata', 'Organizasyon bilgisi bulunamadı. Lütfen tekrar giriş yapın.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'auth.html';
+                    }, 2000);
                     return;
                 }
                 
-                currentUser = payload;
+                // Kullanıcı bilgilerini göster
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
                 
+                // Kullanıcıları ve istatistikleri yükle
+                await loadUserStats();
+                await loadUsers();
+                
             } catch (error) {
-                console.error('Token çözümleme hatası:', error);
-                localStorage.removeItem('token');
-                localStorage.removeItem('jwtToken');
-                window.location.href = 'auth.html';
+                console.error('Token decode hatası:', error);
+                Swal.fire('Hata', 'Token bilgisi hatalı. Lütfen tekrar giriş yapın.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'auth.html';
+                }, 2000);
             }
-        }
+        });
 
         // Rol bazlı UI kontrolü
         function applyRoleBasedUI() {
@@ -374,7 +370,12 @@
         // Kullanıcı istatistiklerini yükle
         async function loadUserStats() {
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const token = localStorage.getItem('jwtToken');
+                
+                if (!token) {
+                    console.error('Token bulunamadı');
+                    return;
+                }
                 
                 const response = await fetch(`${API_BASE_URL}/users/stats/overview`, {
                     headers: {
@@ -401,7 +402,12 @@
         // Kullanıcıları yükle
         async function loadUsers() {
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const token = localStorage.getItem('jwtToken');
+                
+                if (!token) {
+                    console.error('Token bulunamadı');
+                    return;
+                }
                 
                 const response = await fetch(`${API_BASE_URL}/users`, {
                     headers: {
@@ -569,7 +575,7 @@
             }
 
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const token = localStorage.getItem('jwtToken');
                 const response = await fetch(`${API_BASE_URL}/users`, {
                     method: 'POST',
                     headers: {
@@ -609,7 +615,7 @@
             };
 
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const token = localStorage.getItem('jwtToken');
                 const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
                     method: 'PUT',
                     headers: {
@@ -640,7 +646,7 @@
             const newPassword = document.getElementById('newPassword').value;
 
             try {
-                const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                const token = localStorage.getItem('jwtToken');
                 const response = await fetch(`${API_BASE_URL}/users/${userId}/reset-password`, {
                     method: 'POST',
                     headers: {
@@ -698,7 +704,7 @@
 
             if (result.isConfirmed) {
                 try {
-                                    const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                                    const token = localStorage.getItem('jwtToken');
                 const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
                     method: 'DELETE',
                     headers: {
@@ -736,7 +742,7 @@
 
             if (result.isConfirmed) {
                 try {
-                                    const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+                                    const token = localStorage.getItem('jwtToken');
                 const response = await fetch(`${API_BASE_URL}/users/${userId}/toggle-status`, {
                     method: 'PATCH',
                     headers: {
