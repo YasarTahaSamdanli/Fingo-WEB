@@ -30,6 +30,12 @@ router.post('/register', async (req, res) => {
         const newUser = {
             email,
             password: hashedPassword,
+            firstName: '',
+            lastName: '',
+            role: 'staff', // Varsayılan rol
+            phone: '',
+            department: '',
+            isActive: true,
             is2FAEnabled: false,
             twoFactorSecret: null,
             is2FAVerified: false, // Oturum bazında 2FA doğrulaması
@@ -74,9 +80,9 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Geçersiz kimlik bilgileri.' });
         }
 
-        // JWT payload'ına 2FA durumunu ekle
+        // JWT payload'ına 2FA durumunu ve rol bilgisini ekle
         const token = jwt.sign(
-            { userId: user._id.toString(), email: user.email, is2FAEnabled: user.is2FAEnabled, is2FAVerified: false },
+            { userId: user._id.toString(), email: user.email, role: user.role, is2FAEnabled: user.is2FAEnabled, is2FAVerified: false },
             process.env.JWT_SECRET,
             { expiresIn: '1h' } // Token 1 saat geçerli
         );

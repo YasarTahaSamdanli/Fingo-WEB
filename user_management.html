@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingo - Kullanıcı Yönetimi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-2xl font-bold text-blue-600">
+                        <i class="fas fa-store mr-2"></i>Fingo
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-gray-700"></span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Kullanıcı Yönetimi</h1>
+            <p class="text-gray-600">Sistem kullanıcılarını yönetin ve yetkilerini düzenleyin</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Toplam Kullanıcı</p>
+                        <p id="totalUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-user-check text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Aktif Kullanıcı</p>
+                        <p id="activeUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-user-clock text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Pasif Kullanıcı</p>
+                        <p id="inactiveUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fas fa-user-shield text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Admin</p>
+                        <p id="adminUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex space-x-4">
+                <button onclick="showCreateUserModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
+                </button>
+                <button onclick="refreshUsers()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt mr-2"></i>Yenile
+                </button>
+            </div>
+            <div class="flex space-x-2">
+                <select id="roleFilter" onchange="filterUsers()" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Tüm Roller</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Yönetici</option>
+                    <option value="cashier">Kasiyer</option>
+                    <option value="staff">Çalışan</option>
+                </select>
+                <select id="statusFilter" onchange="filterUsers()" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="true">Aktif</option>
+                    <option value="false">Pasif</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departman</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Giriş</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div id="createUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Yeni Kullanıcı Oluştur</h3>
+                    <button onclick="hideCreateUserModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="createUserForm" class="p-6">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                            <input type="text" id="firstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                            <input type="text" id="lastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                        <input type="email" id="email" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+                        <input type="password" id="password" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
+                            <select id="role" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Rol Seçin</option>
+                                <option value="admin">Admin</option>
+                                <option value="manager">Yönetici</option>
+                                <option value="cashier">Kasiyer</option>
+                                <option value="staff">Çalışan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                            <input type="tel" id="phone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Departman</label>
+                        <input type="text" id="department" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideCreateUserModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                            İptal
+                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Oluştur
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Kullanıcı Düzenle</h3>
+                    <button onclick="hideEditUserModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="editUserForm" class="p-6">
+                    <input type="hidden" id="editUserId">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                            <input type="text" id="editFirstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                            <input type="text" id="editLastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                        <input type="email" id="editEmail" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
+                            <select id="editRole" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="admin">Admin</option>
+                                <option value="manager">Yönetici</option>
+                                <option value="cashier">Kasiyer</option>
+                                <option value="staff">Çalışan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                            <input type="tel" id="editPhone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Departman</label>
+                        <input type="text" id="editDepartment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideEditUserModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                            İptal
+                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Güncelle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div id="resetPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">Şifre Sıfırla</h3>
+                    <button onclick="hideResetPasswordModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="resetPasswordForm" class="p-6">
+                    <input type="hidden" id="resetPasswordUserId">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
+                        <input type="password" id="newPassword" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="hideResetPasswordModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
+                            İptal
+                        </button>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            Şifreyi Sıfırla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let users = [];
+
+        // Sayfa yüklendiğinde çalışacak fonksiyonlar
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadUserStats();
+            loadUsers();
+        });
+
+        // Kimlik doğrulama kontrolü
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.role !== 'admin' && payload.role !== 'manager') {
+                    Swal.fire('Yetkisiz Erişim', 'Bu sayfaya erişim yetkiniz bulunmuyor.', 'error');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                currentUser = payload;
+                document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
+            } catch (error) {
+                console.error('Token çözümleme hatası:', error);
+                localStorage.removeItem('token');
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // Çıkış yap
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'auth.html';
+        }
+
+        // Kullanıcı istatistiklerini yükle
+        async function loadUserStats() {
+            try {
+                const response = await fetch('/api/users/stats/overview', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalUsers').textContent = stats.totalUsers;
+                    document.getElementById('activeUsers').textContent = stats.activeUsers;
+                    document.getElementById('inactiveUsers').textContent = stats.inactiveUsers;
+                    
+                    const adminCount = stats.roleBreakdown.find(r => r._id === 'admin')?.count || 0;
+                    document.getElementById('adminUsers').textContent = adminCount;
+                }
+            } catch (error) {
+                console.error('İstatistik yükleme hatası:', error);
+            }
+        }
+
+        // Kullanıcıları yükle
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    users = await response.json();
+                    renderUsers();
+                } else {
+                    const error = await response.json();
+                    Swal.fire('Hata', error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Kullanıcı yükleme hatası:', error);
+                Swal.fire('Hata', 'Kullanıcılar yüklenirken bir hata oluştu.', 'error');
+            }
+        }
+
+        // Kullanıcıları filtrele
+        function filterUsers() {
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filteredUsers = users;
+
+            if (roleFilter) {
+                filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
+            }
+
+            if (statusFilter !== '') {
+                const isActive = statusFilter === 'true';
+                filteredUsers = filteredUsers.filter(user => user.isActive === isActive);
+            }
+
+            renderUsers(filteredUsers);
+        }
+
+        // Kullanıcıları tabloda göster
+        function renderUsers(usersToRender = users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            usersToRender.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <span class="text-blue-600 font-medium">${user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${user.firstName} ${user.lastName}</div>
+                                <div class="text-sm text-gray-500">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeClass(user.role)}">
+                            ${getRoleDisplayName(user.role)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.department || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${user.isActive ? 'Aktif' : 'Pasif'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('tr-TR') : 'Hiç giriş yapmamış'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="editUser('${user._id}')" class="text-blue-600 hover:text-blue-900">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${currentUser.role === 'admin' ? `
+                                <button onclick="resetPassword('${user._id}')" class="text-yellow-600 hover:text-yellow-900">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <button onclick="deleteUser('${user._id}')" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" class="text-${user.isActive ? 'orange' : 'green'}-600 hover:text-${user.isActive ? 'orange' : 'green'}-900">
+                                <i class="fas fa-${user.isActive ? 'ban' : 'check'}"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Rol badge sınıfını al
+        function getRoleBadgeClass(role) {
+            const classes = {
+                'admin': 'bg-red-100 text-red-800',
+                'manager': 'bg-blue-100 text-blue-800',
+                'cashier': 'bg-green-100 text-green-800',
+                'staff': 'bg-gray-100 text-gray-800'
+            };
+            return classes[role] || classes.staff;
+        }
+
+        // Rol görünen adını al
+        function getRoleDisplayName(role) {
+            const names = {
+                'admin': 'Admin',
+                'manager': 'Yönetici',
+                'cashier': 'Kasiyer',
+                'staff': 'Çalışan'
+            };
+            return names[role] || role;
+        }
+
+        // Modal fonksiyonları
+        function showCreateUserModal() {
+            document.getElementById('createUserModal').classList.remove('hidden');
+        }
+
+        function hideCreateUserModal() {
+            document.getElementById('createUserModal').classList.add('hidden');
+            document.getElementById('createUserForm').reset();
+        }
+
+        function showEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('hidden');
+        }
+
+        function hideEditUserModal() {
+            document.getElementById('editUserModal').classList.add('hidden');
+            document.getElementById('editUserForm').reset();
+        }
+
+        function showResetPasswordModal() {
+            document.getElementById('resetPasswordModal').classList.remove('hidden');
+        }
+
+        function hideResetPasswordModal() {
+            document.getElementById('resetPasswordModal').classList.add('hidden');
+            document.getElementById('resetPasswordForm').reset();
+        }
+
+        // Form submit işlemleri
+        document.getElementById('createUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value,
+                phone: document.getElementById('phone').value,
+                department: document.getElementById('department').value
+            };
+
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    Swal.fire('Başarılı', 'Kullanıcı başarıyla oluşturuldu.', 'success');
+                    hideCreateUserModal();
+                    loadUsers();
+                    loadUserStats();
+                } else {
+                    const error = await response.json();
+                    Swal.fire('Hata', error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Kullanıcı oluşturma hatası:', error);
+                Swal.fire('Hata', 'Kullanıcı oluşturulurken bir hata oluştu.', 'error');
+            }
+        });
+
+        document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('editUserId').value;
+            const formData = {
+                firstName: document.getElementById('editFirstName').value,
+                lastName: document.getElementById('editLastName').value,
+                email: document.getElementById('editEmail').value,
+                role: document.getElementById('editRole').value,
+                phone: document.getElementById('editPhone').value,
+                department: document.getElementById('editDepartment').value
+            };
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    Swal.fire('Başarılı', 'Kullanıcı başarıyla güncellendi.', 'success');
+                    hideEditUserModal();
+                    loadUsers();
+                } else {
+                    const error = await response.json();
+                    Swal.fire('Hata', error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Kullanıcı güncelleme hatası:', error);
+                Swal.fire('Hata', 'Kullanıcı güncellenirken bir hata oluştu.', 'error');
+            }
+        });
+
+        document.getElementById('resetPasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userId = document.getElementById('resetPasswordUserId').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            try {
+                const response = await fetch(`/api/users/${userId}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ newPassword })
+                });
+
+                if (response.ok) {
+                    Swal.fire('Başarılı', 'Şifre başarıyla sıfırlandı.', 'success');
+                    hideResetPasswordModal();
+                } else {
+                    const error = await response.json();
+                    Swal.fire('Hata', error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Şifre sıfırlama hatası:', error);
+                Swal.fire('Hata', 'Şifre sıfırlanırken bir hata oluştu.', 'error');
+            }
+        });
+
+        // Kullanıcı işlemleri
+        function editUser(userId) {
+            const user = users.find(u => u._id === userId);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = user._id;
+            document.getElementById('editFirstName').value = user.firstName || '';
+            document.getElementById('editLastName').value = user.lastName || '';
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editRole').value = user.role;
+            document.getElementById('editPhone').value = user.phone || '';
+            document.getElementById('editDepartment').value = user.department || '';
+
+            showEditUserModal();
+        }
+
+        function resetPassword(userId) {
+            document.getElementById('resetPasswordUserId').value = userId;
+            showResetPasswordModal();
+        }
+
+        async function deleteUser(userId) {
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: 'Bu kullanıcı kalıcı olarak silinecek!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, sil!',
+                cancelButtonText: 'İptal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        Swal.fire('Silindi!', 'Kullanıcı başarıyla silindi.', 'success');
+                        loadUsers();
+                        loadUserStats();
+                    } else {
+                        const error = await response.json();
+                        Swal.fire('Hata', error.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Kullanıcı silme hatası:', error);
+                    Swal.fire('Hata', 'Kullanıcı silinirken bir hata oluştu.', 'error');
+                }
+            }
+        }
+
+        async function toggleUserStatus(userId, currentStatus) {
+            const action = currentStatus ? 'devre dışı bırak' : 'etkinleştir';
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: `Bu kullanıcıyı ${action}mak istediğinizden emin misiniz?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet',
+                cancelButtonText: 'İptal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/users/${userId}/toggle-status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        Swal.fire('Başarılı', `Kullanıcı başarıyla ${action}ıldı.`, 'success');
+                        loadUsers();
+                        loadUserStats();
+                    } else {
+                        const error = await response.json();
+                        Swal.fire('Hata', error.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Kullanıcı durumu değiştirme hatası:', error);
+                    Swal.fire('Hata', 'Kullanıcı durumu değiştirilirken bir hata oluştu.', 'error');
+                }
+            }
+        }
+
+        // Kullanıcıları yenile
+        function refreshUsers() {
+            loadUsers();
+            loadUserStats();
+        }
+    </script>
+</body>
+</html>

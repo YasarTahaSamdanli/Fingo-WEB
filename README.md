@@ -9,6 +9,7 @@ Gelir ve gider takibinden ürün yönetimine, satış kayıtlarından göz alıc
 
 - 🛡️ **Kullanıcı Kimlik Doğrulama**: Güvenli kayıt, giriş ve parola yönetimi.
 - 🔐 **İki Faktörlü Kimlik Doğrulama (2FA)**: Hesabınıza ekstra bir güvenlik katmanı ekleyin.
+- 👥 **Kullanıcı Yönetimi**: Patron, yönetici, kasiyer ve çalışan rolleri ile yetki bazlı erişim kontrolü.
 - 💰 **Finansal İşlem Yönetimi**: Gelir ve giderlerinizi kolayca kaydedin, kategorilere ayırın ve takip edin.
 - 🔄 **Tekrarlayan İşlemler**: Düzenli gelir ve giderlerinizi otomatikleştirerek zamandan kazanın.
 - 📦 **Ürün Yönetimi**: Ürünlerinizi tüm detaylarıyla (ad, kategori, fiyat, birim, barkod vb.) ekleyin, güncelleyin ve silin.
