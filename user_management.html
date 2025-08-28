@@ -15,7 +15,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0d1117; /* Ana koyu ton */
-            color: #e2e8f0; /* Varsayılan açık gri metin */
+            color: #e2e8f0; /* Varsayılan açık gri metin (Genel metin için) */
 
             /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
             background-image:
@@ -34,10 +34,10 @@
                 radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
                 radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
 
-            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
-            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-            background-attachment: fixed;
-            overflow-x: hidden;
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px; /* Her gradient için boyutlandırma */
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0; /* Her gradient için pozisyonlandırma */
+            background-attachment: fixed; /* İçerik kaydırıldığında arka plan sabit kalsın (parallax etkisi) */
+            overflow-x: hidden; /* Yatay kaydırmayı engelle */
         }
 
         /* Form ve Input Elementleri için Tema Uyumu */
