@@ -4,23 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fingo - Kullanıcı Yönetimi</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Ana koyu ton */
+            color: #e2e8f0; /* Varsayılan açık gri metin */
+
+            /* Kozmik Bulutsu ve Yıldız Efekti - Birden fazla katman */
+            background-image:
+                /* Büyük, yumuşak, mavimsi bulutsu */
+                radial-gradient(circle at 15% 15%, rgba(68, 108, 201, 0.2) 0%, transparent 60%),
+                /* Büyük, yumuşak, morumsu bulutsu */
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.2) 0%, transparent 60%),
+                /* Daha küçük, çok hafif, genel yıldız pırıltısı */
+                radial-gradient(circle at 50% 30%, rgba(200, 200, 255, 0.05) 0%, transparent 50%),
+
+                /* Küçük yıldız pırıltıları (tekrar eden gradientler) */
+                radial-gradient(2px 2px at 20% 70%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.5px 1.5px at 70% 10%, #ffffff 0%, transparent 50%),
+                radial-gradient(1px 1px at 40% 90%, #ffffff 0%, transparent 50%),
+                radial-gradient(1.8px 1.8px at 90% 40%, #ffffff 0%, transparent 50%),
+                radial-gradient(0.8px 0.8px at 5% 30%, #ffffff 0%, transparent 50%),
+                radial-gradient(2.2px 2.2px at 50% 60%, #ffffff 0%, transparent 50%);
+
+            background-size: cover, cover, cover, 100px 100px, 120px 120px, 80px 80px, 110px 110px, 90px 90px, 130px 130px;
+            background-position: center center, center center, center center, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        /* Form ve Input Elementleri için Tema Uyumu */
+        .form-input, .form-select, .w-full.p-3.border, input, select {
+            background-color: #1A202C;
+            color: #E2E8F0;
+            border-color: #4A5568;
+            border-radius: 0.5rem;
+        }
+        .form-input::placeholder, input::placeholder {
+            color: #A0AEC0;
+        }
+        .form-input:focus, .form-select:focus, .w-full.p-3.border:focus, input:focus, select:focus {
+            border-color: #60A5FA;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+            outline: none;
+        }
+
+        /* Modal Stilleri */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #1A202C;
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: clamp(300px, 80vw, 600px);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Scrollbar Stilleri */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2D3748;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366F1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4F46E5;
+        }
+
+        /* Mobil Uyumluluk */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .filter-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .table-container {
+                overflow-x: auto;
+            }
+            .modal-content {
+                margin: 1rem;
+                padding: 1.5rem;
+                width: calc(100% - 2rem);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .header-content {
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-gray-900 shadow-lg border-b border-gray-700">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="index.html" class="text-2xl font-bold text-blue-600">
+                    <a href="index.html" class="text-2xl font-bold text-blue-400 hover:text-blue-300 transition-colors">
                         <i class="fas fa-store mr-2"></i>Fingo
                     </a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <span id="userInfo" class="text-gray-700"></span>
-                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <span id="userInfo" class="text-gray-300"></span>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
                         <i class="fas fa-sign-out-alt mr-2"></i>Çıkış
                     </button>
                 </div>
@@ -31,62 +167,62 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Kullanıcı Yönetimi</h1>
-            <p class="text-gray-600">Sistem kullanıcılarını yönetin ve yetkilerini düzenleyin</p>
+        <div class="mb-8 header-content">
+            <h1 class="text-3xl font-bold text-white mb-2">Kullanıcı Yönetimi</h1>
+            <p class="text-gray-300">Sistem kullanıcılarını yönetin ve yetkilerini düzenleyin</p>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stats-grid">
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <div class="p-3 rounded-full bg-blue-900 text-blue-400">
                         <i class="fas fa-users text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Toplam Kullanıcı</p>
-                        <p id="totalUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                        <p class="text-sm font-medium text-gray-400">Toplam Kullanıcı</p>
+                        <p id="totalUsers" class="text-2xl font-semibold text-white">-</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <div class="p-3 rounded-full bg-green-900 text-green-400">
                         <i class="fas fa-user-check text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Aktif Kullanıcı</p>
-                        <p id="activeUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                        <p class="text-sm font-medium text-gray-400">Aktif Kullanıcı</p>
+                        <p id="activeUsers" class="text-2xl font-semibold text-white">-</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <div class="p-3 rounded-full bg-yellow-900 text-yellow-400">
                         <i class="fas fa-user-clock text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Pasif Kullanıcı</p>
-                        <p id="inactiveUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                        <p class="text-sm font-medium text-gray-400">Pasif Kullanıcı</p>
+                        <p id="inactiveUsers" class="text-2xl font-semibold text-white">-</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
+            <div class="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <div class="p-3 rounded-full bg-purple-900 text-purple-400">
                         <i class="fas fa-user-shield text-2xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Admin</p>
-                        <p id="adminUsers" class="text-2xl font-semibold text-gray-900">-</p>
+                        <p class="text-sm font-medium text-gray-400">Admin</p>
+                        <p id="adminUsers" class="text-2xl font-semibold text-white">-</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex space-x-4">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 action-buttons">
+            <div class="flex flex-wrap gap-4">
                 <button onclick="showCreateUserModal()" data-manager-only class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
                     <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
                 </button>
@@ -94,15 +230,15 @@
                     <i class="fas fa-sync-alt mr-2"></i>Yenile
                 </button>
             </div>
-            <div class="flex space-x-2">
-                <select id="roleFilter" onchange="filterUsers()" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <div class="flex flex-col sm:flex-row gap-2 filter-controls">
+                <select id="roleFilter" onchange="filterUsers()" class="border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
                     <option value="">Tüm Roller</option>
                     <option value="admin">Admin</option>
                     <option value="manager">Yönetici</option>
                     <option value="cashier">Kasiyer</option>
                     <option value="staff">Çalışan</option>
                 </select>
-                <select id="statusFilter" onchange="filterUsers()" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="statusFilter" onchange="filterUsers()" class="border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
                     <option value="">Tüm Durumlar</option>
                     <option value="true">Aktif</option>
                     <option value="false">Pasif</option>
@@ -111,20 +247,20 @@
         </div>
 
         <!-- Users Table -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700 table-container">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-700">
+                    <thead class="bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departman</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Son Giriş</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">İşlemler</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Kullanıcı</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rol</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Departman</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Durum</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Son Giriş</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">İşlemler</th>
                         </tr>
                     </thead>
-                    <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                    <tbody id="usersTableBody" class="bg-gray-800 divide-y divide-gray-700">
                         <!-- Users will be loaded here -->
                     </tbody>
                 </table>
@@ -133,152 +269,146 @@
     </div>
 
     <!-- Create User Modal -->
-    <div id="createUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">Yeni Kullanıcı Oluştur</h3>
-                    <button onclick="hideCreateUserModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+    <div id="createUserModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-600 pb-4">
+                <h3 class="text-lg font-semibold text-white">Yeni Kullanıcı Oluştur</h3>
+                <button onclick="hideCreateUserModal()" class="text-gray-400 hover:text-gray-200 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="createUserForm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Ad</label>
+                        <input type="text" id="firstName" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Soyad</label>
+                        <input type="text" id="lastName" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+                    <input type="email" id="email" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
+                    <input type="password" id="password" required placeholder="Kullanıcının şifresi (en az 6 karakter)" class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    <p class="text-xs text-gray-400 mt-1">Bu şifre kullanıcıya e-posta ile gönderilecektir.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Rol</label>
+                        <select id="role" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                            <option value="">Rol Seçin</option>
+                            <option value="admin">Admin</option>
+                            <option value="manager">Yönetici</option>
+                            <option value="cashier">Kasiyer</option>
+                            <option value="staff">Çalışan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Telefon</label>
+                        <input type="tel" id="phone" class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Departman</label>
+                    <input type="text" id="department" class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end gap-3">
+                    <button type="button" onclick="hideCreateUserModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Oluştur
                     </button>
                 </div>
-                <form id="createUserForm" class="p-6">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
-                            <input type="text" id="firstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
-                            <input type="text" id="lastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
-                        <input type="email" id="email" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
-                        <input type="password" id="password" required placeholder="Kullanıcının şifresi (en az 6 karakter)" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-xs text-gray-500 mt-1">Bu şifre kullanıcıya e-posta ile gönderilecektir.</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
-                            <select id="role" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Rol Seçin</option>
-                                <option value="admin">Admin</option>
-                                <option value="manager">Yönetici</option>
-                                <option value="cashier">Kasiyer</option>
-                                <option value="staff">Çalışan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                            <input type="tel" id="phone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Departman</label>
-                        <input type="text" id="department" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideCreateUserModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
-                            İptal
-                        </button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            Oluştur
-                        </button>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- Edit User Modal -->
-    <div id="editUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">Kullanıcı Düzenle</h3>
-                    <button onclick="hideEditUserModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+    <div id="editUserModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-600 pb-4">
+                <h3 class="text-lg font-semibold text-white">Kullanıcı Düzenle</h3>
+                <button onclick="hideEditUserModal()" class="text-gray-400 hover:text-gray-200 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Ad</label>
+                        <input type="text" id="editFirstName" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Soyad</label>
+                        <input type="text" id="editLastName" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">E-posta</label>
+                    <input type="email" id="editEmail" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Rol</label>
+                        <select id="editRole" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                            <option value="admin">Admin</option>
+                            <option value="manager">Yönetici</option>
+                            <option value="cashier">Kasiyer</option>
+                            <option value="staff">Çalışan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Telefon</label>
+                        <input type="tel" id="editPhone" class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Departman</label>
+                    <input type="text" id="editDepartment" class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end gap-3">
+                    <button type="button" onclick="hideEditUserModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Güncelle
                     </button>
                 </div>
-                <form id="editUserForm" class="p-6">
-                    <input type="hidden" id="editUserId">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
-                            <input type="text" id="editFirstName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
-                            <input type="text" id="editLastName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
-                        <input type="email" id="editEmail" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
-                            <select id="editRole" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="admin">Admin</option>
-                                <option value="manager">Yönetici</option>
-                                <option value="cashier">Kasiyer</option>
-                                <option value="staff">Çalışan</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
-                            <input type="tel" id="editPhone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Departman</label>
-                        <input type="text" id="editDepartment" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideEditUserModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
-                            İptal
-                        </button>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            Güncelle
-                        </button>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 
     <!-- Reset Password Modal -->
-    <div id="resetPasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-                <div class="flex justify-between items-center p-6 border-b">
-                    <h3 class="text-lg font-semibold text-gray-900">Şifre Sıfırla</h3>
-                    <button onclick="hideResetPasswordModal()" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-xl"></i>
+    <div id="resetPasswordModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-600 pb-4">
+                <h3 class="text-lg font-semibold text-white">Şifre Sıfırla</h3>
+                <button onclick="hideResetPasswordModal()" class="text-gray-400 hover:text-gray-200 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="resetPasswordForm">
+                <input type="hidden" id="resetPasswordUserId">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Yeni Şifre</label>
+                    <input type="password" id="newPassword" required class="w-full border border-gray-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white">
+                </div>
+                <div class="flex flex-col sm:flex-row justify-end gap-3">
+                    <button type="button" onclick="hideResetPasswordModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        Şifreyi Sıfırla
                     </button>
                 </div>
-                <form id="resetPasswordForm" class="p-6">
-                    <input type="hidden" id="resetPasswordUserId">
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
-                        <input type="password" id="newPassword" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="hideResetPasswordModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors">
-                            İptal
-                        </button>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                            Şifreyi Sıfırla
-                        </button>
-                    </div>
-                </form>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -317,6 +447,9 @@
                 
                 // Kullanıcı bilgilerini göster
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;
+                
+                // Rol bazlı UI kontrolü
+                applyRoleBasedUI();
                 
                 // Kullanıcıları ve istatistikleri yükle
                 await loadUserStats();
@@ -459,13 +592,13 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
-                                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <span class="text-blue-600 font-medium">${user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}</span>
+                                <div class="h-10 w-10 rounded-full bg-blue-900 flex items-center justify-center">
+                                    <span class="text-blue-400 font-medium">${user.firstName ? user.firstName.charAt(0) : user.email.charAt(0).toUpperCase()}</span>
                                 </div>
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${user.firstName} ${user.lastName}</div>
-                                <div class="text-sm text-gray-500">${user.email}</div>
+                                <div class="text-sm font-medium text-white">${user.firstName} ${user.lastName}</div>
+                                <div class="text-sm text-gray-400">${user.email}</div>
                             </div>
                         </div>
                     </td>
@@ -474,27 +607,27 @@
                             ${getRoleDisplayName(user.role)}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.department || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">${user.department || '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.isActive ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}">
                             ${user.isActive ? 'Aktif' : 'Pasif'}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                         ${user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('tr-TR') : 'Hiç giriş yapmamış'}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
-                            <button onclick="editUser('${user._id}')" data-manager-only class="text-blue-600 hover:text-blue-900">
+                            <button onclick="editUser('${user._id}')" data-manager-only class="text-blue-400 hover:text-blue-300 transition-colors">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button onclick="resetPassword('${user._id}')" data-admin-only class="text-yellow-600 hover:text-yellow-900">
+                            <button onclick="resetPassword('${user._id}')" data-admin-only class="text-yellow-400 hover:text-yellow-300 transition-colors">
                                 <i class="fas fa-key"></i>
                             </button>
-                            <button onclick="deleteUser('${user._id}')" data-admin-only class="text-red-600 hover:text-blue-900">
+                            <button onclick="deleteUser('${user._id}')" data-admin-only class="text-red-400 hover:text-red-300 transition-colors">
                                 <i class="fas fa-trash"></i>
                             </button>
-                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" data-manager-only class="text-${user.isActive ? 'orange' : 'green'}-600 hover:text-${user.isActive ? 'orange' : 'green'}-900">
+                            <button onclick="toggleUserStatus('${user._id}', ${user.isActive})" data-manager-only class="text-${user.isActive ? 'orange' : 'green'}-400 hover:text-${user.isActive ? 'orange' : 'green'}-300 transition-colors">
                                 <i class="fas fa-${user.isActive ? 'ban' : 'check'}"></i>
                             </button>
                         </div>
@@ -507,10 +640,10 @@
         // Rol badge sınıfını al
         function getRoleBadgeClass(role) {
             const classes = {
-                'admin': 'bg-red-100 text-red-800',
-                'manager': 'bg-blue-100 text-blue-800',
-                'cashier': 'bg-green-100 text-green-800',
-                'staff': 'bg-gray-100 text-gray-800'
+                'admin': 'bg-red-900 text-red-400',
+                'manager': 'bg-blue-900 text-blue-400',
+                'cashier': 'bg-green-900 text-green-400',
+                'staff': 'bg-gray-700 text-gray-300'
             };
             return classes[role] || classes.staff;
         }
@@ -529,27 +662,33 @@
         // Modal fonksiyonları
         function showCreateUserModal() {
             document.getElementById('createUserModal').classList.remove('hidden');
+            document.getElementById('createUserModal').classList.add('show');
         }
 
         function hideCreateUserModal() {
+            document.getElementById('createUserModal').classList.remove('show');
             document.getElementById('createUserModal').classList.add('hidden');
             document.getElementById('createUserForm').reset();
         }
 
         function showEditUserModal() {
             document.getElementById('editUserModal').classList.remove('hidden');
+            document.getElementById('editUserModal').classList.add('show');
         }
 
         function hideEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('show');
             document.getElementById('editUserModal').classList.add('hidden');
             document.getElementById('editUserForm').reset();
         }
 
         function showResetPasswordModal() {
             document.getElementById('resetPasswordModal').classList.remove('hidden');
+            document.getElementById('resetPasswordModal').classList.add('show');
         }
 
         function hideResetPasswordModal() {
+            document.getElementById('resetPasswordModal').classList.remove('show');
             document.getElementById('resetPasswordModal').classList.add('hidden');
             document.getElementById('resetPasswordForm').reset();
         }
@@ -704,13 +843,13 @@
 
             if (result.isConfirmed) {
                 try {
-                                    const token = localStorage.getItem('jwtToken');
-                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                    const token = localStorage.getItem('jwtToken');
+                    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
                     if (response.ok) {
                         Swal.fire('Silindi!', 'Kullanıcı başarıyla silindi.', 'success');
@@ -742,13 +881,13 @@
 
             if (result.isConfirmed) {
                 try {
-                                    const token = localStorage.getItem('jwtToken');
-                const response = await fetch(`${API_BASE_URL}/users/${userId}/toggle-status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                    const token = localStorage.getItem('jwtToken');
+                    const response = await fetch(`${API_BASE_URL}/users/${userId}/toggle-status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
 
                     if (response.ok) {
                         Swal.fire('Başarılı', `Kullanıcı başarıyla ${action}ıldı.`, 'success');
