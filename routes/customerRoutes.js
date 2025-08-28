@@ -99,6 +99,21 @@ router.get('/customers/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// MÜŞTERİ SAYISI GETİRME ROTASI (Dashboard Widget için)
+router.get('/customers/count', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const db = getDb();
+        const count = await db.collection('customers').countDocuments({ userId: new ObjectId(userId) });
+        
+        res.status(200).json({ count: count });
+    } catch (error) {
+        console.error('[DEBUG-BACKEND-CUSTOMER] Müşteri sayısı çekme hatası:', error);
+        res.status(500).json({ message: 'Müşteri sayısı yüklenirken sunucu hatası.' });
+    }
+});
+
 // Müşteri Güncelleme Rotası
 router.put('/customers/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;

@@ -148,5 +148,56 @@ router.get('/sales', authenticateToken, async (req, res) => {
     }
 });
 
+// SATIŞ TRENDİ GETİRME ROTASI (Dashboard Widget için)
+router.get('/sales/trend', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { days = 7 } = req.query;
+
+    try {
+        const db = getDb();
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(days));
+
+        const trend = await db.collection('sales').aggregate([
+            {
+                $match: {
+                    userId: userId,
+                    saleDate: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            format: "%Y-%m-%d",
+                            date: "$saleDate"
+                        }
+                    },
+                    dailyTotal: { $sum: "$totalAmount" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]).toArray();
+
+        // Günlük satış verilerini düzenle
+        const trendData = trend.map(item => ({
+            date: item._id,
+            amount: item.dailyTotal
+        }));
+
+        res.status(200).json({ 
+            trend: trendData,
+            days: parseInt(days),
+            startDate: startDate,
+            endDate: endDate
+        });
+    } catch (error) {
+        console.error('Satış trendi çekme hatası:', error);
+        res.status(500).json({ message: 'Satış trendi yüklenirken sunucu hatası.' });
+    }
+});
 
 module.exports = router;

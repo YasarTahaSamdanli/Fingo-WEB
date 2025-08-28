@@ -46,7 +46,7 @@ router.post('/transactions', authenticateToken, async (req, res) => {
 // Tüm işlemleri getirme rotası (filtreleme ile)
 router.get('/transactions', authenticateToken, async (req, res) => {
     const userId = req.user.userId;
-    const { type, category, date, startDate, endDate } = req.query;
+    const { type, category, date, startDate, endDate, limit } = req.query;
 
     try {
         const db = getDb();
@@ -73,7 +73,14 @@ router.get('/transactions', authenticateToken, async (req, res) => {
             }
         }
 
-        const transactions = await db.collection('transactions').find(query).sort({ date: -1, createdAt: -1 }).toArray();
+        let transactionsQuery = db.collection('transactions').find(query).sort({ date: -1, createdAt: -1 });
+        
+        // Limit parametresi varsa uygula
+        if (limit && !isNaN(parseInt(limit))) {
+            transactionsQuery = transactionsQuery.limit(parseInt(limit));
+        }
+        
+        const transactions = await transactionsQuery.toArray();
         res.status(200).json(transactions);
     } catch (error) {
         console.error('İşlemleri çekerken hata:', error);

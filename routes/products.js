@@ -99,6 +99,82 @@ router.get('/products', authenticateToken, async (req, res) => {
     }
 });
 
+// DÜŞÜK STOK ÜRÜNLERİ GETİRME ROTASI (Dashboard Widget için)
+router.get('/products/low-stock', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const organizationId = req.user.organizationId;
+
+    try {
+        const db = getDb();
+        const lowStockProducts = await db.collection('products').find({
+            userId: userId,
+            organizationId: organizationId,
+            quantity: { $lte: { $min: ['$minStockLevel', 10] } } // minStockLevel veya 10'dan az
+        }).sort({ quantity: 1 }).limit(10).toArray();
+
+        res.status(200).json(lowStockProducts);
+    } catch (error) {
+        console.error('Düşük stok ürünleri çekme hatası:', error);
+        res.status(500).json({ message: 'Düşük stok ürünleri yüklenirken sunucu hatası.' });
+    }
+});
+
+// POPÜLER ÜRÜNLER GETİRME ROTASI (Dashboard Widget için)
+router.get('/products/popular', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const organizationId = req.user.organizationId;
+
+    try {
+        const db = getDb();
+        // Satış verilerinden popüler ürünleri çek
+        const popularProducts = await db.collection('sales').aggregate([
+            {
+                $match: {
+                    userId: new ObjectId(userId),
+                    organizationId: new ObjectId(organizationId)
+                }
+            },
+            {
+                $group: {
+                    _id: '$productId',
+                    salesCount: { $sum: '$quantity' },
+                    totalRevenue: { $sum: { $multiply: ['$price', '$quantity'] } }
+                }
+            },
+            {
+                $sort: { salesCount: -1 }
+            },
+            {
+                $limit: 10
+            },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            {
+                $unwind: '$productInfo'
+            },
+            {
+                $project: {
+                    _id: '$productInfo._id',
+                    name: '$productInfo.name',
+                    salesCount: '$salesCount',
+                    totalRevenue: '$totalRevenue'
+                }
+            }
+        ]).toArray();
+
+        res.status(200).json(popularProducts);
+    } catch (error) {
+        console.error('Popüler ürünleri çekme hatası:', error);
+        res.status(500).json({ message: 'Popüler ürünler yüklenirken sunucu hatası.' });
+    }
+});
+
 // Tek bir Ürünü ID ile Getirme Rotası
 router.get('/products/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;

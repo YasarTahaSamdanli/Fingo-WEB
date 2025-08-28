@@ -119,4 +119,54 @@ router.delete('/categories/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// KATEGORİ DAĞILIMI GETİRME ROTASI (Dashboard Widget için)
+router.get('/categories/distribution', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const db = getDb();
+        
+        // Kategorilere göre işlem sayısını hesapla
+        const distribution = await db.collection('transactions').aggregate([
+            {
+                $match: {
+                    userId: new ObjectId(userId)
+                }
+            },
+            {
+                $group: {
+                    _id: '$category',
+                    count: { $sum: 1 },
+                    totalAmount: { $sum: '$amount' }
+                }
+            },
+            {
+                $sort: { count: -1 }
+            },
+            {
+                $limit: 10
+            }
+        ]).toArray();
+
+        // Toplam işlem sayısını hesapla
+        const totalTransactions = await db.collection('transactions').countDocuments({ userId: new ObjectId(userId) });
+
+        // Yüzdelik hesapla
+        const distributionWithPercentage = distribution.map(cat => ({
+            name: cat._id || 'Kategorisiz',
+            count: cat.count,
+            totalAmount: cat.totalAmount,
+            percentage: totalTransactions > 0 ? Math.round((cat.count / totalTransactions) * 100) : 0
+        }));
+
+        res.status(200).json({ 
+            distribution: distributionWithPercentage,
+            totalTransactions: totalTransactions
+        });
+    } catch (error) {
+        console.error('Kategori dağılımı çekme hatası:', error);
+        res.status(500).json({ message: 'Kategori dağılımı yüklenirken sunucu hatası.' });
+    }
+});
+
 module.exports = router;

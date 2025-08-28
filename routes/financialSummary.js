@@ -91,6 +91,66 @@ router.get('/financial-summary/annual', authenticateToken, async (req, res) => {
     }
 });
 
+// GÜNLÜK FİNANSAL ÖZETİ GETİRME ROTASI (Dashboard Widget için)
+router.get('/financial-summary/daily', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { date } = req.query;
+
+    if (!date) {
+        return res.status(400).json({ message: 'Tarih belirtmelisiniz.' });
+    }
+
+    try {
+        const db = getDb();
+        // Tarih aralığını ayarla (günün başlangıcı ve bitişi)
+        const startOfDay = new Date(date + 'T00:00:00.000Z');
+        const endOfDay = new Date(date + 'T23:59:59.999Z');
+
+        const dailySummary = await db.collection('transactions').aggregate([
+            {
+                $match: {
+                    userId: new ObjectId(userId),
+                    date: { $gte: startOfDay, $lte: endOfDay }
+                }
+            },
+            {
+                $group: {
+                    _id: "$type",
+                    totalAmount: { $sum: "$amount" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    type: "$_id",
+                    totalAmount: "$totalAmount"
+                }
+            }
+        ]).toArray();
+
+        let revenue = 0;
+        let expense = 0;
+
+        dailySummary.forEach(item => {
+            if (item.type === 'Gelir') {
+                revenue = item.totalAmount;
+            } else if (item.type === 'Gider') {
+                expense = item.totalAmount;
+            }
+        });
+
+        res.status(200).json({ 
+            revenue: revenue, 
+            expense: expense, 
+            netBalance: revenue - expense,
+            date: date 
+        });
+    } catch (error) {
+        console.error('Günlük finansal özet verilerini çekerken hata:', error);
+        res.status(500).json({ message: 'Günlük finansal özet yüklenirken sunucu hatası.' });
+    }
+});
+
 
 // AYLIK FİNANSAL ÖZETİ GETİRME ROTASI
 router.get('/financial-summary/monthly', authenticateToken, async (req, res) => {
