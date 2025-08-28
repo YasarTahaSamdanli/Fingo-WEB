@@ -444,6 +444,16 @@
                     }, 2000);
                     return;
                 }
+
+                // Yetki kontrolü - Sadece admin ve yönetici girebilir
+                if (payload.role !== 'admin' && payload.role !== 'manager') {
+                    console.error('Yetkisiz erişim:', payload.role);
+                    Swal.fire('Erişim Reddedildi', 'Bu sayfaya erişim yetkiniz bulunmamaktadır. Sadece yönetici ve admin kullanıcıları bu sayfayı kullanabilir.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 3000);
+                    return;
+                }
                 
                 // Kullanıcı bilgilerini göster
                 document.getElementById('userInfo').textContent = `${payload.email} (${payload.role})`;

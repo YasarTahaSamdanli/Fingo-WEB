@@ -427,6 +427,7 @@
                             <option value="categorySummary">Kategori Bazında Özet</option>
                             <option value="balanceHistory">Bakiye Geçmişi</option>
                             <option value="stockMovements">Stok Hareketleri</option>
+                            <option value="stockByCategory">Kategori Bazında Stok Raporu</option>
                         </select>
                     </div>
                     <div>
@@ -628,6 +629,68 @@
                     </div>
                     <p id="stockMovementsNoData" class="text-center text-gray-400 mt-4 hidden">Seçilen kriterlere uygun veri bulunamadı.</p>
                 </div>
+
+                <!-- Kategori Bazında Stok Raporu -->
+                <div id="stockByCategoryReport" class="report-section bg-gray-800 bg-opacity-70 p-6 rounded-lg shadow-md border border-gray-700 hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-2xl font-semibold text-yellow-300">Kategori Bazında Stok Raporu</h3>
+                        <div class="flex gap-2 export-buttons-container">
+                            <button id="exportStockByCategoryCSV" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                            <button id="exportStockByCategoryPDF" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button id="exportStockByCategoryExcel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors text-sm flex items-center gap-2 export-btn">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Kategori Filtreleri -->
+                    <div class="mb-6 bg-gray-900 bg-opacity-60 border border-gray-700 rounded-lg p-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="stockCategoryFilter" class="block text-gray-300 text-sm font-medium mb-1">Kategori Seç</label>
+                                <select id="stockCategoryFilter" class="form-select w-full p-2 text-sm">
+                                    <option value="">Tüm Kategoriler</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-2">Belirli bir kategori seçerek o kategorideki ürünleri görüntüleyin.</p>
+                            </div>
+                            <div>
+                                <label for="stockCategoryTopN" class="block text-gray-300 text-sm font-medium mb-1">Top N</label>
+                                <select id="stockCategoryTopN" class="form-select p-2 text-sm w-28">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-2">Her kategoride gösterilecek en çok satılan ürün sayısı.</p>
+                            </div>
+                            <div>
+                                <label for="stockCategorySortBy" class="block text-gray-300 text-sm font-medium mb-1">Sıralama</label>
+                                <select id="stockCategorySortBy" class="form-select p-2 text-sm w-40">
+                                    <option value="quantity" selected>Satılan Miktar</option>
+                                    <option value="amount">Toplam Tutar</option>
+                                    <option value="sales">Satış Sayısı</option>
+                                </select>
+                                <p class="text-xs text-gray-400 mt-2">Ürünlerin nasıl sıralanacağını belirleyin.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grafik -->
+                    <div class="relative h-80 mb-6">
+                        <canvas id="stockByCategoryChart"></canvas>
+                    </div>
+
+                    <!-- Kategori Bazında Tablolar -->
+                    <div id="stockByCategoryTables" class="space-y-6">
+                        <!-- Kategoriler burada dinamik olarak oluşturulacak -->
+                    </div>
+
+                    <p id="stockByCategoryNoData" class="text-center text-gray-400 mt-4 hidden">Seçilen kriterlere uygun veri bulunamadı.</p>
+                </div>
             </div>
         </main>
     </div>
@@ -797,6 +860,17 @@
             const stockClearBtn = document.getElementById('stockClearBtn');
             const stockSortBySelect = document.getElementById('stockSortBy');
             let stockMovementsData = [];
+
+            // Kategori Bazında Stok Raporu Elementleri
+            const stockByCategoryReportDiv = document.getElementById('stockByCategoryReport');
+            const stockByCategoryChartCanvas = document.getElementById('stockByCategoryChart');
+            let stockByCategoryChartInstance = null;
+            const stockCategoryFilterSelect = document.getElementById('stockCategoryFilter');
+            const stockCategoryTopNSelect = document.getElementById('stockCategoryTopN');
+            const stockCategorySortBySelect = document.getElementById('stockCategorySortBy');
+            const stockByCategoryTables = document.getElementById('stockByCategoryTables');
+            const stockByCategoryNoData = document.getElementById('stockByCategoryNoData');
+            let stockByCategoryData = {};
 
             // Mesaj ve Bildirim Elementleri
             const messageBox = document.getElementById('messageBox');
@@ -1260,6 +1334,29 @@
                 }
             }
 
+            // Kategori Bazında Stok Raporu Export Fonksiyonları
+            function exportStockByCategory(format) {
+                if (!stockByCategoryData || Object.keys(stockByCategoryData).length === 0) {
+                    showMessageBox('Kategori bazında stok raporu verisi bulunamadı.', 'warning');
+                    return;
+                }
+
+                const data = getStockByCategoryData();
+                const filename = `kategori-bazinda-stok-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`;
+
+                switch (format) {
+                    case 'csv':
+                        exportToCSV(data, filename + '.csv');
+                        break;
+                    case 'pdf':
+                        exportToPDF(data, filename + '.pdf', 'Kategori Bazında Stok Raporu');
+                        break;
+                    case 'excel':
+                        exportToExcel(data, filename + '.xlsx', 'Kategori Bazında Stok');
+                        break;
+                }
+            }
+
             // Veri Çıkarma Fonksiyonları
             function getCategorySummaryData() {
                 const rows = Array.from(categorySummaryTableBody.querySelectorAll('tr'));
@@ -1298,6 +1395,23 @@
                         satisTarihi: cells[3]?.textContent?.trim() || ''
                     };
                 });
+            }
+
+            function getStockByCategoryData() {
+                const data = [];
+                Object.keys(stockByCategoryData).forEach(category => {
+                    const products = stockByCategoryData[category];
+                    products.forEach(product => {
+                        data.push({
+                            kategori: category,
+                            urunAdi: product.productName || '',
+                            satilanMiktar: product.totalQuantity || 0,
+                            toplamTutar: product.totalAmount || 0,
+                            satisSayisi: product.saleCount || 0
+                        });
+                    });
+                });
+                return data;
             }
 
             // Export Format Fonksiyonları
@@ -1478,6 +1592,12 @@
                     if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
                     if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
                     if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
+                } else if (selectedReportType === 'stockByCategory') {
+                    if (stockByCategoryReportDiv) stockByCategoryReportDiv.classList.remove('hidden');
+                    // Kategori bazında stok raporunda tarih aralığı da kullanıldığı için göster
+                    if (reportStartDateInput) reportStartDateInput.parentElement.classList.remove('hidden');
+                    if (reportEndDateInput) reportEndDateInput.parentElement.classList.remove('hidden');
+                    if (dateShortcutsRow) dateShortcutsRow.classList.remove('hidden');
                 }
 
                 // Export butonlarının görünürlüğünü güncelle
@@ -1507,6 +1627,12 @@
                 } else if (selectedReportType === 'stockMovements') {
                     const stockButtons = ['exportStockMovementsCSV', 'exportStockMovementsPDF', 'exportStockMovementsExcel'];
                     stockButtons.forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (btn) btn.style.display = 'flex';
+                    });
+                } else if (selectedReportType === 'stockByCategory') {
+                    const stockByCategoryButtons = ['exportStockByCategoryCSV', 'exportStockByCategoryPDF', 'exportStockByCategoryExcel'];
+                    stockByCategoryButtons.forEach(id => {
                         const btn = document.getElementById(id);
                         if (btn) btn.style.display = 'flex';
                     });
@@ -1592,6 +1718,8 @@
                             await generateBalanceHistoryReport(period, year, month, startDate, endDate);
                         } else if (selectedReportType === 'stockMovements') {
                             await fetchStockMovementReport(startDate, endDate);
+                        } else if (selectedReportType === 'stockByCategory') {
+                            await fetchStockByCategoryReport(startDate, endDate);
                         }
                     } catch (error) {
                         console.error('Rapor oluşturulurken genel hata:', error);
@@ -1951,6 +2079,56 @@
                 }
             }
 
+            // Kategori Bazında Stok Raporu Oluşturma
+            async function fetchStockByCategoryReport(startDate, endDate) {
+                if (stockByCategoryTables) stockByCategoryTables.innerHTML = '';
+                if (stockByCategoryNoData) stockByCategoryNoData.classList.add('hidden');
+                if (stockByCategoryChartInstance) {
+                    stockByCategoryChartInstance.destroy();
+                    stockByCategoryChartInstance = null;
+                }
+
+                try {
+                    const queryParams = new URLSearchParams();
+                    if (startDate) queryParams.append('startDate', startDate);
+                    if (endDate) queryParams.append('endDate', endDate);
+                    queryParams.append('topN', stockCategoryTopNSelect ? stockCategoryTopNSelect.value : '10');
+                    if (stockCategoryFilterSelect && stockCategoryFilterSelect.value) {
+                        queryParams.append('category', stockCategoryFilterSelect.value);
+                    }
+                    queryParams.append('userId', getUserId());
+
+                    const url = `${API_BASE_URL}/reports/stock-by-category?${queryParams.toString()}`;
+                    console.log("Kategori bazında stok raporu için API isteği URL:", url);
+
+                    const response = await fetchWithRetry(url, {
+                        headers: { 'Authorization': `Bearer ${getToken()}` }
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { handleAuthError(); return; }
+                        throw new Error(`HTTP hata! Durum: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    console.log("Kategori bazında stok raporu API yanıtı:", data);
+
+                    if (!data || Object.keys(data).length === 0) {
+                        if (stockByCategoryNoData) stockByCategoryNoData.classList.remove('hidden');
+                        return;
+                    }
+
+                    stockByCategoryData = data;
+                    populateCategoryFilter(data);
+                    renderStockByCategoryTables(data);
+                    renderStockByCategoryChart(data);
+
+                } catch (error) {
+                    console.error('Kategori bazında stok raporu verilerini çekerken hata:', error);
+                    showMessageBox(`Kategori bazında stok raporu yüklenirken hata oluştu: ${error.message}`, 'error');
+                    if (stockByCategoryNoData) stockByCategoryNoData.classList.remove('hidden');
+                }
+            }
+
             function populateStockProductFilter(data) {
                 if (!stockProductFilterSelect) return;
                 const currentSelected = Array.from(stockProductFilterSelect.selectedOptions).map(o => o.value);
@@ -2096,6 +2274,198 @@
                 });
             }
 
+            // Kategori Filtreleme Fonksiyonları
+            function populateCategoryFilter(data) {
+                if (!stockCategoryFilterSelect) return;
+                
+                const categories = Object.keys(data).sort();
+                stockCategoryFilterSelect.innerHTML = '<option value="">Tüm Kategoriler</option>';
+                
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    stockCategoryFilterSelect.appendChild(option);
+                });
+            }
+
+            function renderStockByCategoryTables(data) {
+                if (!stockByCategoryTables) return;
+                
+                stockByCategoryTables.innerHTML = '';
+                const sortBy = stockCategorySortBySelect ? stockCategorySortBySelect.value : 'quantity';
+                
+                Object.keys(data).forEach(category => {
+                    const products = data[category];
+                    if (!products || products.length === 0) return;
+                    
+                    // Ürünleri sırala
+                    const sortedProducts = [...products].sort((a, b) => {
+                        switch (sortBy) {
+                            case 'quantity':
+                                return b.totalQuantity - a.totalQuantity;
+                            case 'amount':
+                                return b.totalAmount - a.totalAmount;
+                            case 'sales':
+                                return b.saleCount - a.saleCount;
+                            default:
+                                return b.totalQuantity - a.totalQuantity;
+                        }
+                    });
+                    
+                    // Kategori tablosu oluştur
+                    const categoryTable = document.createElement('div');
+                    categoryTable.className = 'bg-gray-900 bg-opacity-70 border border-gray-700 rounded-lg p-4';
+                    
+                    const categoryTitle = document.createElement('h4');
+                    categoryTitle.className = 'text-lg font-semibold text-yellow-300 mb-3';
+                    categoryTitle.textContent = `${category} Kategorisi - En Çok Satılan Ürünler`;
+                    categoryTable.appendChild(categoryTitle);
+                    
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full report-table';
+                    table.innerHTML = `
+                        <thead>
+                            <tr class="report-table-header text-gray-200 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">Ürün Adı</th>
+                                <th class="py-3 px-6 text-right">Satılan Miktar</th>
+                                <th class="py-3 px-6 text-right">Toplam Tutar (₺)</th>
+                                <th class="py-3 px-6 text-right">Satış Sayısı</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-200 text-sm font-light">
+                        </tbody>
+                    `;
+                    
+                    const tbody = table.querySelector('tbody');
+                    sortedProducts.forEach(product => {
+                        const row = tbody.insertRow();
+                        row.className = 'border-b border-gray-700 report-table-row';
+                        row.innerHTML = `
+                            <td class="py-3 px-6 text-left whitespace-nowrap">${product.productName}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${product.totalQuantity}</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${product.totalAmount.toFixed(2)} TL</td>
+                            <td class="py-3 px-6 text-right whitespace-nowrap">${product.saleCount}</td>
+                        `;
+                    });
+                    
+                    categoryTable.appendChild(table);
+                    stockByCategoryTables.appendChild(categoryTable);
+                });
+            }
+
+            function renderStockByCategoryChart(data) {
+                if (!stockByCategoryChartCanvas) {
+                    console.error('Stock By Category Chart canvas not found!');
+                    return;
+                }
+                
+                if (stockByCategoryChartInstance) {
+                    stockByCategoryChartInstance.destroy();
+                }
+                
+                const categories = Object.keys(data);
+                const topN = parseInt(stockCategoryTopNSelect ? stockCategoryTopNSelect.value : '10');
+                
+                // Her kategoriden en çok satılan ürünleri al
+                const chartData = [];
+                categories.forEach(category => {
+                    const products = data[category].slice(0, topN);
+                    products.forEach(product => {
+                        chartData.push({
+                            label: `${product.productName} (${category})`,
+                            quantity: product.totalQuantity,
+                            amount: product.totalAmount,
+                            category: category
+                        });
+                    });
+                });
+                
+                // Top N kadar ürünü al
+                const sortBy = stockCategorySortBySelect ? stockCategorySortBySelect.value : 'quantity';
+                chartData.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'quantity':
+                            return b.quantity - a.quantity;
+                        case 'amount':
+                            return b.amount - a.amount;
+                        case 'sales':
+                            return b.quantity - a.quantity; // saleCount chartData'da yok, quantity kullan
+                        default:
+                            return b.quantity - a.quantity;
+                    }
+                });
+                
+                const topProducts = chartData.slice(0, topN);
+                const labels = topProducts.map(item => item.label);
+                const quantities = topProducts.map(item => item.quantity);
+                const amounts = topProducts.map(item => item.amount);
+                
+                const ctx = stockByCategoryChartCanvas.getContext('2d');
+                stockByCategoryChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Satılan Miktar',
+                                data: quantities,
+                                backgroundColor: 'rgba(251, 191, 36, 0.6)',
+                                borderColor: 'rgba(251, 191, 36, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Toplam Tutar (₺)',
+                                data: amounts,
+                                backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                                borderColor: 'rgba(139, 92, 246, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#A0AEC0' }
+                            },
+                            title: {
+                                display: true,
+                                text: `Kategori Bazında En Çok Satılan Ürünler (Top ${topN})`,
+                                color: '#E2E8F0'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: 'Ürünler', color: '#A0AEC0' },
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'Satılan Miktar', color: '#A0AEC0' },
+                                ticks: { color: '#A0AEC0' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: { display: true, text: 'Toplam Tutar (₺)', color: '#A0AEC0' },
+                                ticks: { color: '#A0AEC0' },
+                                grid: { drawOnChartArea: false }
+                            }
+                        }
+                    }
+                });
+            }
+
             function filterStockProductOptions() {
                 if (!stockProductFilterSelect || !stockProductSearchInput) return;
                 const q = stockProductSearchInput.value.toLowerCase().trim();
@@ -2155,6 +2525,21 @@
             }
             if (exportStockMovementsExcel) {
                 exportStockMovementsExcel.addEventListener('click', () => exportStockMovements('excel'));
+            }
+
+            // Kategori Bazında Stok Raporu Export Butonları
+            const exportStockByCategoryCSV = document.getElementById('exportStockByCategoryCSV');
+            const exportStockByCategoryPDF = document.getElementById('exportStockByCategoryPDF');
+            const exportStockByCategoryExcel = document.getElementById('exportStockByCategoryExcel');
+
+            if (exportStockByCategoryCSV) {
+                exportStockByCategoryCSV.addEventListener('click', () => exportStockByCategory('csv'));
+            }
+            if (exportStockByCategoryPDF) {
+                exportStockByCategoryPDF.addEventListener('click', () => exportStockByCategory('pdf'));
+            }
+            if (exportStockByCategoryExcel) {
+                exportStockByCategoryExcel.addEventListener('click', () => exportStockByCategory('excel'));
             }
 
             // Olay Dinleyicileri ve Başlangıç Ayarları
@@ -2222,6 +2607,32 @@
             if (stockSortBySelect) {
                 stockSortBySelect.addEventListener('change', () => {
                     renderStockMovementsTable();
+                });
+            }
+
+            // Kategori Bazında Stok Raporu Event Listener'ları
+            if (stockCategoryFilterSelect) {
+                stockCategoryFilterSelect.addEventListener('change', () => {
+                    if (reportStartDateInput && reportEndDateInput) {
+                        fetchStockByCategoryReport(reportStartDateInput.value, reportEndDateInput.value);
+                    }
+                });
+            }
+
+            if (stockCategoryTopNSelect) {
+                stockCategoryTopNSelect.addEventListener('change', () => {
+                    if (reportStartDateInput && reportEndDateInput) {
+                        fetchStockByCategoryReport(reportStartDateInput.value, reportEndDateInput.value);
+                    }
+                });
+            }
+
+            if (stockCategorySortBySelect) {
+                stockCategorySortBySelect.addEventListener('change', () => {
+                    if (stockByCategoryData && Object.keys(stockByCategoryData).length > 0) {
+                        renderStockByCategoryTables(stockByCategoryData);
+                        renderStockByCategoryChart(stockByCategoryData);
+                    }
                 });
             }
         });

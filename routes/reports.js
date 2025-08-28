@@ -196,4 +196,120 @@ router.get('/stock-movements', authenticateToken, async (req, res) => {
     }
 });
 
+// Kategori Bazında Stok Raporu
+// GET /api/reports/stock-by-category?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&category=categoryName&topN=10
+router.get('/stock-by-category', authenticateToken, async (req, res) => {
+    const userId = req.user.userId;
+    const { startDate: startDateStr, endDate: endDateStr, category, topN = 10 } = req.query;
+
+    const { startDate, endDate } = getDateRange(startDateStr, endDateStr);
+
+    let matchQuery = { userId: userId };
+    if (startDate && endDate) {
+        matchQuery.saleDate = { $gte: startDate, $lte: endDate };
+    }
+
+    try {
+        const db = getDb();
+        
+        // Önce ürünlerin kategorilerini al
+        const products = await db.collection('products').find(
+            { userId: userId },
+            { projection: { _id: 1, name: 1, category: 1 } }
+        ).toArray();
+        
+        const productCategoryMap = {};
+        products.forEach(product => {
+            productCategoryMap[product._id.toString()] = product.category || 'Kategorisiz';
+        });
+
+        // Satış verilerini çek ve kategori bazında grupla
+        const stockByCategory = await db.collection('sales').aggregate([
+            { $match: matchQuery },
+            { $unwind: '$saleItems' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'saleItems.productId',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    productId: '$saleItems.productId',
+                    productName: '$saleItems.productName',
+                    category: {
+                        $ifNull: [
+                            { $arrayElemAt: ['$productInfo.category', 0] },
+                            'Kategorisiz'
+                        ]
+                    },
+                    quantitySold: { $toInt: '$saleItems.quantity' },
+                    saleDate: '$saleDate',
+                    totalAmount: { $toDouble: '$saleItems.totalPrice' }
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        category: '$category',
+                        productName: '$productName'
+                    },
+                    totalQuantity: { $sum: '$quantitySold' },
+                    totalAmount: { $sum: '$totalAmount' },
+                    saleCount: { $sum: 1 }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    category: '$_id.category',
+                    productName: '$_id.productName',
+                    totalQuantity: '$totalQuantity',
+                    totalAmount: '$totalAmount',
+                    saleCount: '$saleCount'
+                }
+            },
+            { $sort: { category: 1, totalQuantity: -1 } }
+        ]).toArray();
+
+        // Kategori bazında grupla ve top N ürünleri al
+        const categoryGroups = {};
+        stockByCategory.forEach(item => {
+            if (!categoryGroups[item.category]) {
+                categoryGroups[item.category] = [];
+            }
+            categoryGroups[item.category].push(item);
+        });
+
+        // Her kategori için top N ürünleri al
+        const result = {};
+        Object.keys(categoryGroups).forEach(cat => {
+            if (!category || category === cat) {
+                result[cat] = categoryGroups[cat].slice(0, parseInt(topN));
+            }
+        });
+
+        // Eğer belirli bir kategori isteniyorsa, sadece o kategoriyi döndür
+        if (category && result[category]) {
+            res.status(200).json({
+                category: category,
+                products: result[category],
+                totalProducts: result[category].length
+            });
+        } else {
+            res.status(200).json(result);
+        }
+
+    } catch (error) {
+        console.error('Kategori bazında stok raporu çekilirken hata:', error);
+        res.status(500).json({ 
+            message: 'Kategori bazında stok raporu çekilirken sunucu hatası oluştu.', 
+            error: error.message 
+        });
+    }
+});
+
 module.exports = router;
