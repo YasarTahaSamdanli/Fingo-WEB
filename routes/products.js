@@ -30,6 +30,7 @@ router.post('/products', authenticateToken, async (req, res) => {
             barcode: barcode || null,
             weightOrVolumePerUnit: (weightOrVolumePerUnit !== null && weightOrVolumePerUnit !== '') ? parseFloat(weightOrVolumePerUnit) : null,
             minStockLevel: parseInt(minStockLevel) || 0,
+            supplierId: req.body.supplierId || null, // Tedarikçi ID'si ekle
             imageUrl: imageUrl || null,
             description: description || null,
             createdAt: new Date(),
