@@ -1,0 +1,133 @@
+{
+  "name": "Basit Stok Uyarısı",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "trigger",
+      "name": "Her 5 Dakikada Kontrol Et",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://fingo-web.onrender.com/api/check-low-stock",
+        "options": {}
+      },
+      "id": "check-stock",
+      "name": "Stok Kontrol Et",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-if-low-stock",
+      "name": "Düşük Stok Var mı?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const products = $input.all();\nlet message = '🚨 DÜŞÜK STOK UYARISI!\\n\\n';\n\nfor (const product of products) {\n  message += `📦 ${product.name || 'Bilinmeyen Ürün'}\\n`;\n  message += `   Mevcut: ${product.quantity || 0} ${product.unit || 'adet'}\\n`;\n  message += `   Minimum: ${product.minStockLevel || 0} ${product.unit || 'adet'}\\n\\n`;\n}\n\nmessage += '⏰ ' + new Date().toLocaleString('tr-TR');\n\nreturn { message, productCount: products.length };"
+      },
+      "id": "prepare-message",
+      "name": "Mesaj Hazırla",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://fingo-web.onrender.com/api/send-supplier-notification",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { message: $json.message, products: $('Stok Kontrol Et').all() } }}",
+        "options": {}
+      },
+      "id": "send-notification",
+      "name": "Tedarikçiye Bildirim Gönder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = new Date().toISOString();\nconst message = `[${timestamp}] ✅ Stok uyarısı gönderildi! ${$('Düşük Stok Var mı?').all().length} ürün için.`;\n\nconsole.log(message);\nreturn { success: true, message, timestamp };"
+      },
+      "id": "success-log",
+      "name": "Başarı Logu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = new Date().toISOString();\nconst message = `[${timestamp}] ✅ Stok kontrolü tamamlandı. Düşük stok bulunamadı.`;\n\nconsole.log(message);\nreturn { noLowStock: true, message, timestamp };"
+      },
+      "id": "no-low-stock-log",
+      "name": "Düşük Stok Yok",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "trigger": {
+      "main": [[{"node": "check-stock", "type": "main", "index": 0}]]
+    },
+    "check-stock": {
+      "main": [[{"node": "check-if-low-stock", "type": "main", "index": 0}]]
+    },
+    "check-if-low-stock": {
+      "main": [
+        [{"node": "prepare-message", "type": "main", "index": 0}],
+        [{"node": "no-low-stock-log", "type": "main", "index": 0}]
+      ]
+    },
+    "prepare-message": {
+      "main": [[{"node": "send-notification", "type": "main", "index": 0}]]
+    },
+    "send-notification": {
+      "main": [[{"node": "success-log", "type": "main", "index": 0}]]
+    }
+  },
+  "pinData": {},
+  "settings": {"executionOrder": "v1"},
+  "staticData": null,
+  "tags": [{"id": "simple-stock-alert", "name": "Stok Yönetimi"}],
+  "triggerCount": 0,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}
