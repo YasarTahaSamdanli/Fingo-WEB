@@ -23,7 +23,7 @@
     },
     {
       "parameters": {
-        "url": "http://localhost:3000/api/check-low-stock",
+        "url": "https://fingo-web.onrender.com/api/check-low-stock",
         "options": {}
       },
       "id": "http-request",
@@ -82,7 +82,7 @@
     },
     {
       "parameters": {
-        "url": "http://localhost:3000/api/send-supplier-notification",
+        "url": "https://fingo-web.onrender.com/api/send-supplier-notification",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json }}",
