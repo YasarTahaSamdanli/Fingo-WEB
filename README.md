@@ -47,4 +47,4 @@ Masaüstü tam sürüm
 
 Çoklu dil desteği
 
-### 👉 Fingo Web ile işletmenizi dijital dünyaya taşıyın, işlerinizi kolaylaştırın!
+### 👉 Fingo Web ile işletmenizi dijital dünyaya taşıyın, işlerinizi kolaylaştırın!   https://yasartahasamdanli.github.io/Fingo-WEB/auth.html
