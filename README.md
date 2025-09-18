@@ -45,10 +45,6 @@ Organizasyon bazlı veri ayrımı (verileriniz başka işletmelerle karışmaz)
 
 Masaüstü tam sürüm
 
-Mobil uygulama
-
-Gelişmiş finans yönetimi (gider, tahsilat, kâr hesaplama)
-
 Çoklu dil desteği
 
 ### 👉 Fingo Web ile işletmenizi dijital dünyaya taşıyın, işlerinizi kolaylaştırın!
